@@ -10,12 +10,18 @@ jobs:
       - name: Checando o código
         uses: actions/checkout@v4
 
+      - name: Instalar Dependências do Site Principal
+        run: npm install  # Isso instala o Vite e outras ferramentas do site
+
+      - name: Criar a Pasta DIST (Build do Site)
+        run: npm run build # Isso gera os arquivos que o Hosting precisa
+
       - name: Instalar Dependências das Funções
         run: cd functions && npm install
 
       - name: Deploy para o Firebase (Functions + Hosting)
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions,hosting
+          args: deploy --only functions,hosting --force
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }} # Verifique se este nome está certo no seu GitHub Secrets
