@@ -12,7 +12,7 @@ import {
   Sparkles,
   Loader2
 } from 'lucide-react';
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface WebsitePreviewProps {
   data: SiteFormData;
