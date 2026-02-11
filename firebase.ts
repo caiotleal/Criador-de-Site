@@ -19,4 +19,4 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
 // Inicializa a IA com a chave que você criou no Default Gemini Project
-export const genAI = new GoogleGenerativeAI("AIzaSyBwmlFaONdzX69AUMd9ybA8ljngO1t_0bw");
+export const genAI = new GoogleGenerativeAI("AIzaSyCaSWUQkoNNf7I3Qt_mz7rTDFkZ8WBvl9g");
