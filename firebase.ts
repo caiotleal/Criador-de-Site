@@ -1,26 +1,22 @@
-
-// Fix: Use correct named imports from 'firebase/app' for the modular SDK (v9+)
-import { initializeApp, getApp, getApps } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// Configuração do seu projeto Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCQgMh6GiO25SYbjbg91AJGfTDGn8ESS7U",
+  apiKey: "AIzaSyBwmlFaONdzX69AUMd9ybA8ljngO1t_0bw", // Sua chave de API principal
   authDomain: "criador-de-site-1a91d.firebaseapp.com",
   projectId: "criador-de-site-1a91d",
   storageBucket: "criador-de-site-1a91d.firebasestorage.app",
-  messagingSenderId: "303869540380",
-  appId: "1:303869540380:web:fcd128e04c3b6de14687d9",
-  measurementId: "G-P21NE965SC"
+  messagingSenderId: "777420488661",
+  appId: "1:777420488661:web:5319808a98b4f056d68884"
 };
 
-// Initialize Firebase only if there are no existing app instances to prevent errors during hot-reloads
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore using the existing app instance
-const db = getFirestore(app);
+// Exporta o Banco de Dados para o App.tsx usar
+export const db = getFirestore(app);
 
-export { app, db };
-
-// A CHAVE QUE VOCÊ ME MANDOU (Google AI Studio)
-// Resolve o erro: "An API Key must be set"
+// Inicializa a IA com a chave que você criou no Default Gemini Project
 export const genAI = new GoogleGenerativeAI("AIzaSyBwmlFaONdzX69AUMd9ybA8ljngO1t_0bw");
