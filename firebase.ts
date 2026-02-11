@@ -1,5 +1,6 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
+// Use the modular Firebase SDK imports
+import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -12,5 +13,6 @@ const firebaseConfig = {
   appId: "1:123456789:web:abcdef"
 };
 
+// Initialize Firebase as a singleton to avoid multiple initializations
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const db = getFirestore(app);
