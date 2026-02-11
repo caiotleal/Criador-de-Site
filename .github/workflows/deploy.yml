@@ -31,6 +31,6 @@ jobs:
       - name: Publicar no Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting,functions --force
+          args: deploy --only hosting,functions --force --project criador-de-site-1a91d
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
