@@ -14,29 +14,22 @@
         font-family: 'Inter', sans-serif;
         background-color: #09090b;
         color: #fafafa;
+        margin: 0;
       }
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #18181b;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #3f3f46;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #52525b;
-      }
+      #root { min-height: 100vh; }
     </style>
   <script type="importmap">
 {
   "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "framer-motion": "https://esm.sh/framer-motion@12.0.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.475.0",
+    "firebase/app": "https://esm.sh/firebase@11.3.1/app",
+    "firebase/firestore": "https://esm.sh/firebase@11.3.1/firestore",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "framer-motion": "https://esm.sh/framer-motion@^12.34.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
     "firebase/": "https://esm.sh/firebase@^12.9.0/",
     "vite": "https://esm.sh/vite@^7.3.1",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4"
@@ -46,5 +39,7 @@
 </head>
   <body>
     <div id="root"></div>
+    <!-- O script abaixo garante que o entrypoint do React seja carregado -->
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
