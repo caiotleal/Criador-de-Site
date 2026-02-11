@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Search, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 const DomainChecker: React.FC = () => {
@@ -53,23 +54,41 @@ const DomainChecker: React.FC = () => {
       </div>
 
       {status === 'available' && (
-        <div className="bg-emerald-500/10 border border-emerald-500/50 rounded-xl p-3 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-emerald-500/10 border border-emerald-500/50 rounded-xl p-3 flex items-center gap-3"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            className="flex-shrink-0"
+          >
+            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+          </motion.div>
           <div className="text-sm">
             <p className="text-emerald-400 font-semibold">Domínio Disponível!</p>
             <p className="text-emerald-500/70 text-xs">Aproveite para garantir o seu nome na web.</p>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {status === 'unavailable' && (
-        <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 flex items-center gap-3"
+        >
           <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
           <div className="text-sm">
             <p className="text-red-400 font-semibold">Indisponível</p>
             <p className="text-red-500/70 text-xs">Este domínio já está em uso ou é restrito.</p>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -7,7 +7,14 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    sourcemap: true
+    emptyOutDir: true,
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
   },
   server: {
     port: 3000
