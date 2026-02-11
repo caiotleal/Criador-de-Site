@@ -1,5 +1,6 @@
-// Fixed: Using modular named imports instead of namespace import to solve property access errors in Firebase v9+
-import { initializeApp, getApps, getApp } from 'firebase/app';
+
+// Fix: Use correct named imports from 'firebase/app' for the modular SDK (v9+)
+import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -12,7 +13,10 @@ const firebaseConfig = {
   measurementId: "G-P21NE965SC"
 };
 
-// Fixed: Using the correct initialization pattern for Firebase JS SDK v9+ modular syntax
-// This avoids "Property does not exist" errors on the firebase namespace
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+// Initialize Firebase only if there are no existing app instances to prevent errors during hot-reloads
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+// Initialize Firestore using the existing app instance
+const db = getFirestore(app);
+
+export { app, db };
