@@ -20,3 +20,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 
 export { app, db };
+
+// A CHAVE QUE VOCÊ ME MANDOU (Google AI Studio)
+// Resolve o erro: "An API Key must be set"
+export const genAI = new GoogleGenerativeAI("AIzaSyBwmlFaONdzX69AUMd9ybA8ljngO1t_0bw");
