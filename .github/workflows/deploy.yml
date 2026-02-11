@@ -17,9 +17,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Instalar Dependências do Site
-        run: npm install
+     - name: Instalar Dependências do Site
+        run: npm install --legacy-peer-deps
 
       - name: Criar Versão Final (Build)
         run: npm run build
