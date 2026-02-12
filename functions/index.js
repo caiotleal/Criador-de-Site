@@ -11,7 +11,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 // Adicione o objeto de configuração como primeiro argumento
 exports.criarPublicarSite = onCall({ 
   cors: true, // Isso libera o acesso para o seu domínio .web.app
-  region: "us-central1" // Certifique-se de que a região é a mesma da imagem
+  region: "us-central1", // Certifique-se de que a região é a mesma da imagem
   secrets: ["FB_TOKEN", "GEMINI_KEY"]
 }, async (request) => {
   });
