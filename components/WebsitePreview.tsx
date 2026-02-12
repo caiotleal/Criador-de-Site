@@ -9,7 +9,7 @@
       try {
         // 1. Inicialização Correta (Use sua chave aqui ou via variável de ambiente)
         // Nota: Em Vite, use import.meta.env.VITE_API_KEY em vez de process.env
-        const genAI = new GoogleGenerativeAI("SUA_API_KEY_AQUI"); 
+        const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY); 
         
         // 2. Obter o Modelo
         const model = genAI.getGenerativeModel({ 
