@@ -44,7 +44,7 @@ const WebsitePreview: React.FC<WebsitePreviewProps> = ({ data, palette }) => {
 
         // 2. Configura o modelo para retornar JSON estrito
         const model = genAI.getGenerativeModel({
-          model: "model: "gemini-1.5-flash-001",
+          model: "model: "gemini-1.5-flash-latest",
           generationConfig: {
             responseMimeType: "application/json",
             responseSchema: {
