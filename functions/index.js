@@ -18,8 +18,8 @@ exports.criarPublicarSite = onCall({
   
   try {
     // Inicializa Vertex AI (Não precisa de chave GEMINI_KEY, usa permissão IAM)
-    const vertexAI = new VertexAI({project: projectId, location: 'us-central1'});
-    const model = vertexAI.getGenerativeModel({ model: 'gemini-1.5-flash-002' });
+const vertexAI = new VertexAI({project: projectId, location: 'us-east1'}); 
+const model = vertexAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
     if (previewOnly) {
       const result = await model.generateContent({
