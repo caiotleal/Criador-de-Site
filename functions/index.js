@@ -13,6 +13,7 @@ exports.criarPublicarSite = onCall({
   cors: true, // Isso libera o acesso para o seu domínio .web.app
   region: "us-central1" // Certifique-se de que a região é a mesma da imagem
 }, async (request) => {
+  });
 const admin = require("firebase-admin");
 const client = require("firebase-tools");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
