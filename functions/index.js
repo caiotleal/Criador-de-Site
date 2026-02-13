@@ -1,73 +1,86 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Mantenha sua chave
-const API_KEY = "AIzaSyBeuhoiZBsSgXTAlK81ormf_9P6zcApLDw";
+const API_KEY = "AIzaSyBeuhoiZBsSgXTAlK81ormf_9P6zcApLDw"; // Sua chave
 
 exports.generateSite = onCall(
   { 
     timeoutSeconds: 300, 
-    memory: "1GiB" // Aumentei memória para processar a imagem
+    memory: "512MiB" 
   }, 
   async (request) => {
     const genAI = new GoogleGenerativeAI(API_KEY);
 
     try {
-      const { businessName, description, segment, paletteId, whatsapp, instagram } = request.data;
+      const { 
+        businessName, 
+        description, 
+        segment, 
+        layoutStyle, 
+        palette, 
+        whatsapp, 
+        instagram,
+        logoBase64 
+      } = request.data;
+
       if (!businessName) throw new HttpsError('invalid-argument', 'Nome obrigatório.');
 
-      // 1. Gera o HTML (Cérebro: Gemini 2.5 Flash)
-      const textModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      
-      // 2. Tenta Gerar Imagem IA (Artista: Imagen 3)
-      // Se falhar, usaremos Unsplash como backup
-      let heroImageBase64 = "";
-      try {
-        console.log("Iniciando geração de imagem com Imagen 3...");
-        const imageModel = genAI.getGenerativeModel({ model: "imagen-3.0-generate-001" });
-        
-        const imagePrompt = `High quality, photorealistic, professional photography of ${segment}, ${description}. Cinematic lighting, 4k resolution, modern style.`;
-        
-        const imageResult = await imageModel.generateContent(imagePrompt);
-        const imageResponse = await imageResult.response;
-        
-        // O Imagen retorna a imagem em base64 dentro do objeto
-        // (A estrutura exata pode variar, ajustamos para o padrão Google)
-        if (imageResponse.candidates && imageResponse.candidates[0].content.parts[0].inlineData) {
-           heroImageBase64 = imageResponse.candidates[0].content.parts[0].inlineData.data;
-        }
-      } catch (imgError) {
-        console.warn("Falha na imagem IA, usando Unsplash:", imgError.message);
-        // Deixamos vazio para o prompt usar Unsplash
-      }
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      // 3. Prompt do HTML
-      const colors = { primary: '#6366f1', secondary: '#8b5cf6', bg: '#0f172a', text: '#f8fafc' };
+      // --- 1. LÓGICA DO LOGO (IMAGEM vs TEXTO) ---
+      // Se tiver imagem, usa ela. Se não, instrui a criar um logo em texto.
+      const logoInstruction = logoBase64 
+        ? `
+          LOGO: O cliente enviou um logo.
+          Use EXATAMENTE esta tag no Header e no Footer (não mude nada):
+          <img src="${logoBase64}" alt="${businessName}" class="h-10 w-auto object-contain hover:opacity-90 transition-opacity" />
+          Também use este base64 no <link rel="icon"> do head.
+        ` 
+        : `
+          LOGO: O cliente NÃO tem imagem. 
+          Crie um logotipo tipográfico moderno usando o nome "${businessName}".
+          Exemplo: <span class="text-2xl font-bold tracking-tight text-${palette.primary.replace('#', '')}"><i class="fas fa-layer-group mr-2"></i>${businessName}</span>
+        `;
 
+      // --- 2. LÓGICA DE IMAGENS (UNSPLASH DINÂMICO) ---
+      // Criamos keywords em inglês baseadas no segmento para a busca funcionar bem
       const prompt = `
-        Crie um arquivo HTML ÚNICO para "${businessName}" (${segment}).
+        Atue como um Arquiteto de Software Frontend. Crie um site HTML ÚNICO.
         
-        INSTRUÇÃO ESPECIAL DE IMAGEM:
-        ${heroImageBase64 ? `USE ESTA IMAGEM BASE64 EXATAMENTE NO BACKGROUND DA SECTION HERO: "data:image/jpeg;base64,${heroImageBase64}"` : `Use imagem do Unsplash: source.unsplash.com/1600x900/?${segment}`}
-        Para as outras seções, use Unsplash.
+        DADOS:
+        - Nome: "${businessName}"
+        - Segmento: "${segment}"
+        - Estilo Visual (Layout): "${layoutStyle}" (Adapte a estrutura do HTML para este estilo).
+        - Cores: Primary ${palette.primary}, Secondary ${palette.secondary}, Bg ${palette.bg}, Text ${palette.text}.
 
-        REGRAS VISUAIS:
-        1. Use TailwindCSS e FontAwesome.
-        2. Estilo Glassmorphism Moderno.
-        3. O menu deve ser transparente/vidro.
-        
+        REGRAS RÍGIDAS:
+        1. ${logoInstruction}
+        2. IMAGENS: Use URLs do Unsplash com keywords em inglês para o segmento "${segment}".
+           - Hero: https://source.unsplash.com/1600x900/?${segment.split(' ')[0]},business
+           - Cards: https://source.unsplash.com/800x600/?${segment.split(' ')[0]},work
+           (NUNCA gere imagens com IA, use apenas esses links).
+        3. TEXTOS: Escreva textos persuasivos em PORTUGUÊS para vender serviços de ${segment}.
+           - Use termos como "Sob medida", "Qualidade Garantida", "Entre em contato".
+           - NÃO coloque preços fixos (ex: R$ 50,00). Use "Orçamento Grátis".
+        4. ESTRUTURA:
+           - Header (Vidro/Glass).
+           - Hero Section (Com a imagem de fundo e CTA).
+           - Sobre Nós.
+           - Serviços (3 cards).
+           - Depoimentos (fictícios).
+           - Footer.
+
         Retorne APENAS o HTML puro (<!DOCTYPE html>...).
       `;
 
-      console.log(`Gerando HTML...`);
-      const result = await textModel.generateContent(prompt);
+      const result = await model.generateContent(prompt);
       let html = result.response.text();
       html = html.replace(/```html/g, "").replace(/```/g, "");
 
       return { success: true, html: html };
 
     } catch (error) {
-      console.error("ERRO GERAL:", error);
+      console.error("ERRO:", error);
       throw new HttpsError('internal', error.message);
     }
   }
