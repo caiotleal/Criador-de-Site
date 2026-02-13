@@ -1,117 +1,83 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const client = require("firebase-tools");
-const axios = require("axios");
-const fs = require("fs");
-const os = require("os");
-const path = require("path");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-exports.criarPublicarSite = onCall({ 
-  timeoutSeconds: 540, 
-  memory: "1GiB",
-  cors: true, 
-  region: "us-central1",
-  secrets: ["FB_TOKEN_CI", "GROQ_KEY"] 
-}, async (request) => {
-  
-  // 1. Validação de Entrada
-  const { nomeEmpresa, prompt, previewOnly } = request.data;
-  const GROQ_KEY = process.env.GROQ_KEY;
-  const projectId = "criador-de-site-1a91d";
+exports.generateSite = onCall(
+  { 
+    secrets: ["GEMINI_KEY"], // Nome exato do seu segredo no Google Cloud
+    timeoutSeconds: 300,     // 5 minutos para evitar erro 500
+    memory: "512MiB"
+  }, 
+  async (request) => {
+    // 1. Inicializa a IA (DENTRO da função para acessar o segredo)
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 
-  if (!GROQ_KEY) {
-    console.error("ERRO: GROQ_KEY não configurada nos Secrets.");
-    throw new HttpsError("failed-precondition", "Configuração de API pendente no servidor.");
-  }
+    // 2. Extrai os dados enviados pelo Frontend
+    const { businessName, description, segment, paletteId, whatsapp, instagram, linkedin } = request.data;
 
-  try {
-    console.log(`🚀 Iniciando ${previewOnly ? 'Preview' : 'Publicação'} para: ${nomeEmpresa}`);
-
-    // 2. Chamada para a API da Groq (Llama 3)
-    const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content: "Você é um desenvolvedor sênior. Responda APENAS com o código solicitado, sem explicações, sem markdown (```) e sem introduções."
-        },
-        {
-          role: "user",
-          content: previewOnly 
-            ? `Gere um JSON para a empresa ${nomeEmpresa} com o tema ${prompt}. Use EXATAMENTE este formato: {"headline": "Título Impactante", "subheadline": "Frase de apoio chamativa"}`
-            : `Crie um index.html profissional e completo para a empresa "${nomeEmpresa}" sobre o tema "${prompt}". Use TailwindCSS via CDN. Inclua seções de Hero, Sobre e Contato. Retorne apenas o código HTML.`
-        }
-      ],
-      temperature: 0.7
-    }, {
-      headers: { 
-        "Authorization": `Bearer ${GROQ_KEY}`,
-        "Content-Type": "application/json"
-      }
-    });
-
-    const aiText = response.data.choices[0].message.content.trim();
-
-    // 3. Tratamento para o Modo PREVIEW (Headline/Subheadline)
-    if (previewOnly) {
-      try {
-        // Extrai o JSON caso a IA mande texto em volta
-        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error("JSON não encontrado na resposta");
-        
-        const jsonData = JSON.parse(jsonMatch[0]);
-        console.log("✅ Preview extraído com sucesso.");
-        return { success: true, data: jsonData };
-      } catch (e) {
-        console.error("Erro ao processar JSON da IA:", aiText);
-        throw new HttpsError("internal", "A IA gerou um formato de texto inválido para o preview.");
-      }
+    // 3. Validação de Segurança (Evita o erro "Bad Request")
+    if (!businessName) {
+      throw new HttpsError('invalid-argument', 'O nome do site é obrigatório para gerar o código.');
     }
 
-    // 4. Tratamento para o Modo PUBLICAÇÃO (HTML Completo)
-    let html = aiText.replace(/```html/g, "").replace(/```/g, "").trim();
-    
-    // Gerar ID do site amigável (sem espaços ou acentos)
-    const siteId = nomeEmpresa.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
-      .replace(/\s+/g, '-') 
-      .replace(/[^\w\-]+/g, '') + "-" + Math.floor(Math.random() * 1000);
+    // 4. Mapa de Cores (O Backend precisa saber os códigos Hex)
+    const PALETTES = {
+      'p1': { primary: '#6366f1', secondary: '#8b5cf6', bg: '#0f172a', text: '#f8fafc' }, // Azul Tech
+      'p2': { primary: '#fbbf24', secondary: '#d97706', bg: '#000000', text: '#f3f4f6' }, // Preto e Ouro
+      'p3': { primary: '#10b981', secondary: '#34d399', bg: '#ffffff', text: '#1f2937' }, // Verde Fresh
+      'p4': { primary: '#1e3a8a', secondary: '#3b82f6', bg: '#f3f4f6', text: '#1f2937' }, // Azul Oceano
+      'p5': { primary: '#f97316', secondary: '#fb923c', bg: '#1c1917', text: '#fafaf9' }, // Pôr do Sol
+      'p6': { primary: '#ec4899', secondary: '#f472b6', bg: '#fff1f2', text: '#881337' }, // Rosa
+      'p7': { primary: '#475569', secondary: '#94a3b8', bg: '#f8fafc', text: '#0f172a' }, // Cinza
+      'p8': { primary: '#7c3aed', secondary: '#a78bfa', bg: '#000000', text: '#e9d5ff' }, // Roxo
+    };
 
-    // 5. Preparação dos Arquivos Temporários
-    const tempDir = path.join(os.tmpdir(), siteId);
-    const publicDir = path.join(tempDir, "public");
-    
-    if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
-    fs.mkdirSync(publicDir, { recursive: true });
-    
-    fs.writeFileSync(path.join(publicDir, "index.html"), html);
-    fs.writeFileSync(path.join(tempDir, "firebase.json"), JSON.stringify({
-      hosting: { public: "public" }
-    }));
+    const colors = PALETTES[paletteId] || PALETTES['p1'];
 
-    // 6. Deploy para o Firebase Hosting
-    console.log(`📦 Fazendo deploy do site: ${siteId}...`);
-    const FIREBASE_TOKEN = process.env.FB_TOKEN_CI;
+    // 5. O Prompt Mestre (Engenharia de Prompt)
+    const prompt = `
+      Atue como um Especialista Sênior em Frontend e UX Design.
+      Gere um arquivo HTML ÚNICO e COMPLETO baseado nestes dados:
 
-    await client.hosting.sites.create(siteId, { project: projectId, token: FIREBASE_TOKEN });
-    await client.deploy({
-      project: projectId,
-      site: siteId,
-      token: FIREBASE_TOKEN,
-      cwd: tempDir,
-      only: "hosting"
-    });
+      CLIENTE:
+      - Nome: "${businessName}"
+      - Segmento: "${segment}"
+      - Sobre: "${description}"
+      - Social: WhatsApp (${whatsapp || '#'}), Instagram (${instagram || '#' })
 
-    console.log("🎉 Site publicado com sucesso!");
-    return { success: true, url: `https://${siteId}.web.app` };
+      REGRAS TÉCNICAS (OBRIGATÓRIO):
+      1. Use TailwindCSS (CDN) + FontAwesome (CDN) + AOS Library (CDN).
+      2. Estilo Visual: Moderno, Clean, Glassmorphism (efeito vidro).
+      3. Configuração de Cores no Tailwind (script no head):
+         primary: '${colors.primary}', secondary: '${colors.secondary}', pageBg: '${colors.bg}', pageText: '${colors.text}'
+      4. Imagens: Use APENAS imagens do Unsplash com keywords em inglês do segmento "${segment}".
+      5. Texto: Escreva copy persuasiva em PORTUGUÊS. Nada de Lorem Ipsum.
 
-  } catch (error) {
-    console.error("❌ Erro na Função:", error.response?.data || error.message);
-    
-    // Se o erro for 401, a chave está errada ou sem permissão
-    if (error.response?.status === 401) {
-      throw new HttpsError("unauthenticated", "A chave da Groq foi rejeitada. Verifique o Secret Manager.");
+      ESTRUTURA OBRIGATÓRIA:
+      - Header flutuante.
+      - Hero Section impactante.
+      - Seção de Serviços (3 cards).
+      - Seção Sobre.
+      - Footer completo.
+      - **IMPORTANTE:** Adicione um widget flutuante de redes sociais no canto inferior direito (vidro/glass).
+
+      SAÍDA:
+      Retorne APENAS o código HTML cru. Comece com <!DOCTYPE html>. Sem markdown (\`\`\`).
+    `;
+
+    // 6. Chamada à IA
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let html = response.text();
+
+      // Limpeza de segurança
+      html = html.replace(/```html/g, "").replace(/```/g, "");
+
+      return { success: true, html: html };
+    } catch (error) {
+      console.error("Erro Gemini:", error);
+      throw new HttpsError('internal', 'Erro ao gerar o site com IA.');
     }
-    
-    throw new HttpsError("internal", "Falha no processo: " + error.message);
   }
-});
+);

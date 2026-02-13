@@ -1,15 +1,9 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SiteFormData, ToneOfVoice } from '../types';
 import { 
-  Building2, 
-  Users2, 
-  MessageCircle, 
-  Instagram, 
-  Facebook, 
-  Linkedin,
-  Radio
+  Building2, Users2, MessageCircle, Instagram, Facebook, Linkedin,
+  FileText, ImagePlus, LayoutTemplate
 } from 'lucide-react';
 
 interface BusinessFormProps {
@@ -18,18 +12,44 @@ interface BusinessFormProps {
 }
 
 const BusinessForm: React.FC<BusinessFormProps> = ({ data, onChange }) => {
-  const inputClass = "w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600";
+  const inputClass = "w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600 text-white";
   const labelClass = "block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 ml-1";
+
+  // A Lógica de Pré-seleção Inteligente
+  const handleSegmentChange = (segmento: string) => {
+    onChange('segment', segmento);
+
+    // Mapa de Sugestões (O "Cérebro" do UX)
+    const sugestoes: Record<string, { layout: string, paleta: string }> = {
+      'Advocacia':   { layout: 'Autoridade Máxima', paleta: 'p4' }, // Azul Oceano
+      'Tecnologia':  { layout: 'Tecnologia & Inovação', paleta: 'p1' }, // Azul Tech
+      'Saúde':       { layout: 'Nossos Serviços', paleta: 'p3' }, // Verde Fresh
+      'Restaurante': { layout: 'Vitrine de Destaque', paleta: 'p5' }, // Pôr do Sol
+      'Estética':    { layout: 'Simplicidade Pura', paleta: 'p6' }, // Rosa Algodão
+      'Imobiliária': { layout: 'Painel Moderno', paleta: 'p7' }, // Cinza Urbano
+      'Educação':    { layout: 'Nossa Jornada', paleta: 'p8' }, // Roxo Galáxia
+      'Vendas':      { layout: 'Foco em Vendas', paleta: 'p2' }, // Preto e Ouro
+      'Serviços':    { layout: 'Nossos Serviços', paleta: 'p7' }, 
+      'Outros':      { layout: 'Simplicidade Pura', paleta: 'p1' }
+    };
+
+    const config = sugestoes[segmento];
+    if (config) {
+      onChange('layoutId', config.layout);
+      onChange('paletteId', config.paleta);
+    }
+  };
 
   return (
     <div className="space-y-6">
+      {/* 1. Nome da Empresa */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <label className={labelClass}>Nome da Empresa</label>
         <div className="relative">
           <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
           <input 
             type="text" 
-            placeholder="Ex: Pizzaria do Jão"
+            placeholder="Ex: Consultoria Silva"
             className={`${inputClass} pl-10`}
             value={data.businessName}
             onChange={(e) => onChange('businessName', e.target.value)}
@@ -37,47 +57,85 @@ const BusinessForm: React.FC<BusinessFormProps> = ({ data, onChange }) => {
         </div>
       </motion.div>
 
+      {/* 2. Segmento (Com Inteligência) */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <label className={labelClass}>Público-Alvo</label>
+        <label className={labelClass}>Qual o seu Ramo?</label>
         <div className="relative">
-          <Users2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
-          <input 
-            type="text" 
-            placeholder="Ex: Jovens apaixonados por tecnologia"
-            className={`${inputClass} pl-10`}
-            value={data.targetAudience}
-            onChange={(e) => onChange('targetAudience', e.target.value)}
+          <LayoutTemplate className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+          <select 
+            className={`${inputClass} pl-10 appearance-none cursor-pointer`}
+            value={data.segment}
+            onChange={(e) => handleSegmentChange(e.target.value)}
+          >
+            <option value="">Selecione para configurar o site...</option>
+            <option value="Advocacia">Advocacia / Jurídico</option>
+            <option value="Tecnologia">Tecnologia / Startup</option>
+            <option value="Saúde">Saúde / Clínica</option>
+            <option value="Restaurante">Restaurante / Bar</option>
+            <option value="Estética">Estética / Beleza</option>
+            <option value="Imobiliária">Imobiliária / Engenharia</option>
+            <option value="Educação">Educação / Cursos</option>
+            <option value="Vendas">Loja / Vendas</option>
+            <option value="Serviços">Prestação de Serviços</option>
+            <option value="Outros">Outro</option>
+          </select>
+        </div>
+      </motion.div>
+
+      {/* 3. Sobre a Empresa (Crucial para a IA) */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <label className={labelClass}>Sobre o Negócio</label>
+        <div className="relative">
+          <FileText className="absolute left-3 top-4 w-4 h-4 text-zinc-600" />
+          <textarea 
+            placeholder="Conte o que sua empresa faz, seus diferenciais e história. Quanto mais detalhes, melhor o site ficará."
+            className={`${inputClass} pl-10 resize-none h-24`}
+            value={data.description}
+            onChange={(e) => onChange('description', e.target.value)}
           />
         </div>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <label className={labelClass}>Tom de Voz</label>
-        <div className="flex gap-2">
-          {(['Descontraído', 'Formal'] as ToneOfVoice[]).map((tone) => (
-            <button
-              key={tone}
-              onClick={() => onChange('tone', tone)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                data.tone === tone 
-                  ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400' 
-                  : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              {tone}
-            </button>
-          ))}
-        </div>
-      </motion.div>
+      {/* 4. Logo e Público */}
+      <div className="grid grid-cols-2 gap-4">
+         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <label className={labelClass}>Link do Logo</label>
+          <div className="relative">
+            <ImagePlus className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+            <input 
+              type="text" 
+              placeholder="URL da imagem"
+              className={`${inputClass} pl-10`}
+              value={data.logoUrl}
+              onChange={(e) => onChange('logoUrl', e.target.value)}
+            />
+          </div>
+        </motion.div>
 
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <label className={labelClass}>Público-Alvo</label>
+          <div className="relative">
+            <Users2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+            <input 
+              type="text" 
+              placeholder="Ex: Jovens, Empresas..."
+              className={`${inputClass} pl-10`}
+              value={data.targetAudience}
+              onChange={(e) => onChange('targetAudience', e.target.value)}
+            />
+          </div>
+        </motion.div>
+      </div>
+
+      {/* 5. Contatos (Rodapé) */}
       <div className="pt-4 border-t border-zinc-800">
-        <label className={labelClass}>Contatos & Redes</label>
-        <div className="grid grid-cols-1 gap-4">
+        <label className={labelClass}>Contatos Rápidos</label>
+        <div className="grid grid-cols-1 gap-3">
           <div className="relative">
             <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
             <input 
               type="tel" 
-              placeholder="WhatsApp (Ex: 11 99999-9999)"
+              placeholder="WhatsApp"
               className={`${inputClass} pl-10`}
               value={data.whatsapp}
               onChange={(e) => onChange('whatsapp', e.target.value)}
@@ -87,30 +145,10 @@ const BusinessForm: React.FC<BusinessFormProps> = ({ data, onChange }) => {
             <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-500" />
             <input 
               type="text" 
-              placeholder="Username Instagram"
+              placeholder="@seu.instagram"
               className={`${inputClass} pl-10`}
               value={data.instagram}
               onChange={(e) => onChange('instagram', e.target.value)}
-            />
-          </div>
-          <div className="relative">
-            <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
-            <input 
-              type="text" 
-              placeholder="Link Facebook"
-              className={`${inputClass} pl-10`}
-              value={data.facebook}
-              onChange={(e) => onChange('facebook', e.target.value)}
-            />
-          </div>
-          <div className="relative">
-            <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
-            <input 
-              type="text" 
-              placeholder="Link LinkedIn"
-              className={`${inputClass} pl-10`}
-              value={data.linkedin}
-              onChange={(e) => onChange('linkedin', e.target.value)}
             />
           </div>
         </div>
