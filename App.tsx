@@ -1,40 +1,85 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase'; 
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, Settings, Palette as PaletteIcon, X, Download, Loader2, Maximize2, Minimize2, Move, RefreshCw } from 'lucide-react';
+import { 
+  Rocket, Settings, Palette as PaletteIcon, Upload, Layout, 
+  Download, Loader2, Minimize2, RefreshCw, Image as ImageIcon, Briefcase, X 
+} from 'lucide-react';
 
-import BusinessForm from './components/BusinessForm';
 import HtmlPreview from './components/HtmlPreview'; 
 import PalettePicker from './components/PalettePicker';
 import LandingPage from './components/LandingPage';
-import { PALETTES } from './constants';
-import { SiteFormData } from './types';
+import { PALETTES } from './constants'; 
+
+// --- LISTA ROBUSTA DE SEGMENTOS ---
+const SEGMENTS = [
+  "Advocacia e Jurídico", "Agência de Marketing", "Arquitetura e Interiores", 
+  "Barbearia", "Cafeteria e Padaria", "Clínica Médica", "Clínica Odontológica",
+  "Consultoria Financeira", "Contabilidade", "Delivery de Comida", 
+  "Educação e Cursos", "Energia Solar", "Engenharia Civil", "Estética e Beleza", 
+  "Eventos e Festas", "Academia e Personal Trainer", "Imobiliária", 
+  "Limpeza e Higienização", "Logística e Transportes", "Mecânica Automotiva",
+  "Pet Shop e Veterinária", "Pizzaria", "Psicologia", "Restaurante", 
+  "Salão de Beleza", "Seguros e Corretagem", "Tecnologia e TI", 
+  "Turismo e Viagens", "Varejo e Loja de Roupas"
+];
+
+const LAYOUT_STYLES = [
+  { id: 'modern', label: 'Moderno', desc: 'Limpo, espaçoso, vidro.' },
+  { id: 'classic', label: 'Clássico', desc: 'Sério, corporativo, tradicional.' },
+  { id: 'bold', label: 'Arrojado', desc: 'Fontes grandes, alto contraste.' },
+  { id: 'minimal', label: 'Minimalista', desc: 'Menos é mais, foco total.' }
+];
 
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'builder'>('landing');
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(true); // Controle do Menu Flutuante
-
-  const [formData, setFormData] = useState<SiteFormData>({
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  
+  const [formData, setFormData] = useState({
     businessName: '',
-    segment: '',
+    segment: 'Tecnologia e TI',
+    layoutStyle: 'modern',
     description: '',
     paletteId: 'p1',
-    // ... outros campos ...
-    logoUrl: '', targetAudience: '', tone: 'Descontraído', whatsapp: '', instagram: '', facebook: '', linkedin: '', layoutId: 'layout-1'
+    whatsapp: '',
+    instagram: '',
+    logoBase64: '' 
   });
 
-  // --- IA + IMAGEM (Backend) ---
+  // --- 1. UPLOAD DE LOGO ---
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validação de tamanho (max 2MB para não travar o payload)
+      if (file.size > 2 * 1024 * 1024) return alert("O logo deve ter no máximo 2MB");
+      
+      const reader = new FileReader();
+      reader.onloadend = () => setFormData(prev => ({ ...prev, logoBase64: reader.result as string }));
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => setFormData(prev => ({ ...prev, logoBase64: '' }));
+
+  // --- 2. GERAÇÃO INTELIGENTE ---
   const handleGenerateAI = async () => {
     if (!formData.businessName) return alert("Digite o nome da empresa!");
     setIsGenerating(true);
+    
+    // Pega o objeto de cor completo
+    const selectedPalette = PALETTES.find(p => p.id === formData.paletteId);
+
     try {
       const generateSiteFn = httpsCallable(functions, 'generateSite');
-      const result: any = await generateSiteFn(formData);
+      // Envia tudo separado para a IA montar
+      const payload = { ...formData, palette: selectedPalette };
+
+      const result: any = await generateSiteFn(payload);
       if (result.data.success) {
         setGeneratedHtml(result.data.html);
       }
@@ -45,17 +90,19 @@ const App: React.FC = () => {
     }
   };
 
-  // --- MUDANÇA DE COR EM TEMPO REAL ---
+  // --- 3. TROCA DE COR INSTANTÂNEA ---
   const handlePaletteChange = (newPaletteId: string) => {
     setFormData(prev => ({ ...prev, paletteId: newPaletteId }));
+    
     if (generatedHtml) {
       const palette = PALETTES.find(p => p.id === newPaletteId);
       if (palette) {
         let newHtml = generatedHtml;
-        newHtml = newHtml.replace(/primary: '#[a-fA-F0-9]{6}'/g, `primary: '${palette.primary}'`);
-        newHtml = newHtml.replace(/secondary: '#[a-fA-F0-9]{6}'/g, `secondary: '${palette.secondary}'`);
-        newHtml = newHtml.replace(/dark: '#[a-fA-F0-9]{6}'/g, `dark: '${palette.bg}'`);
-        newHtml = newHtml.replace(/light: '#[a-fA-F0-9]{6}'/g, `light: '${palette.text}'`);
+        // Regex para atualizar cores do Tailwind Config em tempo real
+        newHtml = newHtml.replace(/primary: '.*?'/, `primary: '${palette.primary}'`);
+        newHtml = newHtml.replace(/secondary: '.*?'/, `secondary: '${palette.secondary}'`);
+        newHtml = newHtml.replace(/dark: '.*?'/, `dark: '${palette.bg}'`);
+        newHtml = newHtml.replace(/light: '.*?'/, `light: '${palette.text}'`);
         setGeneratedHtml(newHtml);
       }
     }
@@ -65,102 +112,140 @@ const App: React.FC = () => {
     if (!generatedHtml) return;
     const zip = new JSZip();
     zip.file("index.html", generatedHtml);
-    zip.generateAsync({ type: "blob" }).then(c => saveAs(c, "site.zip"));
+    zip.generateAsync({ type: "blob" }).then(c => saveAs(c, `${formData.businessName.trim()}.zip`));
   };
 
   if (view === 'landing') return <LandingPage onStart={() => setView('builder')} />;
 
   return (
-    <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans">
+    <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
       
-      {/* 1. LAYER DO SITE (Fundo) */}
-      <div className="absolute inset-0 z-0">
+      {/* BACKGROUND / PREVIEW */}
+      <div className="absolute inset-0 z-0 bg-[#09090b]">
         {generatedHtml ? (
           <HtmlPreview htmlContent={generatedHtml} mode="desktop" />
         ) : (
-          <div className="flex items-center justify-center h-full text-zinc-500">
-            <div className="text-center">
-              <Rocket className="w-16 h-16 mx-auto mb-4 opacity-20" />
-              <p>O site aparecerá aqui em tela cheia.</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full opacity-30 animate-pulse">
+            <Rocket className="w-24 h-24 mb-6" />
+            <h2 className="text-3xl font-bold">SiteCraft Editor</h2>
+            <p>Seu site aparecerá aqui em tela cheia.</p>
           </div>
         )}
       </div>
 
-      {/* 2. LAYER DO MENU FLUTUANTE (Draggable) */}
+      {/* MENU FLUTUANTE */}
       <motion.div 
-        drag
-        dragMomentum={false} // Para não "escorregar" quando soltar
-        initial={{ x: 20, y: 20 }}
-        className="absolute z-50"
+        drag dragMomentum={false} initial={{ x: 20, y: 20 }}
+        className="absolute z-50 flex flex-col max-h-[95vh]"
       >
         <AnimatePresence mode='wait'>
           {isMenuOpen ? (
-            // --- ESTADO ABERTO (Painel Completo) ---
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }} 
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="w-[380px] bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/50 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              className="w-[400px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 shadow-2xl rounded-2xl flex flex-col overflow-hidden"
             >
-              {/* Header do Menu (Área de Arrastar) */}
-              <div className="h-12 bg-zinc-800/50 border-b border-zinc-700/50 flex items-center justify-between px-4 cursor-move active:cursor-grabbing group">
-                <div className="flex items-center gap-2 text-zinc-300">
-                  <Move size={14} className="opacity-50 group-hover:opacity-100" />
-                  <span className="font-bold text-sm">SiteCraft Editor</span>
-                </div>
-                <div className="flex gap-2">
-                   {/* Botão Minimizar */}
-                   <button onClick={() => setIsMenuOpen(false)} className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white">
-                      <Minimize2 size={16} />
-                   </button>
-                </div>
+              {/* Header */}
+              <div className="h-14 bg-zinc-800/80 border-b border-zinc-700 flex items-center justify-between px-5 cursor-move">
+                <span className="font-bold flex items-center gap-2"><Settings size={18} className="text-indigo-400"/> Editor</span>
+                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded"><Minimize2 size={18}/></button>
               </div>
 
-              {/* Corpo do Menu (Scrollável) */}
-              <div className="p-5 overflow-y-auto custom-scrollbar space-y-6">
+              {/* Conteúdo */}
+              <div className="p-5 overflow-y-auto custom-scrollbar space-y-6 max-h-[80vh]">
                 
-                {/* Botão Principal */}
-                <button 
-                  onClick={handleGenerateAI}
-                  disabled={isGenerating}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-2 transition-all"
-                >
-                  {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                  {generatedHtml ? "Regerar Site" : "Gerar com IA"}
-                </button>
+                {/* 1. Identidade */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-zinc-500 uppercase">Identidade</label>
+                  <input 
+                    type="text" placeholder="Nome da Empresa"
+                    className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-indigo-500 outline-none"
+                    value={formData.businessName}
+                    onChange={e => setFormData({...formData, businessName: e.target.value})}
+                  />
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-3 text-zinc-500" size={16} />
+                    <select 
+                      className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 pl-10 text-sm focus:border-indigo-500 outline-none appearance-none"
+                      value={formData.segment}
+                      onChange={e => setFormData({...formData, segment: e.target.value})}
+                    >
+                      {SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
 
-                {/* Cores */}
+                {/* 2. Logo */}
+                <div className="space-y-3">
+                   <label className="text-xs font-bold text-zinc-500 uppercase flex items-center justify-between">
+                     <span>Logo (Opcional)</span>
+                     {formData.logoBase64 && <button onClick={removeLogo} className="text-red-400 text-[10px] flex items-center gap-1 hover:underline"><X size={10}/> Remover</button>}
+                   </label>
+                   
+                   {!formData.logoBase64 ? (
+                     <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 hover:bg-indigo-500/10 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all">
+                        <Upload size={20} className="text-zinc-400"/>
+                        <span className="text-xs text-zinc-400">Clique para enviar logo</span>
+                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                     </label>
+                   ) : (
+                     <div className="w-full h-16 bg-white/5 border border-zinc-700 rounded-lg flex items-center justify-center p-2 relative">
+                        <img src={formData.logoBase64} alt="Logo" className="max-h-full object-contain" />
+                     </div>
+                   )}
+                </div>
+
+                {/* 3. Estilo (Layout) */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2"><Layout size={14}/> Layout</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LAYOUT_STYLES.map(style => (
+                      <button
+                        key={style.id}
+                        onClick={() => setFormData({...formData, layoutStyle: style.id})}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          formData.layoutStyle === style.id 
+                            ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-900/50' 
+                            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{style.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Cores */}
                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                   <h3 className="text-xs font-bold text-zinc-400 uppercase mb-3 flex items-center gap-2">
-                     <PaletteIcon size={12} /> Cores (Tempo Real)
+                   <h3 className="text-xs font-bold text-zinc-500 uppercase mb-3 flex items-center gap-2">
+                     <PaletteIcon size={12} /> Cores
                    </h3>
                    <PalettePicker selectedId={formData.paletteId} onSelect={handlePaletteChange} />
                 </div>
 
-                {/* Formulário */}
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-zinc-400 uppercase border-b border-zinc-700 pb-2">Dados do Negócio</h3>
-                  <BusinessForm data={formData} onChange={(n, v) => setFormData(p => ({...p, [n]: v}))} />
-                </div>
+                {/* AÇÃO */}
+                <button 
+                  onClick={handleGenerateAI}
+                  disabled={isGenerating}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                  {generatedHtml ? "Regerar Site" : "Criar Site"}
+                </button>
 
                 {generatedHtml && (
-                  <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-lg text-sm flex items-center justify-center gap-2">
-                    <Download size={14} /> Baixar Código ZIP
+                  <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 font-medium transition-colors">
+                    <Download size={16} /> Baixar Site
                   </button>
                 )}
               </div>
             </motion.div>
-
           ) : (
-            // --- ESTADO MINIMIZADO (Apenas Ícone) ---
             <motion.div 
-              initial={{ scale: 0 }} 
-              animate={{ scale: 1 }} 
+              initial={{ scale: 0 }} animate={{ scale: 1 }} 
               onClick={() => setIsMenuOpen(true)}
-              className="w-12 h-12 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center text-white cursor-pointer ring-4 ring-black/20"
+              className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 hover:scale-110 transition-transform"
             >
-              <Settings size={24} />
+              <Settings className="text-white" size={26} />
             </motion.div>
           )}
         </AnimatePresence>
