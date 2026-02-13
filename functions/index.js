@@ -2,11 +2,28 @@ const { onCall } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Inicializa o Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-exports.generateSite = onCall({ secrets: ["GEMINI_API_KEY"] }, async (request) => {
+exports.generateSite = onCall({ secrets: ["GEMINI_KEY] }, async (request) => {
   const { businessName, description, segment, paletteId, whatsapp, instagram, linkedin } = request.data;
+const { onCall } = require("firebase-functions/v2/https");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
+// ATENÇÃO: Não inicialize o genAI aqui fora! O segredo ainda não existe.
+
+exports.generateSite = onCall(
+  { 
+    secrets: ["GEMINI_KEY"], // Seu segredo correto
+    timeoutSeconds: 300, 
+    memory: "512MiB"
+  }, 
+  async (request) => {
+    // 1. Inicializa o Gemini AQUI DENTRO, usando a chave certa
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
+
+    const { businessName, description, segment, paletteId, whatsapp, instagram, linkedin } = request.data;
+    
+    // ... O restante do código (PALETTES, Prompt, etc) continua igual ...
+    // ... (Cole o resto da lógica aqui)
   // 1. Configuração de Cores (Backend)
   const PALETTES = {
     'p1': { primary: '#6366f1', secondary: '#8b5cf6', bg: '#0f172a', text: '#f8fafc' }, // Azul Tech
