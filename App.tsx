@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase'; // Certifique-se que seu firebase.ts exporta 'functions'
+import { functions } from './firebase'; 
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, Settings, Palette as PaletteIcon, Eye, X, Download, Loader2, Lock, LogIn } from 'lucide-react';
+import { Rocket, Settings, Palette as PaletteIcon, X, Download, Loader2, Maximize2, Minimize2, Move, RefreshCw } from 'lucide-react';
 
-// Seus Componentes
 import BusinessForm from './components/BusinessForm';
-import WebsitePreview from './components/WebsitePreview'; // Preview estático (enquanto digita)
-import HtmlPreview from './components/HtmlPreview';       // Preview real (do HTML gerado)
+import HtmlPreview from './components/HtmlPreview'; 
 import PalettePicker from './components/PalettePicker';
 import LandingPage from './components/LandingPage';
 import { PALETTES } from './constants';
@@ -17,166 +15,156 @@ import { SiteFormData } from './types';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'builder'>('landing');
-  
-  // Estado para o site gerado pela IA (HTML puro)
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showFullPreview, setShowFullPreview] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(true); // Controle do Menu Flutuante
 
-  // Estado do Formulário
   const [formData, setFormData] = useState<SiteFormData>({
     businessName: '',
     segment: '',
     description: '',
-    logoUrl: '',
-    targetAudience: '',
-    tone: 'Descontraído',
-    whatsapp: '',
-    instagram: '',
-    facebook: '',
-    linkedin: '',
     paletteId: 'p1',
-    layoutId: 'layout-1'
+    // ... outros campos ...
+    logoUrl: '', targetAudience: '', tone: 'Descontraído', whatsapp: '', instagram: '', facebook: '', linkedin: '', layoutId: 'layout-1'
   });
 
-  // --- FUNÇÃO 1: CHAMAR A IA (CORRIGIDA) ---
+  // --- IA + IMAGEM (Backend) ---
   const handleGenerateAI = async () => {
-    if (!formData.businessName) return alert("Digite o nome da sua empresa!");
-    if (!formData.description) return alert("Descreva um pouco seu negócio para a IA criar o texto!");
-
+    if (!formData.businessName) return alert("Digite o nome da empresa!");
     setIsGenerating(true);
-    
     try {
-      // Chama a função 'generateSite' que criamos no Backend
       const generateSiteFn = httpsCallable(functions, 'generateSite');
-      
-      console.log("Enviando dados para o Gemini:", formData); // Debug
-
-      // AQUI ESTÁ A CORREÇÃO: Enviamos o objeto formData direto
       const result: any = await generateSiteFn(formData);
-
       if (result.data.success) {
-        setGeneratedHtml(result.data.html); // Salva o HTML na memória
-        setShowFullPreview(true);           // Abre o preview tela cheia
+        setGeneratedHtml(result.data.html);
       }
-
     } catch (error: any) {
-      console.error("Erro detalhado:", error);
-      alert(`Erro na geração: ${error.message}`);
+      alert(`Erro: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // --- FUNÇÃO 2: BAIXAR ZIP (SIMULA DEPLOY) ---
+  // --- MUDANÇA DE COR EM TEMPO REAL ---
+  const handlePaletteChange = (newPaletteId: string) => {
+    setFormData(prev => ({ ...prev, paletteId: newPaletteId }));
+    if (generatedHtml) {
+      const palette = PALETTES.find(p => p.id === newPaletteId);
+      if (palette) {
+        let newHtml = generatedHtml;
+        newHtml = newHtml.replace(/primary: '#[a-fA-F0-9]{6}'/g, `primary: '${palette.primary}'`);
+        newHtml = newHtml.replace(/secondary: '#[a-fA-F0-9]{6}'/g, `secondary: '${palette.secondary}'`);
+        newHtml = newHtml.replace(/dark: '#[a-fA-F0-9]{6}'/g, `dark: '${palette.bg}'`);
+        newHtml = newHtml.replace(/light: '#[a-fA-F0-9]{6}'/g, `light: '${palette.text}'`);
+        setGeneratedHtml(newHtml);
+      }
+    }
+  };
+
   const handleDownloadZip = () => {
     if (!generatedHtml) return;
     const zip = new JSZip();
-
-    // Cria estrutura para Firebase Hosting
-    zip.file("public/index.html", generatedHtml);
-    zip.file("firebase.json", JSON.stringify({
-      hosting: { public: "public", rewrites: [{ source: "**", destination: "/index.html" }] }
-    }, null, 2));
-
-    zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, `${formData.businessName.replace(/\s+/g, '-')}-site.zip`);
-    });
+    zip.file("index.html", generatedHtml);
+    zip.generateAsync({ type: "blob" }).then(c => saveAs(c, "site.zip"));
   };
 
   if (view === 'landing') return <LandingPage onStart={() => setView('builder')} />;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090b] text-white font-sans">
+    <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans">
       
-      {/* --- PREVIEW TELA CHEIA (O SITE REAL GERADO) --- */}
-      <AnimatePresence>
-        {showFullPreview && generatedHtml && (
-          <motion.div 
-            initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-0 z-50 bg-white flex flex-col"
-          >
-            {/* Barra de Controle do Preview */}
-            <div className="bg-zinc-900 text-white px-4 py-3 shadow-lg flex items-center justify-between border-b border-zinc-800">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg">Seu Site Está Pronto! 🚀</span>
-                <span className="text-xs bg-indigo-600 px-2 py-1 rounded text-white/90">Rascunho</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={handleDownloadZip}
-                  className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-colors"
-                >
-                  <Download size={16} /> Baixar Código (ZIP)
-                </button>
-                <button 
-                  onClick={() => setShowFullPreview(false)}
-                  className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
+      {/* 1. LAYER DO SITE (Fundo) */}
+      <div className="absolute inset-0 z-0">
+        {generatedHtml ? (
+          <HtmlPreview htmlContent={generatedHtml} mode="desktop" />
+        ) : (
+          <div className="flex items-center justify-center h-full text-zinc-500">
+            <div className="text-center">
+              <Rocket className="w-16 h-16 mx-auto mb-4 opacity-20" />
+              <p>O site aparecerá aqui em tela cheia.</p>
             </div>
-
-            {/* O Iframe Seguro */}
-            <div className="flex-1 w-full bg-gray-100 overflow-hidden">
-               <HtmlPreview htmlContent={generatedHtml} mode="desktop" />
-            </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* --- HEADER PRINCIPAL --- */}
-      <header className="border-b border-zinc-800 p-4 flex justify-between items-center bg-zinc-950 sticky top-0 z-40">
-        <div className="flex items-center gap-2">
-           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-             <Rocket className="text-white w-5 h-5" />
-           </div>
-           <span className="font-bold text-lg tracking-tight">SiteCraft AI</span>
-        </div>
-        
-        <button 
-          onClick={handleGenerateAI}
-          disabled={isGenerating}
-          className="bg-white text-zinc-900 px-6 py-2.5 rounded-full hover:bg-zinc-200 transition-all font-bold shadow-[0_0_20px_rgba(255,255,255,0.1)] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isGenerating ? <Loader2 className="animate-spin" /> : <Eye size={18} />}
-          {isGenerating ? "A IA está criando..." : "Gerar Site com IA"}
-        </button>
-      </header>
-
-      {/* --- CONTEÚDO (FORMULÁRIO E PREVIEW RÁPIDO) --- */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Esquerda: Formulário */}
-        <div className="lg:col-span-4 space-y-6 pb-20">
-          <section className="bg-zinc-900/50 backdrop-blur-sm p-6 rounded-2xl border border-zinc-800/50">
-            <h2 className="flex items-center gap-2 mb-6 font-semibold text-zinc-100 border-b border-zinc-800 pb-4">
-              <Settings size={18} className="text-indigo-400"/> Dados do Negócio
-            </h2>
-            <BusinessForm data={formData} onChange={(name, val) => setFormData(p => ({...p, [name]: val}))} />
-          </section>
-          
-          <section className="bg-zinc-900/50 backdrop-blur-sm p-6 rounded-2xl border border-zinc-800/50">
-            <h2 className="flex items-center gap-2 mb-6 font-semibold text-zinc-100 border-b border-zinc-800 pb-4">
-              <PaletteIcon size={18} className="text-indigo-400"/> Estilo Visual
-            </h2>
-            <PalettePicker selectedId={formData.paletteId} onSelect={(id) => setFormData(p => ({...p, paletteId: id}))} />
-          </section>
-        </div>
-
-        {/* Direita: Preview Rápido (React) */}
-        <div className="hidden lg:block lg:col-span-8 sticky top-24 h-[calc(100vh-120px)]">
-           <div className="w-full h-full border border-zinc-800 rounded-3xl overflow-hidden bg-zinc-900 relative shadow-2xl">
-              <div className="h-10 bg-zinc-950 border-b border-zinc-800 flex items-center px-4 gap-2">
-                <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/20"></div><div className="w-3 h-3 rounded-full bg-yellow-500/20"></div><div className="w-3 h-3 rounded-full bg-green-500/20"></div></div>
-                <div className="flex-1 mx-4 bg-zinc-900 rounded-md h-6 flex items-center justify-center text-[10px] text-zinc-500 font-mono">racionamento-visual.sitecraft.app</div>
+      {/* 2. LAYER DO MENU FLUTUANTE (Draggable) */}
+      <motion.div 
+        drag
+        dragMomentum={false} // Para não "escorregar" quando soltar
+        initial={{ x: 20, y: 20 }}
+        className="absolute z-50"
+      >
+        <AnimatePresence mode='wait'>
+          {isMenuOpen ? (
+            // --- ESTADO ABERTO (Painel Completo) ---
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="w-[380px] bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/50 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[85vh]"
+            >
+              {/* Header do Menu (Área de Arrastar) */}
+              <div className="h-12 bg-zinc-800/50 border-b border-zinc-700/50 flex items-center justify-between px-4 cursor-move active:cursor-grabbing group">
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <Move size={14} className="opacity-50 group-hover:opacity-100" />
+                  <span className="font-bold text-sm">SiteCraft Editor</span>
+                </div>
+                <div className="flex gap-2">
+                   {/* Botão Minimizar */}
+                   <button onClick={() => setIsMenuOpen(false)} className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white">
+                      <Minimize2 size={16} />
+                   </button>
+                </div>
               </div>
-              <div className="w-full h-[calc(100%-40px)] bg-white overflow-y-auto">
-                <WebsitePreview data={formData} palette={PALETTES.find(p => p.id === formData.paletteId)} />
+
+              {/* Corpo do Menu (Scrollável) */}
+              <div className="p-5 overflow-y-auto custom-scrollbar space-y-6">
+                
+                {/* Botão Principal */}
+                <button 
+                  onClick={handleGenerateAI}
+                  disabled={isGenerating}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-2 transition-all"
+                >
+                  {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                  {generatedHtml ? "Regerar Site" : "Gerar com IA"}
+                </button>
+
+                {/* Cores */}
+                <div className="bg-black/20 p-4 rounded-xl border border-white/5">
+                   <h3 className="text-xs font-bold text-zinc-400 uppercase mb-3 flex items-center gap-2">
+                     <PaletteIcon size={12} /> Cores (Tempo Real)
+                   </h3>
+                   <PalettePicker selectedId={formData.paletteId} onSelect={handlePaletteChange} />
+                </div>
+
+                {/* Formulário */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-zinc-400 uppercase border-b border-zinc-700 pb-2">Dados do Negócio</h3>
+                  <BusinessForm data={formData} onChange={(n, v) => setFormData(p => ({...p, [n]: v}))} />
+                </div>
+
+                {generatedHtml && (
+                  <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-lg text-sm flex items-center justify-center gap-2">
+                    <Download size={14} /> Baixar Código ZIP
+                  </button>
+                )}
               </div>
-           </div>
-        </div>
-      </main>
+            </motion.div>
+
+          ) : (
+            // --- ESTADO MINIMIZADO (Apenas Ícone) ---
+            <motion.div 
+              initial={{ scale: 0 }} 
+              animate={{ scale: 1 }} 
+              onClick={() => setIsMenuOpen(true)}
+              className="w-12 h-12 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center text-white cursor-pointer ring-4 ring-black/20"
+            >
+              <Settings size={24} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };
