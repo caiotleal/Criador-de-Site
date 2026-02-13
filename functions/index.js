@@ -3,7 +3,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Inicializa o Gemini
 
-exports.generateSite = onCall({ secrets: ["GEMINI_KEY] }, async (request) => {
+exports.generateSite = onCall({ secrets: ["GEMINI_KEY"] }, async (request) => {
   const { businessName, description, segment, paletteId, whatsapp, instagram, linkedin } = request.data;
 const { onCall } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
