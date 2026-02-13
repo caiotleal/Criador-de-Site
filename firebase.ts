@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { GoogleGenerativeAI } from '@google/generative-ai'; // Deve bater com o package.json
+import { getAuth } from 'firebase/auth';
+import { getFunctions } from 'firebase/functions';
 
 // Configuração do seu projeto Firebase
 const firebaseConfig = {
@@ -17,6 +18,8 @@ const app = initializeApp(firebaseConfig);
 
 // Exporta o Banco de Dados para o App.tsx usar
 export const db = getFirestore(app);
-
+export const auth = getAuth(app);
 // Inicializa a IA com a chave que você criou no Default Gemini Project
 export const genAI = new GoogleGenerativeAI("AIzaSyCaSWUQkoNNf7I3Qt_mz7rTDFkZ8WBvl9g");
+
+export default app;
