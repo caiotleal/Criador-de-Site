@@ -1,16 +1,15 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// --- CHAVE DIRETA (Hardcoded) ---
-// Cole sua chave nova aqui dentro das aspas
+// --- COLE SUA CHAVE NOVA AQUI DENTRO DAS ASPAS ---
 const API_KEY = "AIzaSyDZNznq-O9FrNhFtlZszrhmEg7LhfCLyqE"; 
 
 exports.generateSite = onCall(
   { 
-    cors: true, // Libera o acesso do site
+    cors: true, 
     timeoutSeconds: 60, 
     memory: "256MiB"
-    // Removemos a configuração de secrets para não dar erro
+    // Note que REMOVEMOS a linha 'secrets: [...]'
   }, 
   async (request) => {
     // Inicializa a IA direto com a chave
@@ -23,7 +22,7 @@ exports.generateSite = onCall(
 
     const { businessName, description } = request.data;
     
-    // Configuração do Modelo (Mantendo 2.5 como você prefere)
+    // Configuração do Modelo
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.5-flash", 
       generationConfig: { responseMimeType: "application/json" } 
@@ -49,7 +48,7 @@ exports.generateSite = onCall(
       const result = await model.generateContent(prompt);
       let text = result.response.text();
       
-      // Limpeza de segurança para JSON
+      // Limpeza de segurança
       text = text.replace(/```json/g, "").replace(/```/g, "").trim();
       
       return JSON.parse(text);
