@@ -27,7 +27,7 @@ exports.generateSite = onCall(
     // 3. Modelo Gemini (Usando a versão estável Flash)
     // Se você quiser usar outra versão, mude apenas a string "gemini-1.5-flash"
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash", 
+      model: "gemini-2.5-flash", 
       generationConfig: { responseMimeType: "application/json" } 
     });
 
