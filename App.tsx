@@ -11,9 +11,16 @@ import {
 import { TEMPLATES } from './components/templates'; 
 
 const LAYOUT_STYLES = [
-  { id: 'modern', label: 'Moderno & Luxo', desc: 'Vidro, 3D, arrastável.' },
-  { id: 'tech', label: 'Tech & Futuro', desc: 'Neon, HUD, cyber.' },
-  { id: 'retro', label: 'Retro & Pop', desc: 'Windows 95, Pixel Art.' }
+  { id: 'temp1', label: '1. Glass Minimal', desc: 'Dock inferior de vidro.' },
+  { id: 'temp2', label: '2. Sidebar Clean', desc: 'Menu lateral fixo.' },
+  { id: 'temp3', label: '3. Bento Grid', desc: 'Layout em blocos organizados.' },
+  { id: 'temp4', label: '4. Neumorphism Light', desc: 'Suave, tátil, claro.' },
+  { id: 'temp5', label: '5. Dark Elegant', desc: 'Modo escuro profissional.' },
+  { id: 'temp6', label: '6. Card UI Focus', desc: 'Elementos em cartões.' },
+  { id: 'temp7', label: '7. Gradient Mesh', desc: 'Fundo gradiente moderno.' },
+  { id: 'temp8', label: '8. Typography Bold', desc: 'Foco total no texto.' },
+  { id: 'temp9', label: '9. Split Screen', desc: 'Tela dividida meio a meio.' },
+  { id: 'temp10', label: '10. Minimalist Store', desc: 'Estilo loja limpa.' }
 ];
 
 const COLORS = [
