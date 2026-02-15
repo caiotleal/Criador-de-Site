@@ -2,7 +2,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Mantenha sua chave aqui. Se der erro de quota, crie uma nova no Google AI Studio.
-const API_KEY = "AIzaSyBeuhoiZBsSgXTAlK81ormf_9P6zcApLDw"; 
+const API_KEY = "AIzaSyDZNznq-O9FrNhFtlZszrhmEg7LhfCLyqE"; 
 
 exports.generateSite = onCall(
   { 
