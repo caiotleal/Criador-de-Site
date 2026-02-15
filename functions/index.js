@@ -1,19 +1,22 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { defineSecret } = require("firebase-functions/params");
 
-// Mantenha sua chave aqui. Se der erro de quota, crie uma nova no Google AI Studio.
-const API_KEY = "AIzaSyDZNznq-O9FrNhFtlZszrhmEg7LhfCLyqE"; 
+// --- MUDANÇA AQUI: O NOME AGORA É GEMINI_KEY ---
+const geminiKey = defineSecret("GEMINI_KEY");
 
 exports.generateSite = onCall(
   { 
-    cors: true, // OBRIGATÓRIO: Permite que o site converse com o servidor
-    timeoutSeconds: 60, // Dá tempo para a IA pensar
+    cors: true, 
+    timeoutSeconds: 60, 
     memory: "256MiB",
-    maxInstances: 10
+    secrets: [geminiKey] // <--- AQUI TAMBÉM
   }, 
   async (request) => {
-    // 1. Configuração da IA
-    const genAI = new GoogleGenerativeAI(API_KEY);
+    // --- E AQUI PARA USAR O VALOR ---
+    const genAI = new GoogleGenerativeAI(geminiKey.value());
+    
+    // ... resto do código continua igual ...
     
     // 2. Validação dos dados recebidos
     if (!request.data || !request.data.businessName) {
