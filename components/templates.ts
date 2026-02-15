@@ -1,6 +1,6 @@
 export const TEMPLATES: Record<string, string> = {
   // =================================================================
-  // 1. MODERNO & LUXO (Menu Dock Flutuante + Scroll Suave + AOS)
+  // 1. MODERNO (Glassmorphism + Menu Dock Arrastável)
   // =================================================================
   modern: `
     <!DOCTYPE html>
@@ -8,89 +8,77 @@ export const TEMPLATES: Record<string, string> = {
     <head>
       <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
       <script src="https://cdn.tailwindcss.com"></script>
-      <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+      <script>tailwind.config = { theme: { extend: { colors: { primary: '{{COLOR_PRIMARY}}', secondary: '{{COLOR_SECONDARY}}' } } } }</script>
       <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
       <title>{{BUSINESS_NAME}}</title>
       <style>
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
-        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); }
-        .social-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
+        .draggable { cursor: grab; position: fixed; z-index: 50; touch-action: none; }
+        .draggable:active { cursor: grabbing; z-index: 60; }
+        ::-webkit-scrollbar { width: 0px; }
       </style>
     </head>
-    <body class="bg-slate-50 text-slate-900 antialiased pb-32">
+    <body class="bg-slate-50 text-slate-800">
       
-      <nav class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
-        <div class="glass-panel px-6 py-4 rounded-full shadow-2xl flex items-center gap-8 transition-all hover:scale-105 duration-300">
-          <a href="#home" class="text-slate-500 hover:text-indigo-600 transition text-xl"><i class="fas fa-home"></i></a>
-          <a href="#features" class="text-slate-500 hover:text-indigo-600 transition text-xl"><i class="fas fa-star"></i></a>
-          <div class="w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold -mt-16 border-4 border-slate-50 shadow-lg relative top-4 hover:rotate-12 transition">
-             <i class="fas fa-bolt"></i>
-          </div>
-          <a href="#about" class="text-slate-500 hover:text-indigo-600 transition text-xl"><i class="fas fa-user"></i></a>
-          <a href="#contact" class="text-slate-500 hover:text-indigo-600 transition text-xl"><i class="fas fa-envelope"></i></a>
-        </div>
+      <nav class="draggable glass px-8 py-4 rounded-full flex items-center gap-8" style="bottom: 2rem; left: 50%; transform: translateX(-50%);">
+         <a href="#home" class="text-slate-500 hover:text-primary transition text-2xl"><i class="fas fa-home"></i></a>
+         <a href="#about" class="text-slate-500 hover:text-primary transition text-2xl"><i class="fas fa-user"></i></a>
+         <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white text-2xl font-bold -mt-12 border-4 border-slate-50 shadow-xl transform hover:-translate-y-2 transition">
+            [[LOGO_AREA]]
+         </div>
+         <a href="#contact" class="text-slate-500 hover:text-primary transition text-2xl"><i class="fas fa-comment-dots"></i></a>
       </nav>
 
-      <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 z-0">
-          <img src="https://image.pollinations.ai/prompt/minimalist%20bright%20white%20office%20luxury?width=1920&height=1080&nologo=true" class="w-full h-full object-cover opacity-30" />
-          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50"></div>
-        </div>
-        
-        <div class="relative z-10 text-center max-w-4xl px-6" data-aos="fade-up" data-aos-duration="1000">
-          <div class="inline-block px-4 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold mb-6 tracking-wide uppercase">
-            {{BUSINESS_NAME}}
-          </div>
-          <h1 class="text-5xl md:text-8xl font-black tracking-tight text-slate-900 mb-8 leading-tight">
-            {{HERO_TITLE}}
-          </h1>
-          <p class="text-xl md:text-2xl text-slate-600 mb-10 font-light max-w-2xl mx-auto">
-            {{HERO_SUBTITLE}}
-          </p>
-          <div class="flex justify-center gap-4">
-            <a href="#contact" class="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/30 flex items-center gap-2">
-              Começar Agora <i class="fas fa-arrow-right"></i>
-            </a>
-          </div>
-        </div>
+      <section id="home" class="min-h-screen flex items-center justify-center pt-20 relative">
+         <div class="absolute inset-0 z-0 opacity-50 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+         <div class="text-center max-w-4xl px-6 relative z-10">
+            <h1 class="text-6xl md:text-8xl font-black mb-6 tracking-tight text-slate-900">{{HERO_TITLE}}</h1>
+            <p class="text-2xl text-slate-600 mb-10 font-light">{{HERO_SUBTITLE}}</p>
+            <img src="https://image.pollinations.ai/prompt/3d%20render%20abstract%20minimalist%20shapes%20{{COLOR_PRIMARY}}?width=600&height=400&nologo=true" class="mx-auto drop-shadow-2xl hover:scale-105 transition duration-500" />
+         </div>
       </section>
 
-      <section id="features" class="py-24 px-6">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="group bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100" data-aos="fade-up" data-aos-delay="100">
-              <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 text-2xl mb-6 group-hover:scale-110 transition">
-                <i class="fas fa-gem"></i>
-              </div>
-              <h3 class="text-2xl font-bold mb-3">{{FEATURE_1_TITLE}}</h3>
-              <p class="text-slate-500">{{FEATURE_1_DESC}}</p>
-            </div>
-            
-            <div class="group bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100" data-aos="fade-up" data-aos-delay="200">
-              <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 text-2xl mb-6 group-hover:scale-110 transition">
-                <i class="fas fa-rocket"></i>
-              </div>
-              <h3 class="text-2xl font-bold mb-3">{{FEATURE_2_TITLE}}</h3>
-              <p class="text-slate-500">{{FEATURE_2_DESC}}</p>
-            </div>
-
-            <div class="group bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100" data-aos="fade-up" data-aos-delay="300">
-              <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 text-2xl mb-6 group-hover:scale-110 transition">
-                <i class="fas fa-shield-alt"></i>
-              </div>
-              <h3 class="text-2xl font-bold mb-3">{{FEATURE_3_TITLE}}</h3>
-              <p class="text-slate-500">{{FEATURE_3_DESC}}</p>
-            </div>
-        </div>
+      <section id="about" class="py-32 px-6 bg-white">
+         <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
+             <img src="https://image.pollinations.ai/prompt/cute%203d%20character%20professional%20{{COLOR_PRIMARY}}?width=400&height=400&nologo=true" class="w-1/2 drop-shadow-xl" />
+             <div class="w-full md:w-1/2">
+                <h2 class="text-4xl font-bold mb-6 text-primary">{{ABOUT_TITLE}}</h2>
+                <p class="text-lg text-slate-600 leading-relaxed">{{ABOUT_TEXT}}</p>
+             </div>
+         </div>
       </section>
 
-      <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-      <script> AOS.init({ once: true, offset: 50 }); </script>
+      <div id="contact-widget" class="draggable glass p-6 rounded-2xl w-80 hidden md:block" style="top: 20%; right: 2rem;">
+         <div class="flex justify-between mb-4 border-b pb-2"><span class="font-bold text-xs uppercase text-slate-400">Contato</span><i class="fas fa-grip-lines text-slate-300"></i></div>
+         <h3 class="font-bold text-lg mb-2">{{CONTACT_CALL}}</h3>
+         <div class="flex flex-col gap-2 mt-4">
+            [[WHATSAPP_BTN]]
+            [[INSTAGRAM_BTN]]
+         </div>
+      </div>
+
+      <script>
+        // Script Universal de Drag & Drop
+        document.querySelectorAll('.draggable').forEach(elmnt => {
+          let pos1=0, pos2=0, pos3=0, pos4=0;
+          elmnt.onmousedown = (e) => {
+            e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY;
+            document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+            document.onmousemove = (e) => {
+              e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY;
+              elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+              elmnt.style.transform = "none";
+            };
+          };
+        });
+      </script>
     </body>
     </html>
   `,
 
   // =================================================================
-  // 2. TECH & FUTURISTA (Menu Tela Cheia + Mouse Follower + GSAP)
+  // 2. TECH (HUD Futurista + Neon)
   // =================================================================
   tech: `
     <!DOCTYPE html>
@@ -98,110 +86,55 @@ export const TEMPLATES: Record<string, string> = {
     <head>
       <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
       <script src="https://cdn.tailwindcss.com"></script>
+      <script>tailwind.config = { theme: { extend: { colors: { neon: '{{COLOR_PRIMARY}}', dark: '#050505' } } } }</script>
       <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-      <script>
-        tailwind.config = { theme: { extend: { colors: { neon: '#00f3ff', dark: '#050505' } } } }
-      </script>
       <title>{{BUSINESS_NAME}}</title>
       <style>
-        body { background-color: #050505; color: #fff; cursor: none; overflow-x: hidden; }
-        
-        /* CURSOR PERSONALIZADO */
-        .cursor-dot, .cursor-outline { position: fixed; top: 0; left: 0; transform: translate(-50%, -50%); border-radius: 50%; z-index: 9999; pointer-events: none; }
-        .cursor-dot { width: 8px; height: 8px; background: #00f3ff; }
-        .cursor-outline { width: 40px; height: 40px; border: 1px solid rgba(0, 243, 255, 0.5); transition: width 0.2s, height 0.2s; }
-        
-        /* MENU OVERLAY */
-        .menu-overlay { clip-path: circle(0% at 100% 0); transition: clip-path 0.8s cubic-bezier(0.86, 0, 0.07, 1); }
-        .menu-overlay.active { clip-path: circle(150% at 100% 0); }
+        body { background: #050505; color: white; font-family: monospace; overflow: hidden; background-image: radial-gradient(circle at 1px 1px, #222 1px, transparent 0); background-size: 40px 40px; }
+        .hud-panel { background: rgba(5,5,5,0.9); border: 1px solid {{COLOR_PRIMARY}}; box-shadow: 0 0 15px {{COLOR_PRIMARY}}33; position: absolute; cursor: move; }
+        .hud-header { background: {{COLOR_PRIMARY}}; color: black; padding: 2px 10px; font-size: 10px; font-weight: bold; text-transform: uppercase; cursor: grab; }
       </style>
     </head>
-    <body class="font-mono">
-      
-      <div class="cursor-dot"></div>
-      <div class="cursor-outline"></div>
-
-      <nav class="fixed top-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference">
-        <div class="text-neon text-xl font-bold tracking-widest">{{BUSINESS_NAME}}</div>
-        
-        <button id="menu-btn" class="group relative w-12 h-12 flex flex-col justify-center items-end gap-1.5 z-50">
-           <span class="w-8 h-0.5 bg-neon group-hover:w-10 transition-all duration-300"></span>
-           <span class="w-6 h-0.5 bg-neon group-hover:w-10 transition-all duration-300 delay-75"></span>
-           <span class="w-4 h-0.5 bg-neon group-hover:w-10 transition-all duration-300 delay-100"></span>
-        </button>
-      </nav>
-
-      <div id="menu-overlay" class="menu-overlay fixed inset-0 bg-neon z-40 flex items-center justify-center">
-        <div class="text-dark text-center space-y-4">
-           <a href="#" class="block text-6xl font-black hover:text-white transition uppercase tracking-tighter menu-link">Home</a>
-           <a href="#" class="block text-6xl font-black hover:text-white transition uppercase tracking-tighter menu-link">Services</a>
-           <a href="#" class="block text-6xl font-black hover:text-white transition uppercase tracking-tighter menu-link">About</a>
-           <a href="#" class="block text-6xl font-black hover:text-white transition uppercase tracking-tighter menu-link">Contact</a>
-        </div>
+    <body>
+      <div class="hud-panel p-8 w-[600px]" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+         <div class="hud-header">SYSTEM // MAIN</div>
+         <div class="mt-4 text-center">
+            <h1 class="text-5xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">{{HERO_TITLE}}</h1>
+            <p class="text-neon text-lg tracking-widest mb-8">{{HERO_SUBTITLE}}</p>
+            <div class="h-[1px] w-full bg-neon/30 my-6"></div>
+            <div class="flex justify-center gap-4">[[WHATSAPP_BTN]] [[INSTAGRAM_BTN]]</div>
+         </div>
       </div>
-
-      <section class="h-screen flex flex-col justify-center items-center relative px-6 border-b border-white/10">
-        <div class="absolute inset-0 z-0 opacity-20">
-           <img src="https://image.pollinations.ai/prompt/cyberpunk%20grid%20neon%20dark?width=1920&height=1080&nologo=true" class="w-full h-full object-cover" />
-        </div>
-        
-        <h1 id="hero-title" class="text-6xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500 z-10 text-center leading-none mb-8 opacity-0">
-          {{HERO_TITLE}}
-        </h1>
-        <p class="text-neon text-xl tracking-[0.3em] uppercase z-10 text-center">{{HERO_SUBTITLE}}</p>
-      </section>
-
-      <section class="py-32 px-6 bg-dark">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-           <div class="border border-white/20 p-8 hover:bg-white/5 transition duration-500 group">
-              <h3 class="text-2xl text-neon mb-4 group-hover:translate-x-2 transition">{{FEATURE_1_TITLE}}</h3>
-              <p class="text-gray-400">{{FEATURE_1_DESC}}</p>
-           </div>
-           <div class="border border-white/20 p-8 hover:bg-white/5 transition duration-500 group">
-              <h3 class="text-2xl text-neon mb-4 group-hover:translate-x-2 transition">{{FEATURE_2_TITLE}}</h3>
-              <p class="text-gray-400">{{FEATURE_2_DESC}}</p>
-           </div>
-           <div class="border border-white/20 p-8 hover:bg-white/5 transition duration-500 group">
-              <h3 class="text-2xl text-neon mb-4 group-hover:translate-x-2 transition">{{FEATURE_3_TITLE}}</h3>
-              <p class="text-gray-400">{{FEATURE_3_DESC}}</p>
-           </div>
-        </div>
-      </section>
-
+      <div class="hud-panel p-4 w-72" style="top: 10%; left: 5%;">
+         <div class="hud-header">DATA // ABOUT</div>
+         <div class="mt-2">
+             <h3 class="text-neon mb-2">>> {{ABOUT_TITLE}}</h3>
+             <p class="text-gray-400 text-xs">{{ABOUT_TEXT}}</p>
+             <img src="https://image.pollinations.ai/prompt/cyberpunk%20robot%20toy%20{{COLOR_PRIMARY}}?width=200&height=100&nologo=true" class="mt-2 opacity-80" />
+         </div>
+      </div>
+      <div class="hud-panel p-2" style="top: 5%; right: 5%;"><div class="text-xl font-bold text-neon">[[LOGO_AREA]]</div></div>
       <script>
-        // MOUSE FOLLOWER
-        const dot = document.querySelector('.cursor-dot');
-        const outline = document.querySelector('.cursor-outline');
-        window.addEventListener('mousemove', (e) => {
-           dot.style.left = \`\${e.clientX}px\`; dot.style.top = \`\${e.clientY}px\`;
-           outline.animate({ left: \`\${e.clientX}px\`, top: \`\${e.clientY}px\` }, { duration: 500, fill: "forwards" });
+        document.querySelectorAll('.hud-panel').forEach(elmnt => {
+          let pos1=0, pos2=0, pos3=0, pos4=0;
+          let header = elmnt.querySelector(".hud-header") || elmnt;
+          header.onmousedown = (e) => {
+            e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY;
+            document.querySelectorAll('.hud-panel').forEach(p => p.style.zIndex = 1); elmnt.style.zIndex = 10;
+            document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+            document.onmousemove = (e) => {
+              e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY;
+              elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; elmnt.style.transform = "none";
+            };
+          };
         });
-
-        // MENU TOGGLE
-        const btn = document.getElementById('menu-btn');
-        const overlay = document.getElementById('menu-overlay');
-        const links = document.querySelectorAll('.menu-link');
-        let isOpen = false;
-        btn.addEventListener('click', () => {
-           isOpen = !isOpen;
-           if(isOpen) {
-             overlay.classList.add('active');
-             gsap.fromTo(links, {y: 50, opacity:0}, {y:0, opacity:1, duration: 0.5, stagger: 0.1, delay: 0.3});
-           } else {
-             overlay.classList.remove('active');
-           }
-        });
-
-        // HERO ANIMATION
-        gsap.to("#hero-title", { duration: 1.5, opacity: 1, ease: "power4.out", delay: 0.5 });
       </script>
     </body>
     </html>
   `,
 
   // =================================================================
-  // 3. RETRO & ROCK (Brutalista + Marquee Infinito)
+  // 3. RETRO (Windows 95 Style)
   // =================================================================
   retro: `
     <!DOCTYPE html>
@@ -209,66 +142,54 @@ export const TEMPLATES: Record<string, string> = {
     <head>
       <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
       <script src="https://cdn.tailwindcss.com"></script>
-      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
       <title>{{BUSINESS_NAME}}</title>
       <style>
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #FFDE00; color: #000; }
-        .brutal-border { border: 3px solid #000; box-shadow: 8px 8px 0px #000; transition: all 0.2s; }
-        .brutal-border:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0px #000; }
-        
-        /* MARQUEE ANIMATION */
-        .marquee-container { overflow: hidden; white-space: nowrap; border-top: 3px solid #000; border-bottom: 3px solid #000; background: #fff; padding: 15px 0; }
-        .marquee-content { display: inline-block; animation: marquee 20s linear infinite; font-size: 2rem; font-weight: bold; text-transform: uppercase; }
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        body { background-color: {{COLOR_SECONDARY}}; font-family: 'VT323', monospace; overflow: hidden; }
+        .window { position: absolute; background: #c0c0c0; border: 2px solid; border-color: #fff #000 #000 #fff; box-shadow: 4px 4px 0 rgba(0,0,0,0.2); }
+        .title-bar { background: {{COLOR_PRIMARY}}; color: white; padding: 2px 4px; display: flex; justify-content: space-between; cursor: default; }
+        .btn-win { background: #c0c0c0; border: 1px solid #000; border-top-color: #fff; border-left-color: #fff; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: black; }
       </style>
     </head>
-    <body class="overflow-x-hidden">
+    <body class="bg-teal-700 p-4">
       
-      <nav class="flex justify-between items-center p-6 border-b-4 border-black bg-white">
-         <div class="text-3xl font-black uppercase italic tracking-tighter">{{BUSINESS_NAME}}</div>
-         <a href="#contact" class="bg-black text-white px-8 py-3 text-xl font-bold hover:bg-pink-500 transition-colors border-2 border-transparent hover:border-black">START</a>
-      </nav>
-
-      <header class="grid grid-cols-1 md:grid-cols-2 min-h-[80vh] border-b-4 border-black">
-         <div class="p-12 flex flex-col justify-center bg-pink-400 border-b-4 md:border-b-0 md:border-r-4 border-black">
-            <h1 class="text-7xl font-black mb-8 leading-[0.9] uppercase">{{HERO_TITLE}}</h1>
-            <p class="text-2xl font-bold bg-white inline-block p-4 border-4 border-black mb-8 transform -rotate-2 w-fit shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">{{HERO_SUBTITLE}}</p>
-         </div>
-         <div class="relative overflow-hidden bg-blue-400">
-            <img src="https://image.pollinations.ai/prompt/pop%20art%20collage%20retro%20abstract?width=800&height=800&nologo=true" class="w-full h-full object-cover mix-blend-multiply opacity-80 grayscale hover:grayscale-0 transition duration-500"/>
-            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/halftone.png')] opacity-20"></div>
-         </div>
-      </header>
-
-      <div class="marquee-container">
-         <div class="marquee-content">
-            {{BUSINESS_NAME}} ★ QUALIDADE MÁXIMA ★ DESIGN ÚNICO ★ FALE CONOSCO ★ {{BUSINESS_NAME}} ★ QUALIDADE MÁXIMA ★ DESIGN ÚNICO ★ FALE CONOSCO ★
+      <div class="window w-[500px]" style="top: 10%; left: 20%;" id="win-main">
+         <div class="title-bar"><span>{{BUSINESS_NAME}}.exe</span><div class="btn-win">X</div></div>
+         <div class="p-4 bg-white text-center">
+            <h1 class="text-5xl mb-2">{{HERO_TITLE}}</h1>
+            <p class="text-xl mb-4">{{HERO_SUBTITLE}}</p>
+            <img src="https://image.pollinations.ai/prompt/pixel%20art%20{{COLOR_PRIMARY}}?width=200&height=150&nologo=true" class="mx-auto border-2 border-black" />
          </div>
       </div>
 
-      <section class="p-12 bg-[#FFDE00]">
-         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            <div class="brutal-border bg-white p-8">
-               <h3 class="text-4xl font-black mb-4">01.</h3>
-               <h4 class="text-2xl font-bold mb-2">{{FEATURE_1_TITLE}}</h4>
-               <p class="text-lg">{{FEATURE_1_DESC}}</p>
-            </div>
-            <div class="brutal-border bg-blue-300 p-8">
-               <h3 class="text-4xl font-black mb-4">02.</h3>
-               <h4 class="text-2xl font-bold mb-2">{{FEATURE_2_TITLE}}</h4>
-               <p class="text-lg">{{FEATURE_2_DESC}}</p>
-            </div>
-            <div class="brutal-border bg-pink-300 p-8">
-               <h3 class="text-4xl font-black mb-4">03.</h3>
-               <h4 class="text-2xl font-bold mb-2">{{FEATURE_3_TITLE}}</h4>
-               <p class="text-lg">{{FEATURE_3_DESC}}</p>
-            </div>
+      <div class="window w-[300px]" style="top: 50%; right: 10%;" id="win-contact">
+         <div class="title-bar"><span>Msg.exe</span><div class="btn-win">?</div></div>
+         <div class="p-4 bg-gray-200 text-center">
+            <p class="text-xl mb-4">{{CONTACT_CALL}}</p>
+            <div class="flex flex-col gap-2">[[WHATSAPP_BTN]] [[INSTAGRAM_BTN]]</div>
          </div>
-      </section>
+      </div>
 
-      <footer class="bg-black text-white p-12 text-center border-t-4 border-white">
-         <p class="text-xl font-bold uppercase">{{BUSINESS_NAME}} © 2024</p>
-      </footer>
+      <div class="fixed bottom-0 w-full h-10 bg-[#c0c0c0] border-t-2 border-white flex items-center px-2">
+         <button class="flex items-center gap-1 px-2 border-2 border-black border-l-white border-t-white font-bold"><i class="fab fa-windows"></i> INICIAR</button>
+      </div>
+
+      <script>
+        document.querySelectorAll('.window').forEach(elmnt => {
+          let pos1=0, pos2=0, pos3=0, pos4=0;
+          let bar = elmnt.querySelector(".title-bar");
+          bar.onmousedown = (e) => {
+            e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY;
+            document.querySelectorAll('.window').forEach(w => w.style.zIndex = 10); elmnt.style.zIndex = 20;
+            document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+            document.onmousemove = (e) => {
+              e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY;
+              elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            };
+          };
+        });
+      </script>
     </body>
     </html>
   `
