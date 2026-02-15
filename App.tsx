@@ -1,146 +1,110 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase'; 
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Rocket, Settings, Palette, Upload, Layout, Download, 
-  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X 
+  Rocket, Settings, Palette as PaletteIcon, Upload, Layout, 
+  Download, Loader2, Minimize2, RefreshCw, Image as ImageIcon, Briefcase, X 
 } from 'lucide-react';
-import { TEMPLATES } from './components/templates'; // Certifique-se de que o arquivo components/templates.ts existe
 
-// --- 1. CONSTANTES E DADOS ---
+import HtmlPreview from './components/HtmlPreview'; 
+import PalettePicker from './components/PalettePicker';
+import LandingPage from './components/LandingPage';
+import { PALETTES } from './constants'; 
 
-// Removida a lista SEGMENTS. Agora a IA descobre o segmento pela descrição.
-
-const LAYOUT_STYLES = [
-  { id: 'modern', label: 'Moderno & Luxo', desc: 'Menu flutuante, vidro, suave.' },
-  { id: 'tech', label: 'Tech & Futuro', desc: 'Neon, cursor animado, overlay.' },
-  { id: 'retro', label: 'Retro & Pop', desc: 'Brutalista, cores fortes, marquee.' }
+// --- LISTA ROBUSTA DE SEGMENTOS ---
+const SEGMENTS = [
+  "Advocacia e Jurídico", "Agência de Marketing", "Arquitetura e Interiores", 
+  "Barbearia", "Cafeteria e Padaria", "Clínica Médica", "Clínica Odontológica",
+  "Consultoria Financeira", "Contabilidade", "Delivery de Comida", 
+  "Educação e Cursos", "Energia Solar", "Engenharia Civil", "Estética e Beleza", 
+  "Eventos e Festas", "Academia e Personal Trainer", "Imobiliária", 
+  "Limpeza e Higienização", "Logística e Transportes", "Mecânica Automotiva",
+  "Pet Shop e Veterinária", "Pizzaria", "Psicologia", "Restaurante", 
+  "Salão de Beleza", "Seguros e Corretagem", "Tecnologia e TI", 
+  "Turismo e Viagens", "Varejo e Loja de Roupas"
 ];
 
-const COLORS = [
-  { id: 'blue', primary: '#2563eb', secondary: '#1e40af' },
-  { id: 'purple', primary: '#7c3aed', secondary: '#5b21b6' },
-  { id: 'emerald', primary: '#059669', secondary: '#047857' },
-  { id: 'rose', primary: '#e11d48', secondary: '#be123c' },
-  { id: 'orange', primary: '#ea580c', secondary: '#c2410c' },
-  { id: 'dark', primary: '#0f172a', secondary: '#334155' }
+const LAYOUT_STYLES = [
+  { id: 'modern', label: 'Moderno', desc: 'Limpo, espaçoso, vidro.' },
+  { id: 'classic', label: 'Clássico', desc: 'Sério, corporativo, tradicional.' },
+  { id: 'bold', label: 'Arrojado', desc: 'Fontes grandes, alto contraste.' },
+  { id: 'minimal', label: 'Minimalista', desc: 'Menos é mais, foco total.' }
 ];
 
 const App: React.FC = () => {
-  // Estados da Aplicação
+  const [view, setView] = useState<'landing' | 'builder'>('landing');
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(true);
-  const [aiContent, setAiContent] = useState<any>(null); // Guarda o texto da IA
-
-  // Formulário Simplificado (Sem select de segmento)
+  
   const [formData, setFormData] = useState({
     businessName: '',
-    description: '',
+    segment: 'Tecnologia e TI',
     layoutStyle: 'modern',
-    colorId: 'blue',
-    logoBase64: ''
+    description: '',
+    paletteId: 'p1',
+    whatsapp: '',
+    instagram: '',
+    logoBase64: '' 
   });
 
-  // --- 2. MOTOR DE TEMPLATES (A MÁGICA) ---
-  const renderTemplate = (content: any, data: typeof formData) => {
-    // 1. Escolhe o esqueleto HTML
-    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['modern'];
-    const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
-
-    // 2. Injeta os Textos da IA
-    html = html.replace(/{{BUSINESS_NAME}}/g, data.businessName);
-    html = html.replace('{{HERO_TITLE}}', content.heroTitle);
-    html = html.replace('{{HERO_SUBTITLE}}', content.heroSubtitle);
-    html = html.replace('{{FEATURE_1_TITLE}}', content.feature1Title);
-    html = html.replace('{{FEATURE_1_DESC}}', content.feature1Desc);
-    html = html.replace('{{FEATURE_2_TITLE}}', content.feature2Title);
-    html = html.replace('{{FEATURE_2_DESC}}', content.feature2Desc);
-    html = html.replace('{{FEATURE_3_TITLE}}', content.feature3Title);
-    html = html.replace('{{FEATURE_3_DESC}}', content.feature3Desc);
-    html = html.replace('{{ABOUT_TITLE}}', content.aboutTitle);
-    html = html.replace('{{ABOUT_TEXT}}', content.aboutText);
-
-    // 3. Injeta Configurações Visuais
-    html = html.replace(/{{COLOR_PRIMARY}}/g, colors.primary);
-    html = html.replace(/{{COLOR_SECONDARY}}/g, colors.secondary);
-    
-    // Tag para imagem (usa a primeira palavra da descrição para buscar imagem)
-    // Removemos acentos e espaços para a URL da imagem ficar limpa
-    const segmentTag = data.description.split(' ')[0].normalize("NFD").replace(/[\u0300-\u036f]/g, "") || 'business';
-    html = html.replace(/{{SEGMENT_TAG}}/g, segmentTag);
-
-    // 4. Injeta Logo
-    if (data.logoBase64) {
-      const imgTag = `<img src="${data.logoBase64}" class="h-12 w-auto object-contain" alt="Logo" />`;
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, imgTag);
-    } else {
-      const textLogo = `<span class="font-bold tracking-tight">${data.businessName}</span>`;
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, textLogo);
+  // --- 1. UPLOAD DE LOGO ---
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validação de tamanho (max 2MB para não travar o payload)
+      if (file.size > 2 * 1024 * 1024) return alert("O logo deve ter no máximo 2MB");
+      
+      const reader = new FileReader();
+      reader.onloadend = () => setFormData(prev => ({ ...prev, logoBase64: reader.result as string }));
+      reader.readAsDataURL(file);
     }
-
-    return html;
   };
 
-  // --- 3. COMUNICAÇÃO COM O BACKEND ---
-  const handleGenerate = async () => {
+  const removeLogo = () => setFormData(prev => ({ ...prev, logoBase64: '' }));
+
+  // --- 2. GERAÇÃO INTELIGENTE ---
+  const handleGenerateAI = async () => {
     if (!formData.businessName) return alert("Digite o nome da empresa!");
-    if (!formData.description) return alert("Descreva o negócio para a IA criar o conteúdo!");
-    
     setIsGenerating(true);
+    
+    // Pega o objeto de cor completo
+    const selectedPalette = PALETTES.find(p => p.id === formData.paletteId);
 
     try {
-      // Se já temos o texto da IA e só mudamos cor/layout, não gasta crédito da IA!
-      if (aiContent && generatedHtml) {
-         const newHtml = renderTemplate(aiContent, formData);
-         setGeneratedHtml(newHtml);
-         setIsGenerating(false);
-         return;
+      const generateSiteFn = httpsCallable(functions, 'generateSite');
+      // Envia tudo separado para a IA montar
+      const payload = { ...formData, palette: selectedPalette };
+
+      const result: any = await generateSiteFn(payload);
+      if (result.data.success) {
+        setGeneratedHtml(result.data.html);
       }
-
-      // Chama a Cloud Function (só busca JSON)
-      // Atenção: O nome da função deve bater com o exports.generateSiteContent do backend
-      const generateFn = httpsCallable(functions, 'generateSiteContent');
-      const result: any = await generateFn({ 
-        businessName: formData.businessName, 
-        description: formData.description 
-      });
-
-      const content = result.data;
-      setAiContent(content); // Salva para reuso
-
-      // Gera o HTML final
-      const finalHtml = renderTemplate(content, formData);
-      setGeneratedHtml(finalHtml);
-
     } catch (error: any) {
-      console.error(error);
-      alert("Erro ao gerar: " + error.message);
+      alert(`Erro: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Atualiza em tempo real se mudar cor ou layout (sem chamar IA)
-  useEffect(() => {
-    if (aiContent) {
-      const newHtml = renderTemplate(aiContent, formData);
-      setGeneratedHtml(newHtml);
-    }
-  }, [formData.layoutStyle, formData.colorId, formData.logoBase64]);
-
-
-  // --- 4. FUNÇÕES UTILITÁRIAS ---
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) return alert("O logo deve ser menor que 2MB");
-      const reader = new FileReader();
-      reader.onloadend = () => setFormData(p => ({ ...p, logoBase64: reader.result as string }));
-      reader.readAsDataURL(file);
+  // --- 3. TROCA DE COR INSTANTÂNEA ---
+  const handlePaletteChange = (newPaletteId: string) => {
+    setFormData(prev => ({ ...prev, paletteId: newPaletteId }));
+    
+    if (generatedHtml) {
+      const palette = PALETTES.find(p => p.id === newPaletteId);
+      if (palette) {
+        let newHtml = generatedHtml;
+        // Regex para atualizar cores do Tailwind Config em tempo real
+        newHtml = newHtml.replace(/primary: '.*?'/, `primary: '${palette.primary}'`);
+        newHtml = newHtml.replace(/secondary: '.*?'/, `secondary: '${palette.secondary}'`);
+        newHtml = newHtml.replace(/dark: '.*?'/, `dark: '${palette.bg}'`);
+        newHtml = newHtml.replace(/light: '.*?'/, `light: '${palette.text}'`);
+        setGeneratedHtml(newHtml);
+      }
     }
   };
 
@@ -151,28 +115,25 @@ const App: React.FC = () => {
     zip.generateAsync({ type: "blob" }).then(c => saveAs(c, `${formData.businessName.trim()}.zip`));
   };
 
-  // --- 5. RENDERIZAÇÃO (INTERFACE) ---
+  if (view === 'landing') return <LandingPage onStart={() => setView('builder')} />;
+
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
       
-      {/* BACKGROUND (PREVIEW) */}
+      {/* BACKGROUND / PREVIEW */}
       <div className="absolute inset-0 z-0 bg-[#09090b]">
         {generatedHtml ? (
-          <iframe 
-            srcDoc={generatedHtml} 
-            className="w-full h-full border-none bg-white" 
-            title="Site Preview"
-          />
+          <HtmlPreview htmlContent={generatedHtml} mode="desktop" />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full opacity-20 animate-pulse select-none">
+          <div className="flex flex-col items-center justify-center h-full opacity-30 animate-pulse">
             <Rocket className="w-24 h-24 mb-6" />
-            <h2 className="text-4xl font-bold">SiteCraft AI</h2>
-            <p className="mt-2">Preencha os dados ao lado para começar.</p>
+            <h2 className="text-3xl font-bold">SiteCraft Editor</h2>
+            <p>Seu site aparecerá aqui em tela cheia.</p>
           </div>
         )}
       </div>
 
-      {/* MENU FLUTUANTE (SIDEBAR) */}
+      {/* MENU FLUTUANTE */}
       <motion.div 
         drag dragMomentum={false} initial={{ x: 20, y: 20 }}
         className="absolute z-50 flex flex-col max-h-[95vh]"
@@ -183,41 +144,114 @@ const App: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
               className="w-[400px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 shadow-2xl rounded-2xl flex flex-col overflow-hidden"
             >
-              {/* Header do Menu */}
+              {/* Header */}
               <div className="h-14 bg-zinc-800/80 border-b border-zinc-700 flex items-center justify-between px-5 cursor-move">
                 <span className="font-bold flex items-center gap-2"><Settings size={18} className="text-indigo-400"/> Editor</span>
                 <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded"><Minimize2 size={18}/></button>
               </div>
 
-              {/* Corpo do Menu */}
+              {/* Conteúdo */}
               <div className="p-5 overflow-y-auto custom-scrollbar space-y-6 max-h-[80vh]">
                 
-                {/* Inputs de Texto */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12}/> Nome</label>
-                    <input 
-                      className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-indigo-500 outline-none"
-                      placeholder="Ex: Pizzaria do Zé"
-                      value={formData.businessName}
-                      onChange={e => setFormData({...formData, businessName: e.target.value})}
-                    />
-                  </div>
-                  
-                  {/* CAMPO DE PROMPT (SUBSTITUI O SEGMENTO) */}
-                  <div>
-                    <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12}/> Ideia (Prompt)</label>
-                    <textarea 
-                      className="w-full h-24 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-indigo-500 outline-none resize-none placeholder:text-zinc-600"
-                      placeholder="Descreva o negócio... Ex: 'Advocacia trabalhista com foco em bancários, ambiente sério e tradicional...'"
-                      value={formData.description}
-                      onChange={e => setFormData({...formData, description: e.target.value})}
-                    />
+                {/* 1. Identidade */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-zinc-500 uppercase">Identidade</label>
+                  <input 
+                    type="text" placeholder="Nome da Empresa"
+                    className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-indigo-500 outline-none"
+                    value={formData.businessName}
+                    onChange={e => setFormData({...formData, businessName: e.target.value})}
+                  />
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-3 text-zinc-500" size={16} />
+                    <select 
+                      className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 pl-10 text-sm focus:border-indigo-500 outline-none appearance-none"
+                      value={formData.segment}
+                      onChange={e => setFormData({...formData, segment: e.target.value})}
+                    >
+                      {SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </div>
                 </div>
 
-                {/* Logo */}
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
-                     <span>Logo</span>
-                     {formData.logoBase64 && <button onClick={() => setFormData(p=>({...p, logoBase64
+                {/* 2. Logo */}
+                <div className="space-y-3">
+                   <label className="text-xs font-bold text-zinc-500 uppercase flex items-center justify-between">
+                     <span>Logo (Opcional)</span>
+                     {formData.logoBase64 && <button onClick={removeLogo} className="text-red-400 text-[10px] flex items-center gap-1 hover:underline"><X size={10}/> Remover</button>}
+                   </label>
+                   
+                   {!formData.logoBase64 ? (
+                     <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 hover:bg-indigo-500/10 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all">
+                        <Upload size={20} className="text-zinc-400"/>
+                        <span className="text-xs text-zinc-400">Clique para enviar logo</span>
+                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                     </label>
+                   ) : (
+                     <div className="w-full h-16 bg-white/5 border border-zinc-700 rounded-lg flex items-center justify-center p-2 relative">
+                        <img src={formData.logoBase64} alt="Logo" className="max-h-full object-contain" />
+                     </div>
+                   )}
+                </div>
+
+                {/* 3. Estilo (Layout) */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2"><Layout size={14}/> Layout</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LAYOUT_STYLES.map(style => (
+                      <button
+                        key={style.id}
+                        onClick={() => setFormData({...formData, layoutStyle: style.id})}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          formData.layoutStyle === style.id 
+                            ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-900/50' 
+                            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{style.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Cores */}
+                <div className="bg-black/20 p-4 rounded-xl border border-white/5">
+                   <h3 className="text-xs font-bold text-zinc-500 uppercase mb-3 flex items-center gap-2">
+                     <PaletteIcon size={12} /> Cores
+                   </h3>
+                   <PalettePicker selectedId={formData.paletteId} onSelect={handlePaletteChange} />
+                </div>
+
+                {/* AÇÃO */}
+                <button 
+                  onClick={handleGenerateAI}
+                  disabled={isGenerating}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                  {generatedHtml ? "Regerar Site" : "Criar Site"}
+                </button>
+
+                {generatedHtml && (
+                  <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 font-medium transition-colors">
+                    <Download size={16} /> Baixar Site
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ scale: 0 }} animate={{ scale: 1 }} 
+              onClick={() => setIsMenuOpen(true)}
+              className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 hover:scale-110 transition-transform"
+            >
+              <Settings className="text-white" size={26} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+};
+
+export default App;
