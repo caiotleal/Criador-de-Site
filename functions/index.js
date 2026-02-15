@@ -2,7 +2,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // COLE SUA CHAVE API AQUI
-const API_KEY = "SUA_CHAVE_AQUI"; 
+const API_KEY = "AIzaSyDZNznq-O9FrNhFtlZszrhmEg7LhfCLyqE"; 
 
 exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB" }, async (request) => {
     const genAI = new GoogleGenerativeAI(API_KEY);
