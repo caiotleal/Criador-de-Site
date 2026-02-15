@@ -11,7 +11,7 @@ exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB"
     if (!businessName) throw new HttpsError('invalid-argument', 'Nome obrigatório');
 
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-PRO", // Versão estável e rápida
+        model: "gemini-2.5-flash", // Versão estável e rápida
         generationConfig: { responseMimeType: "application/json" } 
     });
 
