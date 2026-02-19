@@ -129,6 +129,7 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const token = await getFirebaseAccessToken();
   const fileHash = sha256Hex(htmlContent);
 
+  // 1. Criar a versão
   const createVersion = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/versions`, {
     method: "POST",
     headers: {
@@ -146,6 +147,7 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const version = await createVersion.json();
   const versionName = version.name;
 
+  // 2. Preparar o upload (populateFiles)
   const populate = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}:populateFiles`, {
     method: "POST",
     headers: {
@@ -161,12 +163,19 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   }
 
   const populateData = await populate.json();
-  const uploadUrl = populateData.uploadRequiredHashes?.[fileHash];
+  const requiredHashes = populateData.uploadRequiredHashes || [];
 
-  if (uploadUrl) {
+  // 3. Fazer o upload se o Firebase solicitar
+  if (requiredHashes.includes(fileHash)) {
+    // A URL real de upload é a URL base + o hash do arquivo
+    const uploadUrl = `${populateData.uploadUrl}/${fileHash}`;
+
     const up = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": "application/octet-stream" },
+      method: "POST", // A API de upload do Firebase exige POST
+      headers: { 
+        "Authorization": `Bearer ${token}`, // Token obrigatório no upload
+        "Content-Type": "application/octet-stream" 
+      },
       body: htmlContent,
     });
 
@@ -176,6 +185,7 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     }
   }
 
+  // 4. Finalizar a versão
   const finalize = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}?updateMask=status`, {
     method: "PATCH",
     headers: {
@@ -190,6 +200,7 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     throw new Error(`Falha ao finalizar versão Hosting: ${txt}`);
   }
 
+  // 5. Criar o release
   const release = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/releases?versionName=${encodeURIComponent(versionName)}`, {
     method: "POST",
     headers: {
