@@ -26,10 +26,14 @@
 ### 2) Configurar secret da Function (uma vez por projeto)
 `firebase functions:secrets:set GEMINI_KEY`
 
-### 3) Deploy completo (hosting + functions)
+### 3) (Opcional) Habilitar criação automática de repositório GitHub
+Defina `GITHUB_TOKEN` como variável de ambiente no runtime/CI (não é obrigatório para deploy).
+
+### 4) Deploy completo (hosting + functions)
 `firebase deploy --only hosting,functions`
 
 ## Observações
 
 - O `firebase.json` está configurado para executar `npm run build` antes do deploy do Hosting.
-- As Functions usam `GEMINI_KEY` via Secret Manager (`defineSecret`).
+- `GEMINI_KEY` continua no Secret Manager (`defineSecret`).
+- `GITHUB_TOKEN` é opcional: se ausente, o app salva o projeto no Firestore e marca GitHub como pendente.

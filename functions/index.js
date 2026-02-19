@@ -9,7 +9,6 @@ if (!admin.apps.length) {
 }
 
 const geminiKey = defineSecret("GEMINI_KEY");
-const githubToken = defineSecret("GITHUB_TOKEN");
 
 const getGeminiClient = () => {
   const apiKey = geminiKey.value();
@@ -41,7 +40,7 @@ const ensureAuthed = (request) => {
 };
 
 async function createGithubRepoIfConfigured(repoName) {
-  const token = githubToken.value();
+  const token = process.env.GITHUB_TOKEN || "";
   if (!token) {
     return { status: "pending_secret", message: "Secret GITHUB_TOKEN não configurado." };
   }
@@ -146,7 +145,6 @@ exports.saveSiteProject = onCall({
   cors: true,
   timeoutSeconds: 120,
   memory: "512MiB",
-  secrets: [githubToken],
 }, async (request) => {
   const uid = ensureAuthed(request);
   const {
