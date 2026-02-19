@@ -280,11 +280,14 @@ exports.saveSiteProject = onCall({
   if (!businessName || !generatedHtml) {
     throw new HttpsError("invalid-argument", "businessName e generatedHtml são obrigatórios.");
   }
-
-  const baseSlug = slugify(businessName) || `site-${Date.now()}`;
-  const projectSlug = `${baseSlug}-${uid.slice(0, 6)}`;
+// O slug será apenas o nome do negócio limpo
+  const projectSlug = slugify(businessName) || `site-${Date.now()}`;
+  
+  // O ID do hosting será exatamente o slug (limitado a 30 caracteres por regra do Firebase)
+  const hostingSiteId = projectSlug.slice(0, 30);
+  
+  // O repositório segue o mesmo padrão limpo
   const repoName = `site-${projectSlug}`;
-  const hostingSiteId = `site-${projectSlug}`.slice(0, 30);
 
   const github = await createGithubRepoIfConfigured(repoName);
   const hosting = await createHostingSiteIfPossible(hostingSiteId);
@@ -387,6 +390,20 @@ exports.publishUserProject = onCall({
     };
   } catch (error) {
     console.error("Erro publishUserProject:", error);
+    
+    // Verificamos se o erro indica que o recurso do Hosting não foi encontrado ou foi deletado
+    const errorMessage = error.message ? error.message.toLowerCase() : "";
+    if (errorMessage.includes("404") || errorMessage.includes("not found") || errorMessage.includes("deleted")) {
+      
+      // Apaga o projeto do banco de dados do usuário
+      await ref.delete();
+      
+      throw new HttpsError(
+        "not-found",
+        "A infraestrutura deste site foi removida do servidor. O projeto foi retirado da sua lista para evitar inconsistências."
+      );
+    }
+
     if (error instanceof HttpsError) {
       throw error;
     }
