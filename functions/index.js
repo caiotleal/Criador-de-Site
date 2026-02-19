@@ -121,13 +121,13 @@ async function getFirebaseAccessToken() {
   return token.token || token;
 }
 
-function sha256base64(content) {
-  return crypto.createHash("sha256").update(content).digest("base64");
+function sha256Hex(content) {
+  return crypto.createHash("sha256").update(content).digest("hex");
 }
 
 async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const token = await getFirebaseAccessToken();
-  const fileHash = sha256base64(htmlContent);
+  const fileHash = sha256Hex(htmlContent);
 
   const createVersion = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/versions`, {
     method: "POST",
