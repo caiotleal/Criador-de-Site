@@ -37,3 +37,24 @@ Defina `GITHUB_TOKEN` como variável de ambiente no runtime/CI (não é obrigat�
 - O `firebase.json` está configurado para executar `npm run build` antes do deploy do Hosting.
 - `GEMINI_KEY` continua no Secret Manager (`defineSecret`).
 - `GITHUB_TOKEN` é opcional: se ausente, o app salva o projeto no Firestore e marca GitHub como pendente.
+
+
+## Variáveis de ambiente do Firebase (Frontend)
+
+Crie um arquivo `.env.local` na raiz com:
+
+```bash
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+```
+
+### Erro `auth/api-key-not-found`
+Se aparecer `Firebase: Error (auth/api-key-not-found)`, normalmente significa:
+- API key inválida/revogada no projeto Firebase, ou
+- variável `VITE_FIREBASE_API_KEY` ausente no ambiente de build/deploy.
+
+Revise a Web App config no console do Firebase e atualize `.env.local` (ou secrets/env do CI).
