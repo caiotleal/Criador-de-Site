@@ -280,13 +280,11 @@ exports.saveSiteProject = onCall({
   if (!businessName || !generatedHtml) {
     throw new HttpsError("invalid-argument", "businessName e generatedHtml são obrigatórios.");
   }
-// O slug será apenas o nome do negócio limpo
-  const projectSlug = slugify(businessName) || `site-${Date.now()}`;
+// Pegamos o domínio limpo que veio do front-end (ou criamos um fallback seguro)
+  const chosenDomain = request.data.chosenDomain || businessName;
+  const projectSlug = slugify(chosenDomain).slice(0, 30);
   
-  // O ID do hosting será exatamente o slug (limitado a 30 caracteres por regra do Firebase)
-  const hostingSiteId = projectSlug.slice(0, 30);
-  
-  // O repositório segue o mesmo padrão limpo
+  const hostingSiteId = projectSlug;
   const repoName = `site-${projectSlug}`;
 
   const github = await createGithubRepoIfConfigured(repoName);
@@ -413,4 +411,61 @@ exports.publishUserProject = onCall({
       { message: error?.message || "erro desconhecido" },
     );
   }
+});
+
+exports.checkDomainAvailability = onCall({
+  cors: true,
+  timeoutSeconds: 30,
+}, async (request) => {
+  const { desiredDomain } = request.data || {};
+
+  if (!desiredDomain) {
+    throw new HttpsError("invalid-argument", "O domínio desejado é obrigatório.");
+  }
+
+  // Limpamos o texto usando a mesma regra do Firebase (máximo 30 caracteres)
+  const cleanDomain = slugify(desiredDomain).slice(0, 30);
+
+  // 1. Verificamos no nosso próprio banco de dados se algum usuário já pegou esse slug
+  const db = admin.firestore();
+  const snapshot = await db.collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
+
+  let isAvailable = true;
+
+  if (!snapshot.empty) {
+    isAvailable = false;
+  } else {
+    // 2. Verificamos globalmente na rede do Google se o endereço já existe
+    try {
+      const response = await fetch(`https://${cleanDomain}.web.app`);
+      // Se a página carregar (200) ou retornar um erro diferente do "Site Not Found" padrão, está em uso.
+      if (response.ok) {
+        isAvailable = false;
+      }
+    } catch (error) {
+      // Se o fetch falhar completamente (erro de DNS), o domínio está livre.
+      isAvailable = true;
+    }
+  }
+
+  // Se estiver disponível, retornamos sucesso imediato
+  if (isAvailable) {
+    return { available: true, cleanDomain };
+  }
+
+  // Se não estiver, geramos 3 sugestões premium, garantindo o limite de 30 caracteres
+  const suffixes = ["-oficial", "-online", "-web"];
+  const suggestions = suffixes.map(suffix => {
+    // Cortamos o domínio base para caber o sufixo sem estourar os 30 caracteres
+    const maxBaseLength = 30 - suffix.length;
+    const baseClipped = cleanDomain.slice(0, maxBaseLength);
+    return `${baseClipped}${suffix}`;
+  });
+
+  return {
+    available: false,
+    cleanDomain,
+    message: "Este endereço já está em uso.",
+    suggestions: suggestions
+  };
 });
