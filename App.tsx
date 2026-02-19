@@ -62,7 +62,9 @@ const App: React.FC = () => {
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [publishedDomain, setPublishedDomain] = useState<string | null>(null);
   const [isSavingProject, setIsSavingProject] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
+  const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -218,10 +220,46 @@ const App: React.FC = () => {
     setIsLoginOpen(false);
   };
 
-  const handlePublishSite = () => {
-    const slug = (formData.businessName || 'meu-site').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const previewDomain = `${slug || 'site'}.site5dias.com`;
-    setPublishedDomain(previewDomain);
+  const handlePublishSite = async () => {
+    if (!auth.currentUser) {
+      setIsLoginOpen(true);
+      return;
+    }
+
+    try {
+      setIsPublishing(true);
+      let slug = currentProjectSlug;
+
+      if (!slug) {
+        const saveFn = httpsCallable(functions, 'saveSiteProject');
+        const saveRes: any = await saveFn({
+          businessName: formData.businessName,
+          generatedHtml,
+          formData,
+          aiContent,
+        });
+        slug = saveRes.data?.projectSlug;
+        setCurrentProjectSlug(slug || null);
+      }
+
+      if (!slug) throw new Error('Não foi possível identificar o projeto para publicar.');
+
+      const publishFn = httpsCallable(functions, 'publishUserProject');
+      const publishRes: any = await publishFn({ projectSlug: slug });
+      const url = publishRes.data?.publishUrl as string;
+      if (url) {
+        setPublishedDomain(url.replace(/^https?:\/\//, ''));
+        window.open(url, '_blank');
+      }
+
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
+    } catch (err: any) {
+      alert('Erro ao publicar: ' + (err?.message || 'erro desconhecido'));
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleSaveProject = async () => {
@@ -242,6 +280,7 @@ const App: React.FC = () => {
       });
 
       const data = res.data || {};
+      if (data?.projectSlug) setCurrentProjectSlug(data.projectSlug);
       if (data?.hosting?.defaultUrl) {
         setPublishedDomain(data.hosting.defaultUrl.replace('https://', ''));
       }
@@ -262,11 +301,14 @@ const App: React.FC = () => {
     setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
     setAiContent(project.aiContent || null);
     setGeneratedHtml(project.generatedHtml || null);
+    setCurrentProjectSlug(project.projectSlug || project.id || null);
+    if (project.publishUrl) setPublishedDomain(String(project.publishUrl).replace(/^https?:\/\//, ''));
   };
 
   const handleLogout = async () => {
     await signOut(auth);
     setSavedProjects([]);
+    setCurrentProjectSlug(null);
   };
 
   return (
@@ -282,6 +324,11 @@ const App: React.FC = () => {
         )}
       </div>
 
+      {loggedUserEmail && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[90] bg-emerald-700/90 text-white text-xs md:text-sm px-4 py-2 rounded-full shadow-lg border border-emerald-300/30">
+          ✅ Logado como: <strong>{loggedUserEmail}</strong>
+        </div>
+      )}
 
       {generatedHtml && (
         <motion.div
@@ -301,9 +348,10 @@ const App: React.FC = () => {
             <div className="space-y-2">
               <button
                 onClick={handlePublishSite}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
+                disabled={isPublishing || !generatedHtml}
+                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
               >
-                <Globe size={16} /> Publicar site e gerar domínio
+                <Globe size={16} /> {isPublishing ? 'Publicando...' : 'Publicar site e gerar domínio'}
               </button>
               {publishedDomain && (
                 <div className="bg-zinc-900/95 border border-zinc-700 text-zinc-100 px-3 py-2 rounded-xl text-xs">

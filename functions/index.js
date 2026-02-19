@@ -3,6 +3,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
+const crypto = require("crypto");
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -111,6 +112,101 @@ async function createHostingSiteIfPossible(siteId) {
   };
 }
 
+
+
+async function getFirebaseAccessToken() {
+  const auth = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/firebase"] });
+  const client = await auth.getClient();
+  const token = await client.getAccessToken();
+  return token.token || token;
+}
+
+function sha256base64(content) {
+  return crypto.createHash("sha256").update(content).digest("base64");
+}
+
+async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
+  const token = await getFirebaseAccessToken();
+  const fileHash = sha256base64(htmlContent);
+
+  const createVersion = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/versions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ config: { rewrites: [{ glob: "**", path: "/index.html" }] } }),
+  });
+
+  if (!createVersion.ok) {
+    const txt = await createVersion.text();
+    throw new Error(`Falha ao criar versão Hosting: ${txt}`);
+  }
+
+  const version = await createVersion.json();
+  const versionName = version.name;
+
+  const populate = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}:populateFiles`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ files: { "/index.html": fileHash } }),
+  });
+
+  if (!populate.ok) {
+    const txt = await populate.text();
+    throw new Error(`Falha ao preparar upload Hosting: ${txt}`);
+  }
+
+  const populateData = await populate.json();
+  const uploadUrl = populateData.uploadRequiredHashes?.[fileHash];
+
+  if (uploadUrl) {
+    const up = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "application/octet-stream" },
+      body: htmlContent,
+    });
+
+    if (!up.ok) {
+      const txt = await up.text();
+      throw new Error(`Falha no upload do arquivo para Hosting: ${txt}`);
+    }
+  }
+
+  const finalize = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}?updateMask=status`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status: "FINALIZED" }),
+  });
+
+  if (!finalize.ok) {
+    const txt = await finalize.text();
+    throw new Error(`Falha ao finalizar versão Hosting: ${txt}`);
+  }
+
+  const release = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/releases?versionName=${encodeURIComponent(versionName)}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message: "Deploy automático via Criador de Site" }),
+  });
+
+  if (!release.ok) {
+    const txt = await release.text();
+    throw new Error(`Falha ao criar release Hosting: ${txt}`);
+  }
+
+  return { versionName, release: await release.json() };
+}
+
 exports.generateSite = onCall({
   cors: true,
   timeoutSeconds: 60,
@@ -207,5 +303,53 @@ exports.listUserProjects = onCall({ cors: true }, async (request) => {
 
   return {
     projects: snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+  };
+});
+
+
+exports.publishUserProject = onCall({
+  cors: true,
+  timeoutSeconds: 180,
+  memory: "512MiB",
+}, async (request) => {
+  const uid = ensureAuthed(request);
+  const { projectSlug } = request.data || {};
+
+  if (!projectSlug) {
+    throw new HttpsError("invalid-argument", "projectSlug é obrigatório.");
+  }
+
+  const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    throw new HttpsError("not-found", "Projeto não encontrado para este usuário.");
+  }
+
+  const project = snap.data();
+  const html = project.generatedHtml;
+  const hostingSiteId = project.hostingSiteId;
+
+  if (!html || !hostingSiteId) {
+    throw new HttpsError("failed-precondition", "Projeto sem HTML ou hostingSiteId.");
+  }
+
+  const deployResult = await deployHtmlToFirebaseHosting(hostingSiteId, html);
+  const publicUrl = `https://${hostingSiteId}.web.app`;
+
+  await ref.set({
+    published: true,
+    publishUrl: publicUrl,
+    publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+    needsDeploy: false,
+    lastDeploy: deployResult,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+
+  return {
+    success: true,
+    publishUrl: publicUrl,
+    hostingSiteId,
+    deploy: deployResult,
   };
 });
