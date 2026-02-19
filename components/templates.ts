@@ -19,14 +19,6 @@ const COMMON_HEAD = `
 
     .floating-hint { animation: pulseHint 1.8s infinite; }
     @keyframes pulseHint { 0%,100% { opacity:.45 } 50% { opacity: 1 } }
-    body { font-family: 'Inter', sans-serif; margin: 0; }
-    .btn-primary { background: linear-gradient(90deg,var(--primary),var(--secondary)); color:white; transition:all .2s ease; }
-    .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.05); }
-    .fade-up { animation: fadeUp .7s ease both; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(12px)} to { opacity:1; transform:translateY(0)} }
-    .draggable { cursor: grab; user-select: none; z-index: 60; }
-    .draggable:active { cursor: grabbing; }
-    ::-webkit-scrollbar { width: 0; background: transparent; }
 
     @media (max-width: 768px) {
       #floating-social {
@@ -38,7 +30,6 @@ const COMMON_HEAD = `
         width: auto !important;
         max-width: none !important;
       }
-      #floating-social .drag-handle { font-size: 11px; }
     }
   </style>
   <script>
@@ -62,14 +53,6 @@ const FLOATING_PANEL = `
       [[KEETA_BTN]]
     </div>
   </aside>
-  <div id="floating-social" class="draggable fixed top-1/2 -translate-y-1/2 right-4 bg-white/95 border border-slate-200 shadow-2xl rounded-2xl p-3 w-[240px] max-w-[92vw]">
-    <div class="drag-handle text-[10px] uppercase tracking-wider text-slate-400 mb-2 flex justify-between items-center cursor-move">
-      <span>Mídias e delivery</span><i class="fas fa-grip-lines"></i>
-    </div>
-    <div class="space-y-2 max-h-[70vh] overflow-y-auto">
-      [[WHATSAPP_BTN]] [[INSTAGRAM_BTN]] [[FACEBOOK_BTN]] [[TIKTOK_BTN]] [[IFOOD_BTN]] [[NOVE_NOVE_BTN]] [[KEETA_BTN]]
-    </div>
-  </div>
 `;
 
 const DRAG_MAGNET_SCRIPT = `
@@ -114,23 +97,6 @@ const DRAG_MAGNET_SCRIPT = `
         elmnt.style.top = clampedTop + 'px';
 
         setTimeout(() => { elmnt.style.transition = ''; }, 220);
-      let pos1=0, pos2=0, pos3=0, pos4=0;
-      let handle = elmnt.querySelector('.drag-handle') || elmnt;
-      handle.onmousedown = (e) => {
-        e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY;
-        document.onmouseup = () => {
-          document.onmouseup = null; document.onmousemove = null;
-          const rect = elmnt.getBoundingClientRect();
-          const snapRight = rect.left > window.innerWidth / 2;
-          elmnt.style.left = snapRight ? 'auto' : '16px';
-          elmnt.style.right = snapRight ? '16px' : 'auto';
-          elmnt.style.top = rect.top + 'px'; elmnt.style.transform = 'none';
-        };
-        document.onmousemove = (ev) => {
-          ev.preventDefault(); pos1 = pos3 - ev.clientX; pos2 = pos4 - ev.clientY; pos3 = ev.clientX; pos4 = ev.clientY;
-          elmnt.style.top = (elmnt.offsetTop - pos2) + 'px'; elmnt.style.left = (elmnt.offsetLeft - pos1) + 'px';
-          elmnt.style.right = 'auto'; elmnt.style.transform = 'none';
-        };
       };
 
       const onStart = (e) => {
@@ -222,52 +188,4 @@ export const TEMPLATES: Record<string, string> = {
   lovable: BASE_TEMPLATE(),
   base_dark: BASE_TEMPLATE('bg-slate-950 text-slate-100', 'bg-slate-900 border border-slate-800'),
   split: BASE_TEMPLATE('bg-amber-50 text-slate-900', 'bg-white border border-amber-200'),
-const TEMPLATE_BRASIL_CLARO = `
-  <!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title></head>
-  <body class="bg-slate-50 text-slate-900">
-    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
-      <div class="max-w-6xl mx-auto h-16 px-6 flex items-center justify-between">
-        <div class="font-bold text-lg">[[LOGO_AREA]]</div>
-        <div class="flex gap-3 md:gap-4 text-xs md:text-sm font-semibold text-slate-600 flex-wrap justify-end"><a href="#home" class="hover:text-brand">Home</a><a href="#quem-somos" class="hover:text-brand">Quem Somos</a><a href="#contato" class="hover:text-brand">Contato</a></div>
-      </div>
-    </nav>
-    <section id="home" class="max-w-6xl mx-auto px-6 py-14 md:py-20 text-center"><h1 class="text-4xl md:text-6xl font-extrabold fade-up">{{HERO_TITLE}}</h1><p class="text-slate-600 mt-4 text-lg fade-up">{{HERO_SUBTITLE}}</p><a href="#contato" class="btn-primary inline-block mt-8 px-7 py-3 rounded-xl font-semibold">Fale com a equipe</a></section>
-    <section id="quem-somos" class="bg-white border-y border-slate-200"><div class="max-w-6xl mx-auto px-6 py-10 md:py-14 grid md:grid-cols-2 gap-6 items-center"><div><h2 class="text-3xl font-bold mb-3">{{ABOUT_TITLE}}</h2><p class="text-slate-600 leading-relaxed">{{ABOUT_TEXT}}</p></div><div class="bg-slate-50 border border-slate-200 rounded-2xl p-6"><h3 class="font-bold mb-2">Nosso diferencial</h3><p class="text-sm text-slate-600">Atendimento próximo, visual limpo e foco total em conversão.</p></div></div></section>
-    <section id="contato" class="max-w-6xl mx-auto px-6 py-10 md:py-14"><h2 class="text-3xl font-bold mb-6">{{CONTACT_CALL}}</h2><div class="grid md:grid-cols-2 gap-6"><div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-3"><p><i class="fas fa-location-dot text-brand"></i> <strong>Endereço:</strong> {{ADDRESS}}</p><p><i class="fas fa-phone text-brand"></i> <strong>Telefone:</strong> {{PHONE}}</p><p><i class="fas fa-envelope text-brand"></i> <strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div><div class="bg-white border border-slate-200 rounded-2xl p-6">[[CONTACT_FORM]]</div></div></section>
-    ${FLOATING_PANEL}
-    ${DRAG_MAGNET_SCRIPT}
-  </body></html>
-`;
-
-const TEMPLATE_SAMBA_NOTURNO = `
-  <!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title><style>body{background:#020617;color:#e2e8f0}</style></head>
-  <body>
-    <nav class="sticky top-0 z-40 bg-slate-950/90 border-b border-slate-800"><div class="max-w-6xl mx-auto h-16 px-6 flex items-center justify-between"><div class="font-bold">[[LOGO_AREA]]</div><div class="flex gap-3 md:gap-4 text-xs md:text-sm flex-wrap justify-end"><a href="#home">Home</a><a href="#quem-somos">Quem Somos</a><a href="#contato">Contato</a></div></div></nav>
-    <section id="home" class="max-w-6xl mx-auto px-6 py-14 md:py-20"><h1 class="text-4xl md:text-6xl font-extrabold">{{HERO_TITLE}}</h1><p class="text-slate-300 mt-4">{{HERO_SUBTITLE}}</p></section>
-    <section id="quem-somos" class="max-w-6xl mx-auto px-6 py-8 md:py-10"><div class="bg-slate-900 border border-slate-800 rounded-2xl p-7"><h2 class="text-3xl font-bold mb-3">{{ABOUT_TITLE}}</h2><p class="text-slate-300">{{ABOUT_TEXT}}</p></div></section>
-    <section id="contato" class="max-w-6xl mx-auto px-6 py-10 md:py-12"><h2 class="text-3xl font-bold mb-6">{{CONTACT_CALL}}</h2><div class="grid md:grid-cols-2 gap-6"><div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-2"><p><strong>Endereço:</strong> {{ADDRESS}}</p><p><strong>Telefone:</strong> {{PHONE}}</p><p><strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div><div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">[[CONTACT_FORM]]</div></div></section>
-    ${FLOATING_PANEL}
-    ${DRAG_MAGNET_SCRIPT}
-  </body></html>
-`;
-
-const TEMPLATE_BAIRRO_FORTE = `
-  <!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title></head>
-  <body class="bg-white text-slate-900">
-    <header class="bg-gradient-to-r from-brand to-accent text-white"><div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between"><div class="font-bold text-lg">[[LOGO_AREA]]</div><div class="flex gap-3 md:gap-4 text-xs md:text-sm font-semibold flex-wrap justify-end"><a href="#home">Home</a><a href="#quem-somos">Quem Somos</a><a href="#contato">Contato</a></div></div></header>
-    <section id="home" class="max-w-6xl mx-auto px-6 py-12 md:py-16"><h1 class="text-4xl md:text-5xl font-extrabold">{{HERO_TITLE}}</h1><p class="mt-4 text-slate-600">{{HERO_SUBTITLE}}</p></section>
-    <section id="quem-somos" class="bg-slate-50 border-y border-slate-200"><div class="max-w-6xl mx-auto px-6 py-10 md:py-12"><h2 class="text-3xl font-bold mb-2">{{ABOUT_TITLE}}</h2><p class="text-slate-600">{{ABOUT_TEXT}}</p></div></section>
-    <section id="contato" class="max-w-6xl mx-auto px-6 py-10 md:py-12"><h2 class="text-3xl font-bold mb-6">{{CONTACT_CALL}}</h2><div class="grid md:grid-cols-2 gap-6"><div class="border border-slate-200 rounded-2xl p-6 space-y-2"><p><strong>Endereço:</strong> {{ADDRESS}}</p><p><strong>Telefone:</strong> {{PHONE}}</p><p><strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div><div class="border border-slate-200 rounded-2xl p-6">[[CONTACT_FORM]]</div></div></section>
-    ${FLOATING_PANEL}
-    ${DRAG_MAGNET_SCRIPT}
-  </body></html>
-`;
-
-export const TEMPLATES: Record<string, string> = {
-  brasil_claro: TEMPLATE_BRASIL_CLARO,
-  samba_noturno: TEMPLATE_SAMBA_NOTURNO,
-  bairro_forte: TEMPLATE_BAIRRO_FORTE,
-  lovable: TEMPLATE_BRASIL_CLARO,
-  base_dark: TEMPLATE_SAMBA_NOTURNO,
-  split: TEMPLATE_BAIRRO_FORTE,
 };

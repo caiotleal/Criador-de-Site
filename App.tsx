@@ -6,9 +6,10 @@ import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket, Settings, Palette, Upload, Layout, Download,
-  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Instagram, MapPin
+  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Instagram, MapPin, Sparkles, Globe
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
+import LoginPage from './components/LoginPage';
 
 const LAYOUT_STYLES = [
   { id: 'brasil_claro', label: 'Brasil Claro', desc: 'Clean nacional com foco em conversão.' },
@@ -30,6 +31,9 @@ const App: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [aiContent, setAiContent] = useState<any>(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(null);
+  const [publishedDomain, setPublishedDomain] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -143,6 +147,18 @@ const App: React.FC = () => {
     zip.generateAsync({ type: 'blob' }).then(c => saveAs(c, `${formData.businessName}.zip`));
   };
 
+
+  const handleLoginSuccess = (email: string) => {
+    setLoggedUserEmail(email);
+    setIsLoginOpen(false);
+  };
+
+  const handlePublishSite = () => {
+    const slug = (formData.businessName || 'meu-site').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const previewDomain = `${slug || 'site'}.site5dias.com`;
+    setPublishedDomain(previewDomain);
+  };
+
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
       <div className="absolute inset-0 z-0 bg-[#09090b]">
@@ -155,6 +171,45 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
+
+
+      {generatedHtml && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed left-4 bottom-4 md:left-6 md:bottom-6 z-[80]"
+        >
+          {!loggedUserEmail ? (
+            <button
+              onClick={() => setIsLoginOpen(true)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2"
+            >
+              <Sparkles size={16} />
+              Publicar por 5 dias grátis — Faça login
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <button
+                onClick={handlePublishSite}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2"
+              >
+                <Globe size={16} /> Publicar site e gerar domínio
+              </button>
+              {publishedDomain && (
+                <div className="bg-zinc-900/95 border border-zinc-700 text-zinc-100 px-3 py-2 rounded-xl text-xs">
+                  Domínio gerado: <strong>{publishedDomain}</strong>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      <LoginPage
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onSuccess={handleLoginSuccess}
+      />
 
       <motion.div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
@@ -174,7 +229,6 @@ const App: React.FC = () => {
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia</label>
                     <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none" placeholder="Ex: restaurante familiar..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                   </div>
-                  <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa (https://www.google.com/maps/embed?... )" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
                 </div>
 
                 <div className="space-y-2">
