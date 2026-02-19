@@ -56,7 +56,7 @@ const App: React.FC = () => {
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
     const replaceAll = (token: string, value: string) => {
-      html = html.replace(new RegExp(token, 'g'), value);
+      html = html.split(token).join(value);
     };
 
     replaceAll('{{BUSINESS_NAME}}', data.businessName || 'Sua Empresa');
@@ -80,27 +80,23 @@ const App: React.FC = () => {
     const actionBtn = (label: string, icon: string, href: string, classes: string) =>
       `<a href="${href}" target="_blank" class="block w-full text-center ${classes} text-white py-2 rounded-lg font-bold transition shadow-md"><i class="${icon}"></i> ${label}</a>`;
 
-    const setOptional = (token: string, value: string) => {
-      html = html.replace(new RegExp(token, 'g'), value);
-    };
-
-    setOptional('\[\[WHATSAPP_BTN\]\]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500 hover:bg-green-600') : '');
-    setOptional('\[\[INSTAGRAM_BTN\]\]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600 hover:bg-pink-700') : '');
-    setOptional('\[\[FACEBOOK_BTN\]\]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700 hover:bg-blue-800') : '');
-    setOptional('\[\[TIKTOK_BTN\]\]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800 hover:bg-black') : '');
-    setOptional('\[\[IFOOD_BTN\]\]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600 hover:bg-red-700') : '');
-    setOptional('\[\[NOVE_NOVE_BTN\]\]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500 hover:bg-yellow-600 text-slate-900') : '');
-    setOptional('\[\[KEETA_BTN\]\]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600 hover:bg-orange-700') : '');
+    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500 hover:bg-green-600') : '');
+    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600 hover:bg-pink-700') : '');
+    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700 hover:bg-blue-800') : '');
+    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800 hover:bg-black') : '');
+    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600 hover:bg-red-700') : '');
+    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500 hover:bg-yellow-600 text-slate-900') : '');
+    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600 hover:bg-orange-700') : '');
 
     const mapArea = data.mapEmbed
       ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
       : '<p class="text-sm text-slate-500">Mapa não informado.</p>';
-    setOptional('\[\[MAP_AREA\]\]', mapArea);
+    replaceAll('[[MAP_AREA]]', mapArea);
 
     const contactForm = data.showForm
       ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold">Enviar mensagem</button></form>`
       : '<p class="text-sm text-slate-500">Formulário desativado para este site.</p>';
-    setOptional('\[\[CONTACT_FORM\]\]', contactForm);
+    replaceAll('[[CONTACT_FORM]]', contactForm);
 
     return html;
   };
@@ -178,6 +174,7 @@ const App: React.FC = () => {
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia</label>
                     <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none" placeholder="Ex: restaurante familiar..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                   </div>
+                  <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa (https://www.google.com/maps/embed?... )" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
                 </div>
 
                 <div className="space-y-2">
