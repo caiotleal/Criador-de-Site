@@ -128,17 +128,16 @@ function sha256Hex(content) {
 async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const token = await getFirebaseAccessToken();
   
-  // 1. Compactar o conteúdo (Exigência padrão do Firebase)
-  const gzippedContent = zlib.gzipSync(htmlContent);
-  
-  // 2. O hash DEVE ser gerado a partir do conteúdo já compactado
+  // 1. Garantir conversão segura para Buffer UTF-8 e compactação
+  const htmlBuffer = Buffer.from(htmlContent, "utf-8");
+  const gzippedContent = zlib.gzipSync(htmlBuffer);
   const fileHash = sha256Hex(gzippedContent);
 
-  // 3. Criar a versão
+  // 2. Criar a versão
   const createVersion = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/versions`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ config: { rewrites: [{ glob: "**", path: "/index.html" }] } }),
@@ -152,11 +151,11 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const version = await createVersion.json();
   const versionName = version.name;
 
-  // 4. Preparar o upload (populateFiles) informando o hash do arquivo compactado
+  // 3. Preparar o upload (populateFiles)
   const populate = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}:populateFiles`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ files: { "/index.html": fileHash } }),
@@ -170,7 +169,7 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const populateData = await populate.json();
   const requiredHashes = populateData.uploadRequiredHashes || [];
 
-  // 5. Fazer o upload do buffer compactado
+  // 4. Fazer o upload exato (com Content-Length)
   if (requiredHashes.includes(fileHash)) {
     const uploadUrl = `${populateData.uploadUrl}/${fileHash}`;
 
@@ -178,9 +177,11 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
       method: "POST",
       headers: { 
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/octet-stream" 
+        "Content-Type": "application/octet-stream",
+        // A chave para o Firebase aceitar o GZIP sem fatiamento:
+        "Content-Length": gzippedContent.length.toString() 
       },
-      body: gzippedContent, // <-- Enviando o buffer compactado
+      body: gzippedContent,
     });
 
     if (!up.ok) {
@@ -189,11 +190,11 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     }
   }
 
-  // 6. Finalizar a versão
+  // 5. Finalizar a versão
   const finalize = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}?updateMask=status`, {
     method: "PATCH",
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ status: "FINALIZED" }),
@@ -204,11 +205,11 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     throw new Error(`Falha ao finalizar versão Hosting: ${txt}`);
   }
 
-  // 7. Criar o release para colocar o site no ar
+  // 6. Criar o release
   const release = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/releases?versionName=${encodeURIComponent(versionName)}`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ message: "Deploy automático via Criador de Site" }),
