@@ -4,6 +4,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
 const crypto = require("crypto");
+casa-de-pao-pao-duro-573-66;
 
 if (!admin.apps.length) {
   admin.initializeApp();
