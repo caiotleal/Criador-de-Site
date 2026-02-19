@@ -12,18 +12,44 @@ import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
 
 const LAYOUT_STYLES = [
-  { id: 'brasil_claro', label: 'Brasil Claro', desc: 'Clean nacional com foco em conversão.' },
-  { id: 'samba_noturno', label: 'Samba Noturno', desc: 'Escuro elegante e moderno.' },
-  { id: 'bairro_forte', label: 'Bairro Forte', desc: 'Comercial local, direto ao ponto.' },
+  { id: 'layout_split_duplo', label: 'Split Duplo', desc: 'Hero em duas colunas com bloco de diferencial.' },
+  { id: 'layout_coluna_simples', label: 'Coluna Simples', desc: 'Fluxo vertical limpo e direto.' },
+  { id: 'layout_menu_hamburguer', label: 'Menu Hambúrguer', desc: 'Menu compacto e moderno.' },
+  { id: 'layout_cards_moderno', label: 'Cards Moderno', desc: 'Seções com destaque em cards.' },
+  { id: 'layout_sidebar_profissional', label: 'Sidebar Profissional', desc: 'Navegação lateral para visual premium.' },
 ];
 
 const COLORS = [
-  { id: 'blue', primary: '#2563eb', secondary: '#1e40af' },
-  { id: 'purple', primary: '#7c3aed', secondary: '#5b21b6' },
-  { id: 'emerald', primary: '#059669', secondary: '#047857' },
-  { id: 'rose', primary: '#e11d48', secondary: '#be123c' },
-  { id: 'orange', primary: '#ea580c', secondary: '#c2410c' },
-  { id: 'dark', primary: '#0f172a', secondary: '#334155' }
+  {
+    id: 'teal_pro',
+    name: 'Teal Pro',
+    c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', c5: '#a3f3ff', c6: '#c5f7ff', c7: '#eafffd',
+    light: '#ffffff', dark: '#003333'
+  },
+  {
+    id: 'violet_studio',
+    name: 'Violet Studio',
+    c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', c5: '#d8c5ff', c6: '#ebe1ff', c7: '#f6f1ff',
+    light: '#ffffff', dark: '#24103a'
+  },
+  {
+    id: 'sunset_orange',
+    name: 'Sunset Orange',
+    c1: '#4a2108', c2: '#7a330a', c3: '#b34d0f', c4: '#ea580c', c5: '#ffd9bf', c6: '#ffe9da', c7: '#fff5ee',
+    light: '#ffffff', dark: '#4a2108'
+  },
+  {
+    id: 'ocean_navy',
+    name: 'Ocean Navy',
+    c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', c5: '#c3e6ff', c6: '#deefff', c7: '#f2f8ff',
+    light: '#ffffff', dark: '#0a1f33'
+  },
+  {
+    id: 'forest_luxe',
+    name: 'Forest Luxe',
+    c1: '#0f2d1c', c2: '#18472b', c3: '#226c3e', c4: '#2f9c58', c5: '#c6f5d6', c6: '#ddf9e7', c7: '#f1fff6',
+    light: '#ffffff', dark: '#0f2d1c'
+  }
 ];
 
 const App: React.FC = () => {
@@ -50,13 +76,13 @@ const App: React.FC = () => {
     address: '',
     mapEmbed: '',
     showForm: true,
-    layoutStyle: 'brasil_claro',
-    colorId: 'blue',
+    layoutStyle: 'layout_split_duplo',
+    colorId: 'teal_pro',
     logoBase64: ''
   });
 
   const renderTemplate = (content: any, data: typeof formData) => {
-    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['brasil_claro'];
+    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_split_duplo'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
     const replaceAll = (token: string, value: string) => {
@@ -69,8 +95,15 @@ const App: React.FC = () => {
     replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
     replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Somos uma equipe focada em resultado e atendimento próximo.');
     replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale com a gente');
-    replaceAll('{{COLOR_PRIMARY}}', colors.primary);
-    replaceAll('{{COLOR_SECONDARY}}', colors.secondary);
+    replaceAll('{{COLOR_1}}', colors.c1);
+    replaceAll('{{COLOR_2}}', colors.c2);
+    replaceAll('{{COLOR_3}}', colors.c3);
+    replaceAll('{{COLOR_4}}', colors.c4);
+    replaceAll('{{COLOR_5}}', colors.c5);
+    replaceAll('{{COLOR_6}}', colors.c6);
+    replaceAll('{{COLOR_7}}', colors.c7);
+    replaceAll('{{COLOR_LIGHT}}', colors.light);
+    replaceAll('{{COLOR_DARK}}', colors.dark);
     replaceAll('{{ADDRESS}}', data.address || 'Endereço não informado');
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
@@ -82,15 +115,15 @@ const App: React.FC = () => {
     }
 
     const actionBtn = (label: string, icon: string, href: string, classes: string) =>
-      `<a href="${href}" target="_blank" class="block w-full text-center ${classes} text-white py-2 rounded-lg font-bold transition shadow-md"><i class="${icon}"></i> ${label}</a>`;
+      `<a href="${href}" target="_blank" class="icon-btn ${classes}" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
 
-    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500 hover:bg-green-600') : '');
-    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600 hover:bg-pink-700') : '');
-    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700 hover:bg-blue-800') : '');
-    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800 hover:bg-black') : '');
-    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600 hover:bg-red-700') : '');
-    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500 hover:bg-yellow-600 text-slate-900') : '');
-    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600 hover:bg-orange-700') : '');
+    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500') : '');
+    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600') : '');
+    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700') : '');
+    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800') : '');
+    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600') : '');
+    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500') : '');
+    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600') : '');
 
     const mapArea = data.mapEmbed
       ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
@@ -177,12 +210,12 @@ const App: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed left-4 bottom-4 md:left-6 md:bottom-6 z-[80]"
+          className="fixed left-1/2 top-1/2 -translate-x-1/2 z-[85]" drag dragConstraints={{ top: -240, left: -420, right: 420, bottom: 260 }} dragElastic={0.08} dragMomentum={false}
         >
           {!loggedUserEmail ? (
             <button
               onClick={() => setIsLoginOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
             >
               <Sparkles size={16} />
               Publicar por 5 dias grátis — Faça login
@@ -191,7 +224,7 @@ const App: React.FC = () => {
             <div className="space-y-2">
               <button
                 onClick={handlePublishSite}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
               >
                 <Globe size={16} /> Publicar site e gerar domínio
               </button>
@@ -277,7 +310,7 @@ const App: React.FC = () => {
                   <label className="text-xs font-bold text-zinc-500 uppercase"><Palette size={12} className="inline mr-1" /> Cor</label>
                   <div className="flex gap-2 flex-wrap">
                     {COLORS.map(c => (
-                      <button key={c.id} onClick={() => setFormData({ ...formData, colorId: c.id })} className={`w-6 h-6 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent opacity-50'}`} style={{ backgroundColor: c.primary }} />
+                      <button key={c.id} onClick={() => setFormData({ ...formData, colorId: c.id })} className={`w-6 h-6 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent opacity-50'}`} style={{ backgroundColor: c.c4 }} />
                     ))}
                   </div>
                 </div>
