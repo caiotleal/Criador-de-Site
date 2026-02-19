@@ -174,6 +174,7 @@ const App: React.FC = () => {
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia</label>
                     <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none" placeholder="Ex: restaurante familiar..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                   </div>
+                  <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa (https://www.google.com/maps/embed?... )" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
                 </div>
 
                 <div className="space-y-2">
