@@ -36,14 +36,14 @@ const App: React.FC = () => {
     description: '',
     whatsapp: '',
     instagram: '',
-    layoutStyle: 'modern',
+    layoutStyle: 'lovable',
     colorId: 'blue',
     logoBase64: ''
   });
 
   // --- MOTOR DE TEMPLATE (INJEÇÃO) ---
   const renderTemplate = (content: any, data: typeof formData) => {
-    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['modern'];
+    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['lovable'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
     // 1. Textos
