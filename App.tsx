@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase';
+import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth, functions } from './firebase';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -58,8 +59,10 @@ const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [aiContent, setAiContent] = useState<any>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(null);
+  const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [publishedDomain, setPublishedDomain] = useState<string | null>(null);
+  const [isSavingProject, setIsSavingProject] = useState(false);
+  const [savedProjects, setSavedProjects] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -81,6 +84,31 @@ const App: React.FC = () => {
     logoBase64: ''
   });
 
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setLoggedUserEmail(user?.email || null);
+    });
+    return () => unsub();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!auth.currentUser) {
+        setSavedProjects([]);
+        return;
+      }
+      try {
+        const listFn = httpsCallable(functions, 'listUserProjects');
+        const listRes: any = await listFn({});
+        setSavedProjects(listRes.data?.projects || []);
+      } catch {
+        setSavedProjects([]);
+      }
+    };
+    fetchProjects();
+  }, [loggedUserEmail]);
   const renderTemplate = (content: any, data: typeof formData) => {
     let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_split_duplo'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
@@ -181,8 +209,12 @@ const App: React.FC = () => {
   };
 
 
-  const handleLoginSuccess = (email: string) => {
-    setLoggedUserEmail(email);
+  const handleLoginSubmit = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch {
+      await createUserWithEmailAndPassword(auth, email, password);
+    }
     setIsLoginOpen(false);
   };
 
@@ -190,6 +222,51 @@ const App: React.FC = () => {
     const slug = (formData.businessName || 'meu-site').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const previewDomain = `${slug || 'site'}.site5dias.com`;
     setPublishedDomain(previewDomain);
+  };
+
+  const handleSaveProject = async () => {
+    if (!auth.currentUser) {
+      setIsLoginOpen(true);
+      return;
+    }
+    if (!generatedHtml) return;
+
+    setIsSavingProject(true);
+    try {
+      const saveFn = httpsCallable(functions, 'saveSiteProject');
+      const res: any = await saveFn({
+        businessName: formData.businessName,
+        generatedHtml,
+        formData,
+        aiContent,
+      });
+
+      const data = res.data || {};
+      if (data?.hosting?.defaultUrl) {
+        setPublishedDomain(data.hosting.defaultUrl.replace('https://', ''));
+      }
+
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
+      alert('Projeto salvo e vinculado ao seu usuário com sucesso!');
+    } catch (err: any) {
+      alert('Erro ao salvar projeto: ' + (err?.message || 'erro desconhecido'));
+    } finally {
+      setIsSavingProject(false);
+    }
+  };
+
+  const handleLoadProject = (project: any) => {
+    if (!project) return;
+    setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
+    setAiContent(project.aiContent || null);
+    setGeneratedHtml(project.generatedHtml || null);
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setSavedProjects([]);
   };
 
   return (
@@ -241,7 +318,7 @@ const App: React.FC = () => {
       <LoginPage
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
-        onSuccess={handleLoginSuccess}
+        onSubmit={handleLoginSubmit}
       />
 
       <motion.div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -262,6 +339,7 @@ const App: React.FC = () => {
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia</label>
                     <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none" placeholder="Ex: restaurante familiar..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                   </div>
+                  <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa (https://www.google.com/maps/embed?... )" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
                 </div>
 
                 <div className="space-y-2">
@@ -319,6 +397,22 @@ const App: React.FC = () => {
                   {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Regerar Textos' : 'Criar Site'}
                 </button>
                 {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-xl text-sm flex items-center justify-center gap-2"><Download size={16} /> Baixar HTML</button>}
+                {generatedHtml && <button onClick={handleSaveProject} disabled={isSavingProject} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white py-2 rounded-xl text-sm font-bold">{isSavingProject ? 'Salvando...' : 'Salvar projeto (GitHub + Firebase)'}</button>}
+
+                {loggedUserEmail && (
+                  <div className="border border-zinc-700 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] text-zinc-400">Conectado: {loggedUserEmail}</p>
+                      <button onClick={handleLogout} className="text-[11px] text-red-300">Sair</button>
+                    </div>
+                    <p className="text-xs font-semibold">Projetos salvos</p>
+                    <div className="max-h-28 overflow-y-auto space-y-1">
+                      {savedProjects.length === 0 ? <p className="text-[11px] text-zinc-500">Nenhum projeto carregado ainda.</p> : savedProjects.map((p: any) => (
+                        <button key={p.id} onClick={() => handleLoadProject(p)} className="w-full text-left text-[11px] bg-zinc-800 hover:bg-zinc-700 rounded p-2">{p.businessName || p.id}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           ) : (

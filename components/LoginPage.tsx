@@ -5,18 +5,29 @@ import { X, LogIn } from 'lucide-react';
 interface LoginPageProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (email: string) => void;
+  onSubmit: (email: string, password: string) => Promise<void>;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ isOpen, onClose, onSuccess }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ isOpen, onClose, onSubmit }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!email || !password) return;
-    onSuccess(email);
-    setPassword('');
+
+    setIsLoading(true);
+    setError('');
+    try {
+      await onSubmit(email, password);
+      setPassword('');
+    } catch (err: any) {
+      setError(err?.message || 'Não foi possível fazer login.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,7 +53,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ isOpen, onClose, onSuccess }) => 
             </div>
 
             <p className="text-sm text-zinc-400 mb-5">
-              Faça login para desbloquear a publicação por <strong>5 dias grátis</strong> e gerar domínio.
+              Faça login para salvar projeto, vincular ao seu usuário e publicar por <strong>5 dias grátis</strong>.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -62,11 +73,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ isOpen, onClose, onSuccess }) => 
                 className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
                 required
               />
+
+              {error && <p className="text-red-400 text-xs">{error}</p>}
+
               <button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
               >
-                <LogIn size={16} /> Entrar e liberar publicação
+                <LogIn size={16} /> {isLoading ? 'Entrando...' : 'Entrar e liberar publicação'}
               </button>
             </form>
           </motion.div>
