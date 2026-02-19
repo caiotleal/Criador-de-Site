@@ -58,3 +58,17 @@ Se aparecer `Firebase: Error (auth/api-key-not-found)`, normalmente significa:
 - variável `VITE_FIREBASE_API_KEY` ausente no ambiente de build/deploy.
 
 Revise a Web App config no console do Firebase e atualize `.env.local` (ou secrets/env do CI).
+
+
+### Secrets necessários no GitHub Actions
+No repositório GitHub, configure estes secrets para o build/deploy:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+- `FIREBASE_SERVICE_ACCOUNT`
+
+Sem esses valores, o frontend pode subir com erro `auth/api-key-not-found`.
