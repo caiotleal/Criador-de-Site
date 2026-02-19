@@ -207,6 +207,16 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   return { versionName, release: await release.json() };
 }
 
+async function ensureHostingReady(siteId) {
+  const existingOrNew = await createHostingSiteIfPossible(siteId);
+  if (existingOrNew.status === "created" || existingOrNew.status === "already_exists") {
+    return existingOrNew;
+  }
+
+  const reason = existingOrNew?.message || "Falha ao provisionar site no Firebase Hosting.";
+  throw new HttpsError("failed-precondition", reason);
+}
+
 exports.generateSite = onCall({
   cors: true,
   timeoutSeconds: 60,
@@ -334,22 +344,39 @@ exports.publishUserProject = onCall({
     throw new HttpsError("failed-precondition", "Projeto sem HTML ou hostingSiteId.");
   }
 
-  const deployResult = await deployHtmlToFirebaseHosting(hostingSiteId, html);
-  const publicUrl = `https://${hostingSiteId}.web.app`;
+  try {
+    const hostingProvision = await ensureHostingReady(hostingSiteId);
+    const deployResult = await deployHtmlToFirebaseHosting(hostingSiteId, html);
+    const publicUrl = hostingProvision.defaultUrl || `https://${hostingSiteId}.web.app`;
 
-  await ref.set({
-    published: true,
-    publishUrl: publicUrl,
-    publishedAt: admin.firestore.FieldValue.serverTimestamp(),
-    needsDeploy: false,
-    lastDeploy: deployResult,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, { merge: true });
+    await ref.set({
+      published: true,
+      publishUrl: publicUrl,
+      publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+      needsDeploy: false,
+      lastDeploy: deployResult,
+      hosting: {
+        ...(project.hosting || {}),
+        ...hostingProvision,
+      },
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
 
-  return {
-    success: true,
-    publishUrl: publicUrl,
-    hostingSiteId,
-    deploy: deployResult,
-  };
+    return {
+      success: true,
+      publishUrl: publicUrl,
+      hostingSiteId,
+      deploy: deployResult,
+    };
+  } catch (error) {
+    console.error("Erro publishUserProject:", error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError(
+      "internal",
+      "Falha ao publicar o projeto no Firebase Hosting.",
+      { message: error?.message || "erro desconhecido" },
+    );
+  }
 });
