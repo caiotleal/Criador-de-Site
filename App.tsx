@@ -7,12 +7,11 @@ import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket, Settings, Palette, Upload, Layout, Download,
-  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Instagram, MapPin, Sparkles, Globe
+  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Instagram, MapPin, Sparkles, Globe, CheckCircle
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
-// 1. IMPORTANDO O COMPONENTE DE DOMÍNIO
-import DomainChecker from './components/DomainChecker'; // Certifique-se que o caminho está correto
+import DomainChecker from './components/DomainChecker';
 
 const LAYOUT_STYLES = [
   { id: 'layout_split_duplo', label: 'Split Duplo', desc: 'Hero em duas colunas com bloco de diferencial.' },
@@ -23,36 +22,11 @@ const LAYOUT_STYLES = [
 ];
 
 const COLORS = [
-  {
-    id: 'teal_pro',
-    name: 'Teal Pro',
-    c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', c5: '#a3f3ff', c6: '#c5f7ff', c7: '#eafffd',
-    light: '#ffffff', dark: '#003333'
-  },
-  {
-    id: 'violet_studio',
-    name: 'Violet Studio',
-    c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', c5: '#d8c5ff', c6: '#ebe1ff', c7: '#f6f1ff',
-    light: '#ffffff', dark: '#24103a'
-  },
-  {
-    id: 'sunset_orange',
-    name: 'Sunset Orange',
-    c1: '#4a2108', c2: '#7a330a', c3: '#b34d0f', c4: '#ea580c', c5: '#ffd9bf', c6: '#ffe9da', c7: '#fff5ee',
-    light: '#ffffff', dark: '#4a2108'
-  },
-  {
-    id: 'ocean_navy',
-    name: 'Ocean Navy',
-    c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', c5: '#c3e6ff', c6: '#deefff', c7: '#f2f8ff',
-    light: '#ffffff', dark: '#0a1f33'
-  },
-  {
-    id: 'forest_luxe',
-    name: 'Forest Luxe',
-    c1: '#0f2d1c', c2: '#18472b', c3: '#226c3e', c4: '#2f9c58', c5: '#c6f5d6', c6: '#ddf9e7', c7: '#f1fff6',
-    light: '#ffffff', dark: '#0f2d1c'
-  }
+  { id: 'teal_pro', name: 'Teal Pro', c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', c5: '#a3f3ff', c6: '#c5f7ff', c7: '#eafffd', light: '#ffffff', dark: '#003333' },
+  { id: 'violet_studio', name: 'Violet Studio', c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', c5: '#d8c5ff', c6: '#ebe1ff', c7: '#f6f1ff', light: '#ffffff', dark: '#24103a' },
+  { id: 'sunset_orange', name: 'Sunset Orange', c1: '#4a2108', c2: '#7a330a', c3: '#b34d0f', c4: '#ea580c', c5: '#ffd9bf', c6: '#ffe9da', c7: '#fff5ee', light: '#ffffff', dark: '#4a2108' },
+  { id: 'ocean_navy', name: 'Ocean Navy', c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', c5: '#c3e6ff', c6: '#deefff', c7: '#f2f8ff', light: '#ffffff', dark: '#0a1f33' },
+  { id: 'forest_luxe', name: 'Forest Luxe', c1: '#0f2d1c', c2: '#18472b', c3: '#226c3e', c4: '#2f9c58', c5: '#c6f5d6', c6: '#ddf9e7', c7: '#f1fff6', light: '#ffffff', dark: '#0f2d1c' }
 ];
 
 const App: React.FC = () => {
@@ -66,29 +40,15 @@ const App: React.FC = () => {
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
+  
+  // Estados de Controle do Fluxo
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
-
-  // 2. ESTADO PARA ARMAZENAR O DOMÍNIO VALIDADO
   const [chosenDomain, setChosenDomain] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    businessName: '',
-    description: '',
-    whatsapp: '',
-    instagram: '',
-    facebook: '',
-    tiktok: '',
-    ifood: '',
-    noveNove: '',
-    keeta: '',
-    phone: '',
-    email: '',
-    address: '',
-    mapEmbed: '',
-    showForm: true,
-    layoutStyle: 'layout_split_duplo',
-    colorId: 'teal_pro',
-    logoBase64: ''
+    businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
+    ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
+    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: ''
   });
 
   useEffect(() => {
@@ -119,9 +79,7 @@ const App: React.FC = () => {
     let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_split_duplo'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
-    const replaceAll = (token: string, value: string) => {
-      html = html.split(token).join(value);
-    };
+    const replaceAll = (token: string, value: string) => { html = html.split(token).join(value); };
 
     replaceAll('{{BUSINESS_NAME}}', data.businessName || 'Sua Empresa');
     replaceAll('{{HERO_TITLE}}', content.heroTitle || `Bem-vindo à ${data.businessName}`);
@@ -129,15 +87,9 @@ const App: React.FC = () => {
     replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
     replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Somos uma equipe focada em resultado e atendimento próximo.');
     replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale com a gente');
-    replaceAll('{{COLOR_1}}', colors.c1);
-    replaceAll('{{COLOR_2}}', colors.c2);
-    replaceAll('{{COLOR_3}}', colors.c3);
-    replaceAll('{{COLOR_4}}', colors.c4);
-    replaceAll('{{COLOR_5}}', colors.c5);
-    replaceAll('{{COLOR_6}}', colors.c6);
-    replaceAll('{{COLOR_7}}', colors.c7);
-    replaceAll('{{COLOR_LIGHT}}', colors.light);
-    replaceAll('{{COLOR_DARK}}', colors.dark);
+    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
+    replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
+    replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
     replaceAll('{{ADDRESS}}', data.address || 'Endereço não informado');
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
@@ -148,8 +100,7 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-bold tracking-tight">${data.businessName || 'Sua Empresa'}</span>`);
     }
 
-    const actionBtn = (label: string, icon: string, href: string, classes: string) =>
-      `<a href="${href}" target="_blank" class="icon-btn ${classes}" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
+    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes}" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
 
     replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500') : '');
     replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600') : '');
@@ -159,14 +110,10 @@ const App: React.FC = () => {
     replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500') : '');
     replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600') : '');
 
-    const mapArea = data.mapEmbed
-      ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
-      : '<p class="text-sm text-slate-500">Mapa não informado.</p>';
+    const mapArea = data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>` : '<p class="text-sm text-slate-500">Mapa não informado.</p>';
     replaceAll('[[MAP_AREA]]', mapArea);
 
-    const contactForm = data.showForm
-      ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold">Enviar mensagem</button></form>`
-      : '<p class="text-sm text-slate-500">Formulário desativado para este site.</p>';
+    const contactForm = data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold">Enviar mensagem</button></form>` : '<p class="text-sm text-slate-500">Formulário desativado para este site.</p>';
     replaceAll('[[CONTACT_FORM]]', contactForm);
 
     return html;
@@ -223,39 +170,63 @@ const App: React.FC = () => {
     setIsLoginOpen(false);
   };
 
+  // FLUXO 1: SALVAR PROJETO
+  const handleSaveProject = async () => {
+    if (!auth.currentUser) {
+      setIsLoginOpen(true);
+      return;
+    }
+    if (!generatedHtml) return;
+    
+    if (!currentProjectSlug && !chosenDomain) {
+      alert("Por favor, escolha e valide um domínio na barra lateral antes de salvar.");
+      return;
+    }
+
+    setIsSavingProject(true);
+    try {
+      const saveFn = httpsCallable(functions, 'saveSiteProject');
+      const res: any = await saveFn({
+        businessName: formData.businessName,
+        chosenDomain: chosenDomain,
+        generatedHtml,
+        formData,
+        aiContent,
+      });
+
+      const data = res.data || {};
+      if (data?.projectSlug) setCurrentProjectSlug(data.projectSlug);
+      if (data?.hosting?.defaultUrl) {
+        setPublishedDomain(data.hosting.defaultUrl.replace('https://', ''));
+      }
+
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
+      
+    } catch (err: any) {
+      alert('Erro ao salvar projeto: ' + (err?.message || 'erro desconhecido'));
+    } finally {
+      setIsSavingProject(false);
+    }
+  };
+
+  // FLUXO 2: PUBLICAR SITE (Requer Salvamento Prévio)
   const handlePublishSite = async () => {
     if (!auth.currentUser) {
       setIsLoginOpen(true);
       return;
     }
     
-    // Trava para exigir a escolha do domínio antes de publicar
-    if (!currentProjectSlug && !chosenDomain) {
-      alert("Por favor, escolha e valide um domínio na barra lateral antes de publicar.");
+    if (!currentProjectSlug) {
+      alert("Você precisa salvar o projeto primeiro antes de publicar.");
       return;
     }
 
     try {
       setIsPublishing(true);
-      let slug = currentProjectSlug;
-
-      if (!slug) {
-        const saveFn = httpsCallable(functions, 'saveSiteProject');
-        const saveRes: any = await saveFn({
-          businessName: formData.businessName,
-          chosenDomain: chosenDomain, // Enviando o domínio validado
-          generatedHtml,
-          formData,
-          aiContent,
-        });
-        slug = saveRes.data?.projectSlug;
-        setCurrentProjectSlug(slug || null);
-      }
-
-      if (!slug) throw new Error('Não foi possível identificar o projeto para publicar.');
-
       const publishFn = httpsCallable(functions, 'publishUserProject');
-      const publishRes: any = await publishFn({ projectSlug: slug });
+      const publishRes: any = await publishFn({ projectSlug: currentProjectSlug });
       const url = publishRes.data?.publishUrl as string;
       if (url) {
         setPublishedDomain(url.replace(/^https?:\/\//, ''));
@@ -272,47 +243,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSaveProject = async () => {
-    if (!auth.currentUser) {
-      setIsLoginOpen(true);
-      return;
-    }
-    if (!generatedHtml) return;
-    
-    // Trava para exigir a escolha do domínio antes de salvar
-    if (!currentProjectSlug && !chosenDomain) {
-      alert("Por favor, escolha e valide um domínio na barra lateral antes de salvar.");
-      return;
-    }
-
-    setIsSavingProject(true);
-    try {
-      const saveFn = httpsCallable(functions, 'saveSiteProject');
-      const res: any = await saveFn({
-        businessName: formData.businessName,
-        chosenDomain: chosenDomain, // Enviando o domínio validado
-        generatedHtml,
-        formData,
-        aiContent,
-      });
-
-      const data = res.data || {};
-      if (data?.projectSlug) setCurrentProjectSlug(data.projectSlug);
-      if (data?.hosting?.defaultUrl) {
-        setPublishedDomain(data.hosting.defaultUrl.replace('https://', ''));
-      }
-
-      const listFn = httpsCallable(functions, 'listUserProjects');
-      const listRes: any = await listFn({});
-      setSavedProjects(listRes.data?.projects || []);
-      alert('Projeto salvo e vinculado ao seu usuário com sucesso!');
-    } catch (err: any) {
-      alert('Erro ao salvar projeto: ' + (err?.message || 'erro desconhecido'));
-    } finally {
-      setIsSavingProject(false);
-    }
-  };
-
   const handleLoadProject = (project: any) => {
     if (!project) return;
     setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
@@ -320,7 +250,6 @@ const App: React.FC = () => {
     setGeneratedHtml(project.generatedHtml || null);
     setCurrentProjectSlug(project.projectSlug || project.id || null);
     if (project.publishUrl) setPublishedDomain(String(project.publishUrl).replace(/^https?:\/\//, ''));
-    // Definimos chosenDomain como o slug para liberar o botão de publicar/salvar
     setChosenDomain(project.projectSlug || project.id || null);
   };
 
@@ -350,7 +279,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Botão flutuante para Publicar (Centro da Tela) */}
+      {/* BOTÃO FLUTUANTE CENTRAL: Respeitando a ordem Salvar -> Publicar */}
       {generatedHtml && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -362,22 +291,33 @@ const App: React.FC = () => {
               onClick={() => setIsLoginOpen(true)}
               className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
             >
-              <Sparkles size={16} />
-              Publicar por 5 dias grátis — Faça login
+              <Sparkles size={16} /> Faça login para Salvar e Publicar
             </button>
           ) : (
             <div className="space-y-2">
-              <button
-                onClick={handlePublishSite}
-                // O botão bloqueia se isPublishing = true, se não houver HTML gerado, ou (se for projeto novo) se chosenDomain for nulo
-                disabled={isPublishing || !generatedHtml || (!currentProjectSlug && !chosenDomain)}
-                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
-              >
-                <Globe size={16} /> {isPublishing ? 'Publicando...' : 'Publicar site e gerar domínio'}
-              </button>
+              {!currentProjectSlug ? (
+                // ETAPA 1: SALVAR
+                <button
+                  onClick={handleSaveProject}
+                  disabled={isSavingProject || (!currentProjectSlug && !chosenDomain)}
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
+                >
+                  <Briefcase size={16} /> {isSavingProject ? 'Salvando...' : '1. Salvar Projeto para Publicar'}
+                </button>
+              ) : (
+                // ETAPA 2: PUBLICAR
+                <button
+                  onClick={handlePublishSite}
+                  disabled={isPublishing}
+                  className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
+                >
+                  <Globe size={16} /> {isPublishing ? 'Publicando...' : '2. Publicar Site na Web'}
+                </button>
+              )}
+              
               {publishedDomain && (
-                <div className="bg-zinc-900/95 border border-zinc-700 text-zinc-100 px-3 py-2 rounded-xl text-xs">
-                  Domínio gerado: <strong>{publishedDomain}</strong>
+                <div className="bg-zinc-900/95 border border-zinc-700 text-zinc-100 px-3 py-2 rounded-xl text-xs text-center">
+                  Disponível em: <br/><strong>https://{publishedDomain}</strong>
                 </div>
               )}
             </div>
@@ -385,13 +325,9 @@ const App: React.FC = () => {
         </motion.div>
       )}
 
-      <LoginPage
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
-        onSubmit={handleLoginSubmit}
-      />
+      <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
 
-      {/* SIDEBAR (Menu Lateral Direto) */}
+      {/* SIDEBAR */}
       <motion.div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
@@ -471,7 +407,6 @@ const App: React.FC = () => {
                 </div>
 
                 {/* 7. NOVA SEÇÃO: DOMÍNIO */}
-                {/* Ocultamos a escolha de domínio se o projeto já existir e estiver sendo carregado do banco */}
                 {!currentProjectSlug && (
                   <div className="space-y-2 border-t border-zinc-700 pt-4">
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={12} /> Endereço do Site</label>
@@ -479,24 +414,40 @@ const App: React.FC = () => {
                   </div>
                 )}
 
-                {/* 8. BOTÕES DE AÇÃO PRINCIPAIS */}
-                <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2">
-                  {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Regerar Textos' : 'Criar Site'}
+                {/* 8. BOTÕES DE AÇÃO DA SIDEBAR */}
+                
+                {/* SEMPRE VISÍVEL: GERAR SITE */}
+                <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 border border-zinc-600">
+                  {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Regerar Textos' : 'Gerar Site'}
                 </button>
+                
                 {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-xl text-sm flex items-center justify-center gap-2"><Download size={16} /> Baixar HTML</button>}
-                {generatedHtml && (
+                
+                {/* ETAPA 1: SALVAR PROJETO */}
+                {generatedHtml && !currentProjectSlug && (
                   <button 
                     onClick={handleSaveProject} 
-                    disabled={isSavingProject || (!currentProjectSlug && !chosenDomain)} 
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-2 rounded-xl text-sm font-bold"
+                    disabled={isSavingProject || !chosenDomain} 
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-bold shadow-lg"
                   >
-                    {isSavingProject ? 'Salvando...' : 'Salvar projeto (GitHub + Firebase)'}
+                    {isSavingProject ? 'Salvando...' : '1. Salvar Projeto'}
+                  </button>
+                )}
+
+                {/* ETAPA 2: PUBLICAR SITE (Aparece após salvar) */}
+                {currentProjectSlug && (
+                  <button 
+                    onClick={handlePublishSite} 
+                    disabled={isPublishing} 
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <Globe size={16} /> {isPublishing ? 'Publicando...' : '2. Publicar Site'}
                   </button>
                 )}
 
                 {/* 9. LISTAGEM DE PROJETOS SALVOS */}
                 {loggedUserEmail && (
-                  <div className="border border-zinc-700 rounded-xl p-3 space-y-2">
+                  <div className="border border-zinc-700 rounded-xl p-3 space-y-2 mt-4">
                     <div className="flex items-center justify-between">
                       <p className="text-[11px] text-zinc-400">Conectado: {loggedUserEmail}</p>
                       <button onClick={handleLogout} className="text-[11px] text-red-300">Sair</button>
@@ -504,7 +455,10 @@ const App: React.FC = () => {
                     <p className="text-xs font-semibold">Projetos salvos</p>
                     <div className="max-h-28 overflow-y-auto space-y-1">
                       {savedProjects.length === 0 ? <p className="text-[11px] text-zinc-500">Nenhum projeto carregado ainda.</p> : savedProjects.map((p: any) => (
-                        <button key={p.id} onClick={() => handleLoadProject(p)} className="w-full text-left text-[11px] bg-zinc-800 hover:bg-zinc-700 rounded p-2">{p.businessName || p.id}</button>
+                        <button key={p.id} onClick={() => handleLoadProject(p)} className="w-full text-left text-[11px] bg-zinc-800 hover:bg-zinc-700 rounded p-2 flex justify-between items-center">
+                          <span>{p.businessName || p.id}</span>
+                          {p.published && <CheckCircle size={10} className="text-emerald-500" />}
+                        </button>
                       ))}
                     </div>
                   </div>
