@@ -43,7 +43,8 @@ const App: React.FC = () => {
   
   // Estados de Controle do Fluxo
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
-  const [chosenDomain, setChosenDomain] = useState<string | null>(null);
+  const [officialDomain, setOfficialDomain] = useState('');
+  const [registerLater, setRegisterLater] = useState(false);
 
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
@@ -170,7 +171,7 @@ const App: React.FC = () => {
     setIsLoginOpen(false);
   };
 
-  // FLUXO 1: SALVAR PROJETO
+  // FLUXO 1: SALVAR PROJETO (Totalmente livre de erros de banco)
   const handleSaveProject = async () => {
     if (!auth.currentUser) {
       setIsLoginOpen(true);
@@ -178,17 +179,26 @@ const App: React.FC = () => {
     }
     if (!generatedHtml) return;
     
-    if (!currentProjectSlug && !chosenDomain) {
-      alert("Por favor, escolha e valide um domínio na barra lateral antes de salvar.");
+    // Validação limpa: o usuário decide o caminho dele
+    if (!registerLater && !officialDomain) {
+      alert("Por favor, informe o domínio que você comprou na barra lateral ou marque a opção 'Vou configurar depois'.");
       return;
     }
 
     setIsSavingProject(true);
     try {
+      // Criação de URL blindada contra duplicações (sem depender do Firebase procurar antes)
+      const baseName = formData.businessName || 'meu-site';
+      const cleanName = baseName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-');
+      const suffix = Math.random().toString(36).substring(2, 6); // Sufixo de segurança
+      const internalDomain = `${cleanName}-${suffix}`; // Backend cuida de adicionar .web.app
+
       const saveFn = httpsCallable(functions, 'saveSiteProject');
       const res: any = await saveFn({
         businessName: formData.businessName,
-        chosenDomain: chosenDomain,
+        officialDomain: registerLater ? "Pendente" : officialDomain,
+        internalDomain: internalDomain,
+        registerLater: registerLater,
         generatedHtml,
         formData,
         aiContent,
@@ -250,14 +260,18 @@ const App: React.FC = () => {
     setGeneratedHtml(project.generatedHtml || null);
     setCurrentProjectSlug(project.projectSlug || project.id || null);
     if (project.publishUrl) setPublishedDomain(String(project.publishUrl).replace(/^https?:\/\//, ''));
-    setChosenDomain(project.projectSlug || project.id || null);
+    
+    // Puxa os dados atualizados para a tela
+    setOfficialDomain(project.officialDomain || '');
+    setRegisterLater(project.officialDomain === 'Pendente');
   };
 
   const handleLogout = async () => {
     await signOut(auth);
     setSavedProjects([]);
     setCurrentProjectSlug(null);
-    setChosenDomain(null);
+    setOfficialDomain('');
+    setRegisterLater(false);
   };
 
   return (
@@ -299,7 +313,7 @@ const App: React.FC = () => {
                 // ETAPA 1: SALVAR
                 <button
                   onClick={handleSaveProject}
-                  disabled={isSavingProject || (!currentProjectSlug && !chosenDomain)}
+                  disabled={isSavingProject}
                   className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
                 >
                   <Briefcase size={16} /> {isSavingProject ? 'Salvando...' : '1. Salvar Projeto para Publicar'}
@@ -316,8 +330,8 @@ const App: React.FC = () => {
               )}
               
               {publishedDomain && (
-                <div className="bg-zinc-900/95 border border-zinc-700 text-zinc-100 px-3 py-2 rounded-xl text-xs text-center">
-                  Disponível em: <br/><strong>https://{publishedDomain}</strong>
+                <div className="bg-zinc-900/95 border border-zinc-700 text-zinc-100 px-3 py-2 rounded-xl text-xs text-center shadow-xl backdrop-blur-md">
+                  Disponível em: <br/><a href={`https://${publishedDomain}`} target="_blank" rel="noreferrer" className="text-emerald-400 font-bold hover:underline">https://{publishedDomain}</a>
                 </div>
               )}
             </div>
@@ -334,7 +348,7 @@ const App: React.FC = () => {
             <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} className="w-[92vw] max-w-[380px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden">
               <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-700">
                 <h2 className="font-bold text-sm tracking-wide">Criador de Site</h2>
-                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded"><Minimize2 size={18} /></button>
+                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors"><Minimize2 size={18} /></button>
               </div>
               <div className="p-5 overflow-y-auto custom-scrollbar space-y-5 max-h-[80vh]">
                 
@@ -342,11 +356,11 @@ const App: React.FC = () => {
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Nome</label>
-                    <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm" placeholder="Ex: Pizzaria do Zé" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} />
+                    <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500 transition-colors" placeholder="Ex: Pizzaria do Zé" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia</label>
-                    <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none" placeholder="Ex: restaurante familiar..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                    <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500 transition-colors" placeholder="Ex: restaurante familiar..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                   </div>
                 </div>
 
@@ -373,14 +387,14 @@ const App: React.FC = () => {
                     <input className="bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="99 Food URL" value={formData.noveNove} onChange={e => setFormData({ ...formData, noveNove: e.target.value })} />
                     <input className="col-span-2 bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="Keeta URL" value={formData.keeta} onChange={e => setFormData({ ...formData, keeta: e.target.value })} />
                   </div>
-                  <label className="flex items-center gap-2 text-xs text-zinc-300"><input type="checkbox" checked={formData.showForm} onChange={e => setFormData({ ...formData, showForm: e.target.checked })} /> Habilitar formulário de contato</label>
+                  <label className="flex items-center gap-2 text-xs text-zinc-300"><input type="checkbox" checked={formData.showForm} onChange={e => setFormData({ ...formData, showForm: e.target.checked })} className="accent-emerald-500" /> Habilitar formulário de contato</label>
                 </div>
 
                 {/* 4. SEÇÃO LOGO */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between"><span>Logo</span> {formData.logoBase64 && <button onClick={() => setFormData(p => ({ ...p, logoBase64: '' }))} className="text-red-400 text-[10px]"><X size={10} /></button>}</label>
+                  <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between"><span>Logo</span> {formData.logoBase64 && <button onClick={() => setFormData(p => ({ ...p, logoBase64: '' }))} className="text-red-400 text-[10px] hover:text-red-300 transition-colors"><X size={10} /></button>}</label>
                   {!formData.logoBase64 ? (
-                    <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400"><Upload size={14} /> Carregar Logo <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
+                    <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={14} /> Carregar Logo <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
                   ) : (
                     <div className="h-12 bg-white/5 border border-zinc-700 rounded-lg flex items-center justify-center"><img src={formData.logoBase64} className="h-full object-contain" alt="Preview" /></div>
                   )}
@@ -391,7 +405,7 @@ const App: React.FC = () => {
                   <label className="text-xs font-bold text-zinc-500 uppercase"><Layout size={12} className="inline mr-1" /> Estilo</label>
                   <div className="grid grid-cols-1 gap-2">
                     {LAYOUT_STYLES.map(style => (
-                      <button key={style.id} onClick={() => setFormData({ ...formData, layoutStyle: style.id })} className={`p-2 rounded-lg border text-left transition-all ${formData.layoutStyle === style.id ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-zinc-800 border-zinc-700 text-zinc-400'}`}><span className="font-bold text-xs">{style.label}</span></button>
+                      <button key={style.id} onClick={() => setFormData({ ...formData, layoutStyle: style.id })} className={`p-2 rounded-lg border text-left transition-all ${formData.layoutStyle === style.id ? 'bg-indigo-600 border-indigo-500 text-white shadow-md' : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}><span className="font-bold text-xs">{style.label}</span></button>
                     ))}
                   </div>
                 </div>
@@ -401,7 +415,7 @@ const App: React.FC = () => {
                   <label className="text-xs font-bold text-zinc-500 uppercase"><Palette size={12} className="inline mr-1" /> Cor</label>
                   <div className="flex gap-2 flex-wrap">
                     {COLORS.map(c => (
-                      <button key={c.id} onClick={() => setFormData({ ...formData, colorId: c.id })} className={`w-6 h-6 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent opacity-50'}`} style={{ backgroundColor: c.c4 }} />
+                      <button key={c.id} onClick={() => setFormData({ ...formData, colorId: c.id })} className={`w-6 h-6 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: c.c4 }} />
                     ))}
                   </div>
                 </div>
@@ -410,27 +424,32 @@ const App: React.FC = () => {
                 {!currentProjectSlug && (
                   <div className="space-y-2 border-t border-zinc-700 pt-4">
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={12} /> Endereço do Site</label>
-                    <DomainChecker onDomainSelected={(domain) => setChosenDomain(domain)} />
+                    <DomainChecker 
+                      onDomainChange={(domain, isLater) => {
+                        setOfficialDomain(domain);
+                        setRegisterLater(isLater);
+                      }} 
+                    />
                   </div>
                 )}
 
                 {/* 8. BOTÕES DE AÇÃO DA SIDEBAR */}
                 
                 {/* SEMPRE VISÍVEL: GERAR SITE */}
-                <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 border border-zinc-600">
+                <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 border border-zinc-600 transition-colors">
                   {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Regerar Textos' : 'Gerar Site'}
                 </button>
                 
-                {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-xl text-sm flex items-center justify-center gap-2"><Download size={16} /> Baixar HTML</button>}
+                {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors"><Download size={16} /> Baixar HTML</button>}
                 
                 {/* ETAPA 1: SALVAR PROJETO */}
                 {generatedHtml && !currentProjectSlug && (
                   <button 
                     onClick={handleSaveProject} 
-                    disabled={isSavingProject || !chosenDomain} 
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-bold shadow-lg"
+                    disabled={isSavingProject} 
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
                   >
-                    {isSavingProject ? 'Salvando...' : '1. Salvar Projeto'}
+                    <Briefcase size={16} /> {isSavingProject ? 'Salvando...' : '1. Salvar Projeto'}
                   </button>
                 )}
 
@@ -439,7 +458,7 @@ const App: React.FC = () => {
                   <button 
                     onClick={handlePublishSite} 
                     disabled={isPublishing} 
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2"
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2 transition-colors"
                   >
                     <Globe size={16} /> {isPublishing ? 'Publicando...' : '2. Publicar Site'}
                   </button>
@@ -447,17 +466,17 @@ const App: React.FC = () => {
 
                 {/* 9. LISTAGEM DE PROJETOS SALVOS */}
                 {loggedUserEmail && (
-                  <div className="border border-zinc-700 rounded-xl p-3 space-y-2 mt-4">
+                  <div className="border border-zinc-700 bg-zinc-900/50 rounded-xl p-3 space-y-2 mt-4">
                     <div className="flex items-center justify-between">
                       <p className="text-[11px] text-zinc-400">Conectado: {loggedUserEmail}</p>
-                      <button onClick={handleLogout} className="text-[11px] text-red-300">Sair</button>
+                      <button onClick={handleLogout} className="text-[11px] text-red-400 hover:text-red-300 transition-colors">Sair</button>
                     </div>
-                    <p className="text-xs font-semibold">Projetos salvos</p>
-                    <div className="max-h-28 overflow-y-auto space-y-1">
-                      {savedProjects.length === 0 ? <p className="text-[11px] text-zinc-500">Nenhum projeto carregado ainda.</p> : savedProjects.map((p: any) => (
-                        <button key={p.id} onClick={() => handleLoadProject(p)} className="w-full text-left text-[11px] bg-zinc-800 hover:bg-zinc-700 rounded p-2 flex justify-between items-center">
-                          <span>{p.businessName || p.id}</span>
-                          {p.published && <CheckCircle size={10} className="text-emerald-500" />}
+                    <p className="text-xs font-semibold text-zinc-200">Projetos salvos</p>
+                    <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1 pr-1">
+                      {savedProjects.length === 0 ? <p className="text-[11px] text-zinc-500 italic">Nenhum projeto carregado ainda.</p> : savedProjects.map((p: any) => (
+                        <button key={p.id} onClick={() => handleLoadProject(p)} className="w-full text-left text-[11px] bg-zinc-800 hover:bg-zinc-700 rounded-lg p-2.5 flex justify-between items-center border border-zinc-700/50 transition-colors">
+                          <span className="font-medium truncate pr-2">{p.businessName || p.id}</span>
+                          {p.published && <CheckCircle size={12} className="text-emerald-500 flex-shrink-0" />}
                         </button>
                       ))}
                     </div>
@@ -466,7 +485,7 @@ const App: React.FC = () => {
               </div>
             </motion.div>
           ) : (
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20"><Settings className="text-white" size={26} /></motion.div>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105"><Settings className="text-white" size={26} /></motion.div>
           )}
         </AnimatePresence>
       </motion.div>
