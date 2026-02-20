@@ -1,131 +1,81 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Loader2, CheckCircle2, XCircle } from 'lucide-react';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import React, { useState, useEffect } from 'react';
+import { Globe, Search, ArrowUpRight } from 'lucide-react';
 
 interface DomainCheckerProps {
-  onDomainSelected: (domain: string | null) => void;
+  // Agora passamos o domínio (se houver) e se o cliente escolheu deixar para depois
+  onDomainChange: (domain: string, registerLater: boolean) => void;
 }
 
-const DomainChecker: React.FC<DomainCheckerProps> = ({ onDomainSelected }) => {
-  const [domain, setDomain] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'available' | 'unavailable'>('idle');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+const DomainChecker: React.FC<DomainCheckerProps> = ({ onDomainChange }) => {
+  const [officialDomain, setOfficialDomain] = useState('');
+  const [registerLater, setRegisterLater] = useState(false);
 
-  const checkDomain = async (domainToCheck = domain) => {
-    if (!domainToCheck) return;
-    
-    setStatus('loading');
-    setSuggestions([]);
-    
-    try {
-      const functions = getFunctions();
-      const checkDomainAvailability = httpsCallable(functions, 'checkDomainAvailability');
-      
-      const response = await checkDomainAvailability({ desiredDomain: domainToCheck });
-      const data = response.data as any;
-
-      if (data.available) {
-        setStatus('available');
-        setDomain(data.cleanDomain); 
-        // A MÁGICA ACONTECE AQUI: Ele envia o domínio validado para o botão de Salvar!
-        onDomainSelected(data.cleanDomain); 
-      } else {
-        setStatus('unavailable');
-        setSuggestions(data.suggestions || []);
-        onDomainSelected(null);
-      }
-    } catch (error) {
-      console.error("Erro ao validar domínio:", error);
-      setStatus('unavailable');
-      onDomainSelected(null);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') checkDomain();
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setDomain(suggestion);
-    checkDomain(suggestion); 
-  };
+  // Atualiza o componente pai sempre que o usuário digita ou marca a caixa
+  useEffect(() => {
+    onDomainChange(officialDomain, registerLater);
+  }, [officialDomain, registerLater, onDomainChange]);
 
   return (
-    <div className="space-y-4 font-sans">
-      <div className="relative group">
-        <input 
-          type="text" 
-          placeholder="ex: meu-novo-site"
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-4 pr-24 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-zinc-600 text-zinc-100"
-          value={domain}
-          onChange={(e) => {
-            setDomain(e.target.value.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase());
-            setStatus('idle');
-            // Se o usuário voltar a digitar, bloqueamos o botão de salvar até validar de novo
-            onDomainSelected(null); 
-          }}
-          onKeyDown={handleKeyDown}
-        />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {/* Note que aqui agora reflete o destino real da publicação */}
-          <span className="text-zinc-500 font-bold text-sm select-none">.web.app</span>
-          <button 
-            type="button"
-            onClick={() => checkDomain()}
-            disabled={status === 'loading' || !domain}
-            className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors disabled:opacity-50"
-          >
-            {status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          </button>
+    <div className="space-y-4 bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800/50">
+      <div className="flex items-center gap-3">
+        <div className="bg-emerald-500/10 p-2 rounded-lg">
+          <Globe className="w-5 h-5 text-emerald-500" />
+        </div>
+        <div>
+          <h3 className="font-bold text-zinc-100 text-sm">Endereço Oficial</h3>
+          <p className="text-[11px] text-zinc-400 mt-0.5">Ex: www.suaempresa.com.br</p>
         </div>
       </div>
 
-      {status === 'available' && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-emerald-500/10 border border-emerald-500/50 rounded-xl p-3 flex items-center gap-3"
-        >
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-          <div className="text-sm">
-            <p className="text-emerald-400 font-semibold">Domínio Disponível!</p>
-          </div>
-        </motion.div>
+      <div className="text-xs text-zinc-400 leading-relaxed bg-zinc-950/50 p-3 rounded-xl">
+        Para usar um domínio profissional, você precisa registrá-lo no <strong>Registro.br</strong>. Nós forneceremos um link provisório gratuito enquanto você não configura o oficial.
+      </div>
+
+      {/* Botão para o Registro.br */}
+      <button 
+        type="button"
+        onClick={() => window.open('https://registro.br/busca-dominio/', '_blank')}
+        className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+      >
+        <Search className="w-4 h-4" />
+        Consultar no Registro.br <ArrowUpRight className="w-3 h-3 text-zinc-500" />
+      </button>
+
+      {/* Campo de input condicional */}
+      {!registerLater && (
+        <div className="pt-2">
+          <label className="text-xs text-zinc-400 font-medium mb-1.5 block">
+            Já comprou? Digite seu domínio:
+          </label>
+          <input 
+            type="text" 
+            placeholder="suaempresa.com.br"
+            value={officialDomain}
+            onChange={(e) => setOfficialDomain(e.target.value.toLowerCase())}
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all text-zinc-100 placeholder:text-zinc-600"
+          />
+        </div>
       )}
 
-      {status === 'unavailable' && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 flex flex-col gap-3"
-        >
-          <div className="flex items-center gap-3">
-            <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <div className="text-sm">
-              <p className="text-red-400 font-semibold">Este endereço já está em uso.</p>
-            </div>
+      {/* Opção de pular */}
+      <div className="pt-2 border-t border-zinc-800/50">
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <input 
+            type="checkbox" 
+            checked={registerLater}
+            onChange={(e) => {
+              setRegisterLater(e.target.checked);
+              if (e.target.checked) setOfficialDomain(''); // Limpa o campo se marcar para depois
+            }}
+            className="mt-0.5 rounded border-zinc-700 bg-zinc-950 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900" 
+          />
+          <div className="flex flex-col">
+            <span className="text-xs text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">
+              Vou configurar meu domínio depois
+            </span>
           </div>
-          
-          {suggestions.length > 0 && (
-            <div className="mt-1 pt-3 border-t border-red-500/20">
-              <p className="text-xs text-zinc-400 mb-2">Alternativas disponíveis:</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestions.map((sugestao) => (
-                  <button
-                    key={sugestao}
-                    onClick={() => handleSuggestionClick(sugestao)}
-                    type="button"
-                    className="px-3 py-1.5 bg-zinc-900 border border-zinc-700 text-zinc-300 text-xs rounded-lg hover:bg-zinc-800 transition-all"
-                  >
-                    {sugestao}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.div>
-      )}
+        </label>
+      </div>
     </div>
   );
 };
