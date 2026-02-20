@@ -14,14 +14,12 @@ const geminiKey = defineSecret("GEMINI_KEY");
 
 const getGeminiClient = () => {
   const apiKey = geminiKey.value();
-
   if (!apiKey) {
     throw new HttpsError(
       "failed-precondition",
       "O Secret GEMINI_KEY não está configurado no ambiente das Cloud Functions.",
     );
   }
-
   return new GoogleGenerativeAI(apiKey);
 };
 
@@ -113,8 +111,6 @@ async function createHostingSiteIfPossible(siteId) {
   };
 }
 
-
-
 async function getFirebaseAccessToken() {
   const auth = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/firebase"] });
   const client = await auth.getClient();
@@ -129,12 +125,11 @@ function sha256Hex(content) {
 async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const token = await getFirebaseAccessToken();
   
-  // 1. Garantir conversão segura para Buffer UTF-8 e compactação
+  // Compactação GZIP exigida pela API do Firebase
   const htmlBuffer = Buffer.from(htmlContent, "utf-8");
   const gzippedContent = zlib.gzipSync(htmlBuffer);
   const fileHash = sha256Hex(gzippedContent);
 
-  // 2. Criar a versão
   const createVersion = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/versions`, {
     method: "POST",
     headers: {
@@ -152,7 +147,6 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const version = await createVersion.json();
   const versionName = version.name;
 
-  // 3. Preparar o upload (populateFiles)
   const populate = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}:populateFiles`, {
     method: "POST",
     headers: {
@@ -170,7 +164,6 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const populateData = await populate.json();
   const requiredHashes = populateData.uploadRequiredHashes || [];
 
-  // 4. Fazer o upload exato (com Content-Length)
   if (requiredHashes.includes(fileHash)) {
     const uploadUrl = `${populateData.uploadUrl}/${fileHash}`;
 
@@ -179,7 +172,6 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
       headers: { 
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/octet-stream",
-        // A chave para o Firebase aceitar o GZIP sem fatiamento:
         "Content-Length": gzippedContent.length.toString() 
       },
       body: gzippedContent,
@@ -191,7 +183,6 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     }
   }
 
-  // 5. Finalizar a versão
   const finalize = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}?updateMask=status`, {
     method: "PATCH",
     headers: {
@@ -206,7 +197,6 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     throw new Error(`Falha ao finalizar versão Hosting: ${txt}`);
   }
 
-  // 6. Criar o release
   const release = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/releases?versionName=${encodeURIComponent(versionName)}`, {
     method: "POST",
     headers: {
@@ -264,6 +254,53 @@ exports.generateSite = onCall({
   }
 });
 
+exports.checkDomainAvailability = onCall({
+  cors: true,
+  timeoutSeconds: 30,
+}, async (request) => {
+  const { desiredDomain } = request.data || {};
+
+  if (!desiredDomain) {
+    throw new HttpsError("invalid-argument", "O domínio desejado é obrigatório.");
+  }
+
+  const cleanDomain = slugify(desiredDomain).slice(0, 30);
+  const db = admin.firestore();
+  const snapshot = await db.collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
+
+  let isAvailable = true;
+
+  if (!snapshot.empty) {
+    isAvailable = false;
+  } else {
+    try {
+      const response = await fetch(`https://${cleanDomain}.web.app`);
+      if (response.ok) {
+        isAvailable = false;
+      }
+    } catch (error) {
+      isAvailable = true;
+    }
+  }
+
+  if (isAvailable) {
+    return { available: true, cleanDomain };
+  }
+
+  const suffixes = ["-oficial", "-online", "-web"];
+  const suggestions = suffixes.map(suffix => {
+    const maxBaseLength = 30 - suffix.length;
+    return `${cleanDomain.slice(0, maxBaseLength)}${suffix}`;
+  });
+
+  return {
+    available: false,
+    cleanDomain,
+    message: "Este endereço já está em uso.",
+    suggestions: suggestions
+  };
+});
+
 exports.saveSiteProject = onCall({
   cors: true,
   timeoutSeconds: 120,
@@ -272,6 +309,7 @@ exports.saveSiteProject = onCall({
   const uid = ensureAuthed(request);
   const {
     businessName,
+    chosenDomain,
     generatedHtml,
     formData,
     aiContent,
@@ -280,10 +318,9 @@ exports.saveSiteProject = onCall({
   if (!businessName || !generatedHtml) {
     throw new HttpsError("invalid-argument", "businessName e generatedHtml são obrigatórios.");
   }
-// Pegamos o domínio limpo que veio do front-end (ou criamos um fallback seguro)
-  const chosenDomain = request.data.chosenDomain || businessName;
-  const projectSlug = slugify(chosenDomain).slice(0, 30);
-  
+
+  // URL limpa baseada na escolha do usuário ou no nome da empresa como fallback
+  const projectSlug = slugify(chosenDomain || businessName).slice(0, 30);
   const hostingSiteId = projectSlug;
   const repoName = `site-${projectSlug}`;
 
@@ -318,8 +355,33 @@ exports.saveSiteProject = onCall({
     hostingSiteId,
     github,
     hosting,
-    message: "Projeto salvo e infra provisionada (ou marcada como pendente).",
+    message: "Projeto salvo e infra provisionada com sucesso.",
   };
+});
+
+exports.updateSiteProject = onCall({
+  cors: true,
+  timeoutSeconds: 60,
+  memory: "256MiB",
+}, async (request) => {
+  const uid = ensureAuthed(request);
+  const { projectSlug, updatedHtml, updatedAiContent } = request.data || {};
+
+  if (!projectSlug || !updatedHtml) {
+    throw new HttpsError("invalid-argument", "projectSlug e updatedHtml são obrigatórios para atualizar.");
+  }
+
+  const db = admin.firestore();
+  const ref = db.collection("users").doc(uid).collection("projects").doc(projectSlug);
+
+  await ref.update({
+    generatedHtml: updatedHtml,
+    aiContent: updatedAiContent || {},
+    needsDeploy: true,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return { success: true, message: "Projeto atualizado com sucesso." };
 });
 
 exports.listUserProjects = onCall({ cors: true }, async (request) => {
@@ -333,7 +395,6 @@ exports.listUserProjects = onCall({ cors: true }, async (request) => {
     projects: snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
   };
 });
-
 
 exports.publishUserProject = onCall({
   cors: true,
@@ -389,16 +450,13 @@ exports.publishUserProject = onCall({
   } catch (error) {
     console.error("Erro publishUserProject:", error);
     
-    // Verificamos se o erro indica que o recurso do Hosting não foi encontrado ou foi deletado
+    // Regra para apagar o projeto do banco se o Host tiver sido removido manualmente
     const errorMessage = error.message ? error.message.toLowerCase() : "";
     if (errorMessage.includes("404") || errorMessage.includes("not found") || errorMessage.includes("deleted")) {
-      
-      // Apaga o projeto do banco de dados do usuário
       await ref.delete();
-      
       throw new HttpsError(
         "not-found",
-        "A infraestrutura deste site foi removida do servidor. O projeto foi retirado da sua lista para evitar inconsistências."
+        "A infraestrutura deste site foi removida do servidor. O projeto foi retirado da sua lista."
       );
     }
 
@@ -411,61 +469,4 @@ exports.publishUserProject = onCall({
       { message: error?.message || "erro desconhecido" },
     );
   }
-});
-
-exports.checkDomainAvailability = onCall({
-  cors: true,
-  timeoutSeconds: 30,
-}, async (request) => {
-  const { desiredDomain } = request.data || {};
-
-  if (!desiredDomain) {
-    throw new HttpsError("invalid-argument", "O domínio desejado é obrigatório.");
-  }
-
-  // Limpamos o texto usando a mesma regra do Firebase (máximo 30 caracteres)
-  const cleanDomain = slugify(desiredDomain).slice(0, 30);
-
-  // 1. Verificamos no nosso próprio banco de dados se algum usuário já pegou esse slug
-  const db = admin.firestore();
-  const snapshot = await db.collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
-
-  let isAvailable = true;
-
-  if (!snapshot.empty) {
-    isAvailable = false;
-  } else {
-    // 2. Verificamos globalmente na rede do Google se o endereço já existe
-    try {
-      const response = await fetch(`https://${cleanDomain}.web.app`);
-      // Se a página carregar (200) ou retornar um erro diferente do "Site Not Found" padrão, está em uso.
-      if (response.ok) {
-        isAvailable = false;
-      }
-    } catch (error) {
-      // Se o fetch falhar completamente (erro de DNS), o domínio está livre.
-      isAvailable = true;
-    }
-  }
-
-  // Se estiver disponível, retornamos sucesso imediato
-  if (isAvailable) {
-    return { available: true, cleanDomain };
-  }
-
-  // Se não estiver, geramos 3 sugestões premium, garantindo o limite de 30 caracteres
-  const suffixes = ["-oficial", "-online", "-web"];
-  const suggestions = suffixes.map(suffix => {
-    // Cortamos o domínio base para caber o sufixo sem estourar os 30 caracteres
-    const maxBaseLength = 30 - suffix.length;
-    const baseClipped = cleanDomain.slice(0, maxBaseLength);
-    return `${baseClipped}${suffix}`;
-  });
-
-  return {
-    available: false,
-    cleanDomain,
-    message: "Este endereço já está em uso.",
-    suggestions: suggestions
-  };
 });
