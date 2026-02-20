@@ -250,13 +250,15 @@ const App: React.FC = () => {
     finally { setIsPublishing(false); }
   };
 
-  const handleDeleteSite = async (projectId: string) => {
-    if (!window.confirm("Esta ação apagará definitivamente o seu site. Tem a certeza?")) return;
-    
+  const handleLoginSubmit = async (email: string, password: string) => {
     try {
-      const deleteFn = httpsCallable(functions, 'deleteUserProject');
-      await deleteFn({ projectId });
-      alert("Site excluído com sucesso.");
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch {
+      // Se não existir, cria a conta automaticamente
+      await createUserWithEmailAndPassword(auth, email, password);
+    }
+    setIsLoginOpen(false);
+  };
       
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null);
