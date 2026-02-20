@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth, functions } from './firebase';
+import { auth, functions, db } from './firebase'; // Certifique-se de que db está exportado no seu firebase.ts se for usar addDoc direto, ou ajuste conforme seu backend
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket, Settings, Palette, Upload, Layout, Download,
-  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Instagram, MapPin, Sparkles, Globe, CheckCircle
+  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, MapPin, Sparkles, Globe, CheckCircle, LayoutDashboard
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
 import DomainChecker from './components/DomainChecker';
+import ClientDashboard from './components/ClientDashboard'; // O nosso novo painel!
 
 const LAYOUT_STYLES = [
   { id: 'layout_split_duplo', label: 'Split Duplo', desc: 'Hero em duas colunas com bloco de diferencial.' },
@@ -41,7 +42,10 @@ const App: React.FC = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
   
-  // Estados de Controle do Fluxo
+  // Controle de Interface
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  
+  // Estados de Controle do Fluxo de Domínio
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
@@ -261,7 +265,7 @@ const App: React.FC = () => {
     setCurrentProjectSlug(project.projectSlug || project.id || null);
     if (project.publishUrl) setPublishedDomain(String(project.publishUrl).replace(/^https?:\/\//, ''));
     
-    // Puxa os dados atualizados para a tela
+    // Puxa os dados de domínio atualizados para a tela
     setOfficialDomain(project.officialDomain || '');
     setRegisterLater(project.officialDomain === 'Pendente');
   };
@@ -287,9 +291,22 @@ const App: React.FC = () => {
         )}
       </div>
 
+      {/* HEADER: INFO DO USUÁRIO E BOTÃO DO PAINEL DE CONTROLE */}
       {loggedUserEmail && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[90] bg-emerald-700/90 text-white text-xs md:text-sm px-4 py-2 rounded-full shadow-lg border border-emerald-300/30">
-          ✅ Logado como: <strong>{loggedUserEmail}</strong>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3">
+          <div className="bg-zinc-900/90 backdrop-blur-md text-white text-xs md:text-sm px-4 py-2.5 rounded-full shadow-xl border border-zinc-800 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="hidden md:inline text-zinc-400">Logado como:</span> 
+            <strong className="text-emerald-400">{loggedUserEmail}</strong>
+          </div>
+          
+          <button 
+            onClick={() => setIsDashboardOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm px-5 py-2.5 rounded-full shadow-xl font-bold flex items-center gap-2 transition-all hover:scale-105"
+          >
+            <LayoutDashboard size={16} />
+            Meu Painel
+          </button>
         </div>
       )}
 
@@ -341,7 +358,7 @@ const App: React.FC = () => {
 
       <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR DO CRIADOR */}
       <motion.div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
@@ -372,7 +389,7 @@ const App: React.FC = () => {
                     <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="Telefone" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                     <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="Email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                   </div>
-                  <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa (https://www.google.com/maps/embed?... )" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
+                  <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
                 </div>
 
                 {/* 3. SEÇÃO REDES SOCIAIS E DELIVERY */}
@@ -387,7 +404,7 @@ const App: React.FC = () => {
                     <input className="bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="99 Food URL" value={formData.noveNove} onChange={e => setFormData({ ...formData, noveNove: e.target.value })} />
                     <input className="col-span-2 bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="Keeta URL" value={formData.keeta} onChange={e => setFormData({ ...formData, keeta: e.target.value })} />
                   </div>
-                  <label className="flex items-center gap-2 text-xs text-zinc-300"><input type="checkbox" checked={formData.showForm} onChange={e => setFormData({ ...formData, showForm: e.target.checked })} className="accent-emerald-500" /> Habilitar formulário de contato</label>
+                  <label className="flex items-center gap-2 text-xs text-zinc-300"><input type="checkbox" checked={formData.showForm} onChange={e => setFormData({ ...formData, showForm: e.target.checked })} className="accent-emerald-500" /> Habilitar formulário</label>
                 </div>
 
                 {/* 4. SEÇÃO LOGO */}
@@ -420,7 +437,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 7. NOVA SEÇÃO: DOMÍNIO */}
+                {/* 7. NOVA SEÇÃO: DOMÍNIO INTEGRADOR */}
                 {!currentProjectSlug && (
                   <div className="space-y-2 border-t border-zinc-700 pt-4">
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={12} /> Endereço do Site</label>
@@ -434,15 +451,12 @@ const App: React.FC = () => {
                 )}
 
                 {/* 8. BOTÕES DE AÇÃO DA SIDEBAR */}
-                
-                {/* SEMPRE VISÍVEL: GERAR SITE */}
                 <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 border border-zinc-600 transition-colors">
                   {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Regerar Textos' : 'Gerar Site'}
                 </button>
                 
                 {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors"><Download size={16} /> Baixar HTML</button>}
                 
-                {/* ETAPA 1: SALVAR PROJETO */}
                 {generatedHtml && !currentProjectSlug && (
                   <button 
                     onClick={handleSaveProject} 
@@ -453,7 +467,6 @@ const App: React.FC = () => {
                   </button>
                 )}
 
-                {/* ETAPA 2: PUBLICAR SITE (Aparece após salvar) */}
                 {currentProjectSlug && (
                   <button 
                     onClick={handlePublishSite} 
@@ -463,25 +476,7 @@ const App: React.FC = () => {
                     <Globe size={16} /> {isPublishing ? 'Publicando...' : '2. Publicar Site'}
                   </button>
                 )}
-
-                {/* 9. LISTAGEM DE PROJETOS SALVOS */}
-                {loggedUserEmail && (
-                  <div className="border border-zinc-700 bg-zinc-900/50 rounded-xl p-3 space-y-2 mt-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] text-zinc-400">Conectado: {loggedUserEmail}</p>
-                      <button onClick={handleLogout} className="text-[11px] text-red-400 hover:text-red-300 transition-colors">Sair</button>
-                    </div>
-                    <p className="text-xs font-semibold text-zinc-200">Projetos salvos</p>
-                    <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1 pr-1">
-                      {savedProjects.length === 0 ? <p className="text-[11px] text-zinc-500 italic">Nenhum projeto carregado ainda.</p> : savedProjects.map((p: any) => (
-                        <button key={p.id} onClick={() => handleLoadProject(p)} className="w-full text-left text-[11px] bg-zinc-800 hover:bg-zinc-700 rounded-lg p-2.5 flex justify-between items-center border border-zinc-700/50 transition-colors">
-                          <span className="font-medium truncate pr-2">{p.businessName || p.id}</span>
-                          {p.published && <CheckCircle size={12} className="text-emerald-500 flex-shrink-0" />}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                
               </div>
             </motion.div>
           ) : (
@@ -489,6 +484,26 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* RENDERIZAÇÃO DO PAINEL DE CONTROLE (O NOVO DASHBOARD) */}
+      <AnimatePresence>
+        {isDashboardOpen && (
+          <ClientDashboard 
+            projects={savedProjects}
+            userEmail={loggedUserEmail || ''}
+            onClose={() => setIsDashboardOpen(false)}
+            onEditProject={(project) => {
+              handleLoadProject(project); // Carrega os dados na barra lateral perfeitamente
+              setIsDashboardOpen(false); // Fecha o painel para ele editar
+              setIsMenuOpen(true); // Garante que a barra lateral esteja aberta focando na edição
+            }}
+            onUpgrade={(projectId) => {
+              // Aqui chamaremos a integração com Stripe / MercadoPago / Asaas
+              alert(`Iniciando upgrade para o projeto ID: ${projectId}. O checkout será integrado aqui!`);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
