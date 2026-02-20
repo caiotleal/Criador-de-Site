@@ -20,9 +20,9 @@ const LAYOUT_STYLES = [
 ];
 
 const COLORS = [
-  { id: 'teal_pro', name: 'Teal', c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', c5: '#a3f3ff', c6: '#c5f7ff', c7: '#eafffd', light: '#ffffff', dark: '#003333' },
-  { id: 'violet_studio', name: 'Violet', c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', c5: '#d8c5ff', c6: '#ebe1ff', c7: '#f6f1ff', light: '#ffffff', dark: '#24103a' },
-  { id: 'ocean_navy', name: 'Ocean', c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', c5: '#c3e6ff', c6: '#deefff', c7: '#f2f8ff', light: '#ffffff', dark: '#0a1f33' },
+  { id: 'teal_pro', name: 'Teal', c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', light: '#ffffff', dark: '#003333' },
+  { id: 'violet_studio', name: 'Violet', c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', light: '#ffffff', dark: '#24103a' },
+  { id: 'ocean_navy', name: 'Ocean', c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', light: '#ffffff', dark: '#0a1f33' },
 ];
 
 const App: React.FC = () => {
@@ -46,11 +46,12 @@ const App: React.FC = () => {
   const [publishedDomain, setPublishedDomain] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
-    ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
-    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: ''
+    businessName: '', description: '', whatsapp: '', instagram: '', facebook: '',
+    phone: '', email: '', address: '', mapEmbed: '', showForm: true, 
+    layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: ''
   });
 
+  // Listener do Editor Visual (Iframe)
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
       if (event.data?.type === 'CONTENT_EDITED') {
@@ -87,38 +88,10 @@ const App: React.FC = () => {
     replaceAll('{{BUSINESS_NAME}}', data.businessName || 'Sua Empresa');
     replaceAll('{{HERO_TITLE}}', content.heroTitle || `Bem-vindo à ${data.businessName}`);
     replaceAll('{{HERO_SUBTITLE}}', content.heroSubtitle || 'Presença digital profissional.');
-    replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
-    replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
-    replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
-    
-    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
-    replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
-    replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
-    
-    replaceAll('{{ADDRESS}}', data.address || 'Endereço não informado');
-    replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
-    replaceAll('{{EMAIL}}', data.email || 'Email não informado');
+    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_4}}', colors.c4);
+    replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
 
-    if (data.logoBase64) {
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 w-auto object-contain" alt="Logo" />`);
-    } else {
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-bold tracking-tight">${data.businessName || 'Sua Empresa'}</span>`);
-    }
-
-    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes}" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
-
-    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500') : '');
-    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600') : '');
-    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700') : '');
-    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800') : '');
-    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600') : '');
-    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500') : '');
-    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600') : '');
-
-    const mapArea = data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>` : '';
-    replaceAll('[[MAP_AREA]]', mapArea);
-    replaceAll('[[CONTACT_FORM]]', data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold">Enviar mensagem</button></form>` : '');
-
+    // INJEÇÃO DA BARRA DE FERRAMENTAS DO EDITOR VISUAL
     const editorScript = `
       <style>
         .custom-editor-toolbar {
@@ -146,12 +119,14 @@ const App: React.FC = () => {
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           const toolbar = document.getElementById('editor-toolbar');
+          let currentTarget = null;
 
           document.querySelectorAll('h1, h2, h3, h4, p, span, button').forEach(el => {
             el.setAttribute('contenteditable', 'true');
             el.classList.add('editable-element');
             
             el.addEventListener('focus', (e) => {
+              currentTarget = el;
               const rect = el.getBoundingClientRect();
               toolbar.style.display = 'flex';
               toolbar.style.top = (rect.top + window.scrollY - 45) + 'px';
@@ -246,25 +221,21 @@ const App: React.FC = () => {
       const res: any = await publishFn({ projectSlug: currentProjectSlug });
       if (res.data?.publishUrl) setPublishedDomain(res.data.publishUrl.replace(/^https?:\/\//, ''));
       alert("Site publicado com sucesso!");
-    } catch (err: any) { alert('Erro ao publicar.'); } 
+    } catch (err: any) { alert('Erro ao publicar. Verifique o backend.'); } 
     finally { setIsPublishing(false); }
   };
 
-  const handleLoginSubmit = async (email: string, password: string) => {
+  const handleDeleteSite = async (projectId: string) => {
+    if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site. Tem certeza?")) return;
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch {
-      // Se não existir, cria a conta automaticamente
-      await createUserWithEmailAndPassword(auth, email, password);
-    }
-    setIsLoginOpen(false);
-  };
+      const deleteFn = httpsCallable(functions, 'deleteUserProject');
+      await deleteFn({ projectId });
+      alert("Site excluído com sucesso.");
       
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null);
         setCurrentProjectSlug(null);
         setHasUnsavedChanges(false);
-        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) {
@@ -272,8 +243,18 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLoginSubmit = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch {
+      await createUserWithEmailAndPassword(auth, email, password);
+    }
+    setIsLoginOpen(false);
+  };
+
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
+      {/* FRAME DO SITE GERADO */}
       <div className="absolute inset-0 z-0 bg-[#09090b]">
         {generatedHtml ? (
           <iframe srcDoc={generatedHtml} className="w-full h-full border-none bg-white" title="Preview Visual" />
@@ -285,6 +266,7 @@ const App: React.FC = () => {
         )}
       </div>
 
+      {/* HEADER: INFO DO USUÁRIO E DASHBOARD */}
       {loggedUserEmail && (
         <div className="fixed top-4 right-4 md:right-6 z-[90] flex items-center gap-3">
           <button onClick={() => setIsDashboardOpen(true)} className="bg-zinc-900/90 backdrop-blur-md border border-zinc-700 hover:border-indigo-500 text-white px-5 py-2.5 rounded-full shadow-xl font-bold flex items-center gap-2 transition-all">
@@ -293,6 +275,7 @@ const App: React.FC = () => {
         </div>
       )}
 
+      {/* BARRA FLUTUANTE DE PUBLICAÇÃO */}
       {generatedHtml && (
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 left-1/2 -translate-x-1/2 z-[85] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
           <button 
@@ -300,9 +283,11 @@ const App: React.FC = () => {
             className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
           >
             {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
-            {currentProjectSlug ? 'Atualizar Site' : 'Guardar Site'}
+            {currentProjectSlug ? 'Atualizar Site' : 'Salvar Site'}
           </button>
+
           <div className="w-px h-6 bg-zinc-700 mx-1"></div>
+
           <button 
             onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
             className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
@@ -314,6 +299,7 @@ const App: React.FC = () => {
 
       <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
 
+      {/* SIDEBAR INTELIGENTE */}
       <motion.div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
@@ -324,6 +310,7 @@ const App: React.FC = () => {
               </div>
 
               <div className="p-5 overflow-y-auto custom-scrollbar max-h-[75vh] space-y-5">
+                
                 <div className="space-y-3">
                   <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Nome do Negócio" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
                   <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Ideia do site..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
@@ -335,32 +322,38 @@ const App: React.FC = () => {
 
                 {generatedHtml && (
                   <div className="pt-4 border-t border-zinc-800 space-y-5">
+                    
                     <div className="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/30 text-xs text-indigo-300">
-                      ✨ <strong>Dica:</strong> Clique nos textos do site à direita para alterar cores, tamanhos e fontes!
+                      ✨ <strong>Dica:</strong> Clique nos textos do site à direita para alterar as cores, tamanhos e fontes livremente!
                     </div>
+
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-zinc-500 uppercase">Layout Principal</label>
                       <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
                         {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                       </select>
                     </div>
+
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-zinc-500 uppercase">Tema de Cores</label>
                       <div className="flex gap-2 flex-wrap">
                         {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent'}`} style={{ backgroundColor: c.c4 }} />)}
                       </div>
                     </div>
+
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-zinc-500 uppercase">Redes Sociais</label>
                       <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
                       <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs mt-2" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                     </div>
+
                     <div className="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
                       <h4 className="text-sm font-bold text-white flex items-center gap-2"><Globe size={16} className="text-emerald-400"/> Domínio Profissional</h4>
                       <p className="text-[11px] text-zinc-400 leading-relaxed">
-                        Para ter um site <strong>.com.br</strong>, registre o nome no <a href="https://registro.br" target="_blank" rel="noreferrer" className="text-emerald-400 underline">Registro.br</a> e configure o seu DNS.
+                        Para ter um site <strong>.com.br</strong>, registre o nome no <a href="https://registro.br" target="_blank" rel="noreferrer" className="text-emerald-400 underline">Registro.br</a> e configure o seu DNS. Seu site provisório já está sendo salvo.
                       </p>
                     </div>
+
                   </div>
                 )}
               </div>
@@ -371,6 +364,7 @@ const App: React.FC = () => {
         </AnimatePresence>
       </motion.div>
 
+      {/* DASHBOARD DE CLIENTE COM OPÇÃO DE DELETAR */}
       <AnimatePresence>
         {isDashboardOpen && (
           <ClientDashboard 
@@ -386,7 +380,7 @@ const App: React.FC = () => {
               setIsMenuOpen(true);
             }}
             onDeleteProject={handleDeleteSite}
-            onUpgrade={(projectId) => alert(`Redirecionando para o checkout do projeto: ${projectId}`)}
+            onUpgrade={(projectId) => alert(`A redirecionar para o pagamento do projeto: ${projectId}`)}
           />
         )}
       </AnimatePresence>
