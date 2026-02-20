@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, AlertCircle, Edit3, CreditCard, ExternalLink, Globe, LayoutDashboard } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, Edit3, CreditCard, ExternalLink, Globe, LayoutDashboard, Trash2 } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -9,7 +9,7 @@ interface Project {
   officialDomain?: string;
   createdAt: any;
   status: 'active' | 'expired' | 'pending';
-  isPaid?: boolean; // Define se o cliente já comprou
+  isPaid?: boolean;
 }
 
 interface ClientDashboardProps {
@@ -17,17 +17,17 @@ interface ClientDashboardProps {
   userEmail: string;
   onEditProject: (project: Project) => void;
   onUpgrade: (projectId: string) => void;
+  onDeleteProject: (projectId: string) => void;
   onClose: () => void;
 }
 
-const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, onEditProject, onUpgrade, onClose }) => {
+const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, onEditProject, onUpgrade, onDeleteProject, onClose }) => {
   
-  // Função para calcular os dias restantes do teste grátis (5 dias)
   const calculateDaysLeft = (createdAt: any) => {
     if (!createdAt) return 0;
     const createdDate = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
     const expirationDate = new Date(createdDate);
-    expirationDate.setDate(expirationDate.getDate() + 5); // 5 dias de teste
+    expirationDate.setDate(expirationDate.getDate() + 5); 
     
     const today = new Date();
     const diffTime = expirationDate.getTime() - today.getTime();
@@ -43,7 +43,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, 
         animate={{ opacity: 1, scale: 1, y: 0 }}
         className="bg-[#0c0c0e] w-full max-w-5xl h-[85vh] rounded-3xl border border-zinc-800 shadow-2xl flex flex-col overflow-hidden"
       >
-        {/* HEADER DO PAINEL */}
         <div className="bg-zinc-900/50 border-b border-zinc-800 p-6 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="bg-indigo-500/10 p-3 rounded-xl">
@@ -59,7 +58,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, 
           </button>
         </div>
 
-        {/* LISTAGEM DE PROJETOS */}
         <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
           {projects.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-zinc-500 space-y-4">
@@ -78,14 +76,21 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, 
                     whileHover={{ y: -4 }}
                     className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col justify-between group transition-colors hover:border-zinc-700"
                   >
-                    {/* TOPO DO CARD: Nome e Status */}
                     <div className="space-y-4">
                       <div className="flex justify-between items-start">
                         <h3 className="font-bold text-lg text-white truncate pr-2" title={project.businessName}>
                           {project.businessName || 'Meu Site'}
                         </h3>
-                        
-                        {/* BADGES DE STATUS */}
+                        <button 
+                          onClick={() => onDeleteProject(project.id)}
+                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
+                          title="Excluir Site Definitivamente"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
                         {project.isPaid ? (
                           <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-500/20">
                             <CheckCircle size={10} /> PREMIUM
@@ -103,17 +108,11 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, 
 
                       <div className="space-y-1.5">
                         <p className="text-xs text-zinc-500 flex items-center gap-1.5">
-                          <Globe size={12} /> {project.internalDomain}
+                          <Globe size={12} /> {project.internalDomain}.web.app
                         </p>
-                        {project.officialDomain && project.officialDomain !== 'Pendente' && (
-                          <p className="text-xs text-indigo-400 flex items-center gap-1.5 font-medium">
-                            <CheckCircle size={12} /> {project.officialDomain}
-                          </p>
-                        )}
                       </div>
                     </div>
 
-                    {/* BARRA DE PROGRESSO DO TESTE GRÁTIS */}
                     {!project.isPaid && (
                       <div className="mt-5 mb-2">
                         <div className="flex justify-between text-[10px] text-zinc-500 mb-1.5 font-medium">
@@ -131,20 +130,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, 
                       </div>
                     )}
 
-                    {/* BOTÕES DE AÇÃO */}
                     <div className="pt-5 mt-auto border-t border-zinc-800/50 flex flex-col gap-2">
                       <div className="flex gap-2">
                         <button 
-                          onClick={() => {
-                            onEditProject(project);
-                            onClose();
-                          }}
+                          onClick={() => onEditProject(project)}
                           className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-xs py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
                         >
                           <Edit3 size={14} /> Editar Site
                         </button>
                         <a 
-                          href={`https://${project.internalDomain}`} 
+                          href={`https://${project.internalDomain}.web.app`} 
                           target="_blank" 
                           rel="noreferrer"
                           className="px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl flex items-center justify-center transition-colors"
@@ -154,14 +149,11 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ projects, userEmail, 
                         </a>
                       </div>
                       
-                      {/* BOTÃO DE PAGAMENTO (UPGRADE) */}
                       {!project.isPaid && (
                         <button 
                           onClick={() => onUpgrade(project.id)}
                           className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg
-                            ${isExpired 
-                              ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse' 
-                              : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+                            ${isExpired ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
                         >
                           <CreditCard size={14} /> 
                           {isExpired ? 'Desbloquear Site Agora' : 'Ativar Plano Premium'}
