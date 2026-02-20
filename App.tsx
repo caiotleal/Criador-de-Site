@@ -19,10 +19,11 @@ const LAYOUT_STYLES = [
   { id: 'layout_menu_hamburguer', label: 'Menu Hambúrguer', desc: 'Menu moderno' },
 ];
 
+// PALETA COM AS 7 CORES RESTAURADAS
 const COLORS = [
-  { id: 'teal_pro', name: 'Teal', c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', light: '#ffffff', dark: '#003333' },
-  { id: 'violet_studio', name: 'Violet', c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', light: '#ffffff', dark: '#24103a' },
-  { id: 'ocean_navy', name: 'Ocean', c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', light: '#ffffff', dark: '#0a1f33' },
+  { id: 'teal_pro', name: 'Teal', c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', c5: '#a3f3ff', c6: '#c5f7ff', c7: '#eafffd', light: '#ffffff', dark: '#003333' },
+  { id: 'violet_studio', name: 'Violet', c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', c5: '#d8c5ff', c6: '#ebe1ff', c7: '#f6f1ff', light: '#ffffff', dark: '#24103a' },
+  { id: 'ocean_navy', name: 'Ocean', c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', c5: '#c3e6ff', c6: '#deefff', c7: '#f2f8ff', light: '#ffffff', dark: '#0a1f33' },
 ];
 
 const App: React.FC = () => {
@@ -46,10 +47,19 @@ const App: React.FC = () => {
   const [publishedDomain, setPublishedDomain] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    businessName: '', description: '', whatsapp: '', instagram: '', facebook: '',
-    phone: '', email: '', address: '', mapEmbed: '', showForm: true, 
-    layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: ''
+    businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
+    ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
+    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: ''
   });
+
+  // O SEGREDO DA ATUALIZAÇÃO EM TEMPO REAL: Se mudar o formData, regera o site visualmente
+  useEffect(() => {
+    // Nós só regeramos automaticamente se houver conteúdo base da IA gerado
+    if (aiContent) {
+      setGeneratedHtml(renderTemplate(aiContent, formData));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta]);
 
   // Listener do Editor Visual (Iframe)
   useEffect(() => {
@@ -88,10 +98,41 @@ const App: React.FC = () => {
     replaceAll('{{BUSINESS_NAME}}', data.businessName || 'Sua Empresa');
     replaceAll('{{HERO_TITLE}}', content.heroTitle || `Bem-vindo à ${data.businessName}`);
     replaceAll('{{HERO_SUBTITLE}}', content.heroSubtitle || 'Presença digital profissional.');
-    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_4}}', colors.c4);
-    replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
+    replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
+    replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
+    replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
+    
+    // TODAS AS 7 CORES APLICADAS
+    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
+    replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
+    replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
+    
+    replaceAll('{{ADDRESS}}', data.address || 'Endereço não informado');
+    replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
+    replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    // INJEÇÃO DA BARRA DE FERRAMENTAS DO EDITOR VISUAL
+    // LÓGICA DO LOGO RESTAURADA
+    if (data.logoBase64) {
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 w-auto object-contain" alt="Logo" />`);
+    } else {
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-bold tracking-tight">${data.businessName || 'Sua Empresa'}</span>`);
+    }
+
+    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes}" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
+
+    // REDES SOCIAIS COMPLETAS
+    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500') : '');
+    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600') : '');
+    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700') : '');
+    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800') : '');
+    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600') : '');
+    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500') : '');
+    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600') : '');
+
+    const mapArea = data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>` : '';
+    replaceAll('[[MAP_AREA]]', mapArea);
+    replaceAll('[[CONTACT_FORM]]', data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold">Enviar mensagem</button></form>` : '');
+
     const editorScript = `
       <style>
         .custom-editor-toolbar {
@@ -119,14 +160,12 @@ const App: React.FC = () => {
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           const toolbar = document.getElementById('editor-toolbar');
-          let currentTarget = null;
 
           document.querySelectorAll('h1, h2, h3, h4, p, span, button').forEach(el => {
             el.setAttribute('contenteditable', 'true');
             el.classList.add('editable-element');
             
             el.addEventListener('focus', (e) => {
-              currentTarget = el;
               const rect = el.getBoundingClientRect();
               toolbar.style.display = 'flex';
               toolbar.style.top = (rect.top + window.scrollY - 45) + 'px';
@@ -184,6 +223,17 @@ const App: React.FC = () => {
     finally { setIsGenerating(false); }
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(p => ({ ...p, logoBase64: reader.result as string }));
+      setHasUnsavedChanges(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSaveOrUpdateSite = async () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
     setIsSavingProject(true);
@@ -193,8 +243,9 @@ const App: React.FC = () => {
       const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
 
       if (currentProjectSlug) {
+        // Garantindo que a requisição envie os dois possíveis nomes de variável para o Backend não quebrar
         const updateFn = httpsCallable(functions, 'updateSiteProject');
-        await updateFn({ projectId: currentProjectSlug, html: generatedHtml, formData });
+        await updateFn({ projectId: currentProjectSlug, projectSlug: currentProjectSlug, html: generatedHtml, formData });
       } else {
         const saveFn = httpsCallable(functions, 'saveSiteProject');
         const res: any = await saveFn({
@@ -209,7 +260,7 @@ const App: React.FC = () => {
       setLastSavedAt(new Date());
       fetchProjects();
       alert("Site guardado com sucesso!");
-    } catch (err: any) { alert('Erro ao guardar site.'); } 
+    } catch (err: any) { alert('Erro ao guardar site. Verifique o console.'); } 
     finally { setIsSavingProject(false); }
   };
 
@@ -218,24 +269,25 @@ const App: React.FC = () => {
     setIsPublishing(true);
     try {
       const publishFn = httpsCallable(functions, 'publishUserProject');
-      const res: any = await publishFn({ projectSlug: currentProjectSlug });
+      const res: any = await publishFn({ projectSlug: currentProjectSlug, projectId: currentProjectSlug });
       if (res.data?.publishUrl) setPublishedDomain(res.data.publishUrl.replace(/^https?:\/\//, ''));
       alert("Site publicado com sucesso!");
-    } catch (err: any) { alert('Erro ao publicar. Verifique o backend.'); } 
+    } catch (err: any) { alert('Erro ao publicar.'); } 
     finally { setIsPublishing(false); }
   };
 
   const handleDeleteSite = async (projectId: string) => {
-    if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site. Tem certeza?")) return;
+    if (!window.confirm("Esta ação apagará definitivamente o seu site. Tem a certeza?")) return;
     try {
       const deleteFn = httpsCallable(functions, 'deleteUserProject');
-      await deleteFn({ projectId });
+      await deleteFn({ projectId, projectSlug: projectId });
       alert("Site excluído com sucesso.");
       
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null);
         setCurrentProjectSlug(null);
         setHasUnsavedChanges(false);
+        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) {
@@ -266,7 +318,7 @@ const App: React.FC = () => {
         )}
       </div>
 
-      {/* HEADER: INFO DO USUÁRIO E DASHBOARD */}
+      {/* HEADER */}
       {loggedUserEmail && (
         <div className="fixed top-4 right-4 md:right-6 z-[90] flex items-center gap-3">
           <button onClick={() => setIsDashboardOpen(true)} className="bg-zinc-900/90 backdrop-blur-md border border-zinc-700 hover:border-indigo-500 text-white px-5 py-2.5 rounded-full shadow-xl font-bold flex items-center gap-2 transition-all">
@@ -311,6 +363,7 @@ const App: React.FC = () => {
 
               <div className="p-5 overflow-y-auto custom-scrollbar max-h-[75vh] space-y-5">
                 
+                {/* FASE 1: DADOS INICIAIS */}
                 <div className="space-y-3">
                   <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Nome do Negócio" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
                   <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Ideia do site..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
@@ -320,11 +373,29 @@ const App: React.FC = () => {
                   {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Textos c/ IA' : 'Gerar Meu Site'}
                 </button>
 
+                {/* FASE 2: OPÇÕES COMPLETAS DEPOIS DE GERADO */}
                 {generatedHtml && (
                   <div className="pt-4 border-t border-zinc-800 space-y-5">
                     
                     <div className="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/30 text-xs text-indigo-300">
                       ✨ <strong>Dica:</strong> Clique nos textos do site à direita para alterar as cores, tamanhos e fontes livremente!
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
+                        <span>Logo do Site</span> 
+                        {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px]"><X size={12} /></button>}
+                      </label>
+                      {!formData.logoBase64 ? (
+                        <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors">
+                          <Upload size={14} /> Carregar Imagem 
+                          <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                        </label>
+                      ) : (
+                        <div className="h-12 bg-white/5 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden">
+                          <img src={formData.logoBase64} className="h-full object-contain" alt="Preview Logo" />
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -337,21 +408,23 @@ const App: React.FC = () => {
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-zinc-500 uppercase">Tema de Cores</label>
                       <div className="flex gap-2 flex-wrap">
-                        {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent'}`} style={{ backgroundColor: c.c4 }} />)}
+                        {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent'}`} style={{ backgroundColor: c.c4 }} title={c.name} />)}
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-zinc-500 uppercase">Redes Sociais</label>
+                      <label className="text-xs font-bold text-zinc-500 uppercase">Redes Sociais (Links)</label>
                       <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
                       <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs mt-2" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                    </div>
-
-                    <div className="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
-                      <h4 className="text-sm font-bold text-white flex items-center gap-2"><Globe size={16} className="text-emerald-400"/> Domínio Profissional</h4>
-                      <p className="text-[11px] text-zinc-400 leading-relaxed">
-                        Para ter um site <strong>.com.br</strong>, registre o nome no <a href="https://registro.br" target="_blank" rel="noreferrer" className="text-emerald-400 underline">Registro.br</a> e configure o seu DNS. Seu site provisório já está sendo salvo.
-                      </p>
+                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs mt-2" placeholder="TikTok" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs mt-2" placeholder="Facebook" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
+                      
+                      <label className="text-xs font-bold text-zinc-500 uppercase mt-4 block">Delivery (Links)</label>
+                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="iFood" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="99 Food" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="Keeta" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                      </div>
                     </div>
 
                   </div>
@@ -364,7 +437,6 @@ const App: React.FC = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* DASHBOARD DE CLIENTE COM OPÇÃO DE DELETAR */}
       <AnimatePresence>
         {isDashboardOpen && (
           <ClientDashboard 
@@ -380,7 +452,7 @@ const App: React.FC = () => {
               setIsMenuOpen(true);
             }}
             onDeleteProject={handleDeleteSite}
-            onUpgrade={(projectId) => alert(`A redirecionar para o pagamento do projeto: ${projectId}`)}
+            onUpgrade={(projectId) => alert(`Redirecionando para o checkout do projeto: ${projectId}`)}
           />
         )}
       </AnimatePresence>
