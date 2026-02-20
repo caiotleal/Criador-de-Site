@@ -254,53 +254,7 @@ exports.generateSite = onCall({
   }
 });
 
-exports.checkDomainAvailability = onCall({
-  cors: true,
-  timeoutSeconds: 30,
-}, async (request) => {
-  const { desiredDomain } = request.data || {};
-
-  if (!desiredDomain) {
-    throw new HttpsError("invalid-argument", "O domínio desejado é obrigatório.");
-  }
-
-  const cleanDomain = slugify(desiredDomain).slice(0, 30);
-  const db = admin.firestore();
-  const snapshot = await db.collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
-
-  let isAvailable = true;
-
-  if (!snapshot.empty) {
-    isAvailable = false;
-  } else {
-    try {
-      const response = await fetch(`https://${cleanDomain}.web.app`);
-      if (response.ok) {
-        isAvailable = false;
-      }
-    } catch (error) {
-      isAvailable = true;
-    }
-  }
-
-  if (isAvailable) {
-    return { available: true, cleanDomain };
-  }
-
-  const suffixes = ["-oficial", "-online", "-web"];
-  const suggestions = suffixes.map(suffix => {
-    const maxBaseLength = 30 - suffix.length;
-    return `${cleanDomain.slice(0, maxBaseLength)}${suffix}`;
-  });
-
-  return {
-    available: false,
-    cleanDomain,
-    message: "Este endereço já está em uso.",
-    suggestions: suggestions
-  };
-});
-
+// Atualizado para a nova lógica baseada no `internalDomain`
 exports.saveSiteProject = onCall({
   cors: true,
   timeoutSeconds: 120,
@@ -309,18 +263,18 @@ exports.saveSiteProject = onCall({
   const uid = ensureAuthed(request);
   const {
     businessName,
-    chosenDomain,
+    internalDomain, // Novo ID seguro
+    officialDomain, // Novo formato do domínio
     generatedHtml,
     formData,
     aiContent,
   } = request.data || {};
 
-  if (!businessName || !generatedHtml) {
-    throw new HttpsError("invalid-argument", "businessName e generatedHtml são obrigatórios.");
+  if (!businessName || !generatedHtml || !internalDomain) {
+    throw new HttpsError("invalid-argument", "Nome da empresa, domínio interno e HTML são obrigatórios.");
   }
 
-  // URL limpa baseada na escolha do usuário ou no nome da empresa como fallback
-  const projectSlug = slugify(chosenDomain || businessName).slice(0, 30);
+  const projectSlug = internalDomain; 
   const hostingSiteId = projectSlug;
   const repoName = `site-${projectSlug}`;
 
@@ -337,6 +291,8 @@ exports.saveSiteProject = onCall({
     projectSlug,
     repoName,
     hostingSiteId,
+    internalDomain,
+    officialDomain: officialDomain || "Pendente",
     generatedHtml,
     formData: formData || {},
     aiContent: aiContent || {},
@@ -359,24 +315,30 @@ exports.saveSiteProject = onCall({
   };
 });
 
+// Atualizado para aceitar o novo formato (html vs updatedHtml)
 exports.updateSiteProject = onCall({
   cors: true,
   timeoutSeconds: 60,
   memory: "256MiB",
 }, async (request) => {
   const uid = ensureAuthed(request);
-  const { projectSlug, updatedHtml, updatedAiContent } = request.data || {};
+  
+  // O Front-end pode enviar projectId ou projectSlug e html ou updatedHtml
+  const { projectId, projectSlug, html, updatedHtml, formData, aiContent } = request.data || {};
+  const targetId = projectId || projectSlug;
+  const targetHtml = html || updatedHtml;
 
-  if (!projectSlug || !updatedHtml) {
-    throw new HttpsError("invalid-argument", "projectSlug e updatedHtml são obrigatórios para atualizar.");
+  if (!targetId || !targetHtml) {
+    throw new HttpsError("invalid-argument", "ID do projeto e HTML são obrigatórios para atualizar.");
   }
 
   const db = admin.firestore();
-  const ref = db.collection("users").doc(uid).collection("projects").doc(projectSlug);
+  const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
 
   await ref.update({
-    generatedHtml: updatedHtml,
-    aiContent: updatedAiContent || {},
+    generatedHtml: targetHtml,
+    ...(formData && { formData }),
+    ...(aiContent && { aiContent }),
     needsDeploy: true,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -396,19 +358,21 @@ exports.listUserProjects = onCall({ cors: true }, async (request) => {
   };
 });
 
+// Atualizado para pegar a variável projectId também
 exports.publishUserProject = onCall({
   cors: true,
   timeoutSeconds: 180,
   memory: "512MiB",
 }, async (request) => {
   const uid = ensureAuthed(request);
-  const { projectSlug } = request.data || {};
+  const { projectSlug, projectId } = request.data || {};
+  const targetId = projectId || projectSlug;
 
-  if (!projectSlug) {
-    throw new HttpsError("invalid-argument", "projectSlug é obrigatório.");
+  if (!targetId) {
+    throw new HttpsError("invalid-argument", "ID do projeto é obrigatório para publicar.");
   }
 
-  const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug);
+  const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
   const snap = await ref.get();
 
   if (!snap.exists) {
@@ -450,7 +414,6 @@ exports.publishUserProject = onCall({
   } catch (error) {
     console.error("Erro publishUserProject:", error);
     
-    // Regra para apagar o projeto do banco se o Host tiver sido removido manualmente
     const errorMessage = error.message ? error.message.toLowerCase() : "";
     if (errorMessage.includes("404") || errorMessage.includes("not found") || errorMessage.includes("deleted")) {
       await ref.delete();
@@ -469,4 +432,45 @@ exports.publishUserProject = onCall({
       { message: error?.message || "erro desconhecido" },
     );
   }
+});
+
+// NOVA FUNÇÃO: Deletar site (Apaga banco de dados e tenta remover o projeto do Hosting)
+exports.deleteUserProject = onCall({
+  cors: true,
+  timeoutSeconds: 60,
+}, async (request) => {
+  const uid = ensureAuthed(request);
+  const { projectId, projectSlug } = request.data || {};
+  const targetId = projectId || projectSlug;
+
+  if (!targetId) {
+    throw new HttpsError("invalid-argument", "ID do projeto é obrigatório para deletar.");
+  }
+
+  const db = admin.firestore();
+  const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
+  const snap = await ref.get();
+
+  if (snap.exists) {
+    const data = snap.data();
+    const siteId = data.hostingSiteId;
+    
+    // Tenta remover o site do Firebase Hosting via API REST
+    if (siteId) {
+      try {
+        const projectIdEnv = process.env.GCLOUD_PROJECT;
+        const token = await getFirebaseAccessToken();
+        await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${siteId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (e) {
+        console.error("Aviso: Falha ao deletar o site no Firebase Hosting, prosseguindo com a deleção no Firestore.", e);
+      }
+    }
+
+    await ref.delete();
+  }
+
+  return { success: true, message: "Projeto deletado com sucesso." };
 });
