@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
+// 1. IMPORTANDO O COMPONENTE DE DOMÍNIO
+import DomainChecker from './components/DomainChecker'; // Certifique-se que o caminho está correto
 
 const LAYOUT_STYLES = [
   { id: 'layout_split_duplo', label: 'Split Duplo', desc: 'Hero em duas colunas com bloco de diferencial.' },
@@ -66,6 +68,9 @@ const App: React.FC = () => {
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
 
+  // 2. ESTADO PARA ARMAZENAR O DOMÍNIO VALIDADO
+  const [chosenDomain, setChosenDomain] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     businessName: '',
     description: '',
@@ -86,14 +91,12 @@ const App: React.FC = () => {
     logoBase64: ''
   });
 
-
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setLoggedUserEmail(user?.email || null);
     });
     return () => unsub();
   }, []);
-
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -111,6 +114,7 @@ const App: React.FC = () => {
     };
     fetchProjects();
   }, [loggedUserEmail]);
+
   const renderTemplate = (content: any, data: typeof formData) => {
     let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_split_duplo'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
@@ -210,7 +214,6 @@ const App: React.FC = () => {
     zip.generateAsync({ type: 'blob' }).then(c => saveAs(c, `${formData.businessName}.zip`));
   };
 
-
   const handleLoginSubmit = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -225,6 +228,12 @@ const App: React.FC = () => {
       setIsLoginOpen(true);
       return;
     }
+    
+    // Trava para exigir a escolha do domínio antes de publicar
+    if (!currentProjectSlug && !chosenDomain) {
+      alert("Por favor, escolha e valide um domínio na barra lateral antes de publicar.");
+      return;
+    }
 
     try {
       setIsPublishing(true);
@@ -234,6 +243,7 @@ const App: React.FC = () => {
         const saveFn = httpsCallable(functions, 'saveSiteProject');
         const saveRes: any = await saveFn({
           businessName: formData.businessName,
+          chosenDomain: chosenDomain, // Enviando o domínio validado
           generatedHtml,
           formData,
           aiContent,
@@ -268,12 +278,19 @@ const App: React.FC = () => {
       return;
     }
     if (!generatedHtml) return;
+    
+    // Trava para exigir a escolha do domínio antes de salvar
+    if (!currentProjectSlug && !chosenDomain) {
+      alert("Por favor, escolha e valide um domínio na barra lateral antes de salvar.");
+      return;
+    }
 
     setIsSavingProject(true);
     try {
       const saveFn = httpsCallable(functions, 'saveSiteProject');
       const res: any = await saveFn({
         businessName: formData.businessName,
+        chosenDomain: chosenDomain, // Enviando o domínio validado
         generatedHtml,
         formData,
         aiContent,
@@ -303,12 +320,15 @@ const App: React.FC = () => {
     setGeneratedHtml(project.generatedHtml || null);
     setCurrentProjectSlug(project.projectSlug || project.id || null);
     if (project.publishUrl) setPublishedDomain(String(project.publishUrl).replace(/^https?:\/\//, ''));
+    // Definimos chosenDomain como o slug para liberar o botão de publicar/salvar
+    setChosenDomain(project.projectSlug || project.id || null);
   };
 
   const handleLogout = async () => {
     await signOut(auth);
     setSavedProjects([]);
     setCurrentProjectSlug(null);
+    setChosenDomain(null);
   };
 
   return (
@@ -330,6 +350,7 @@ const App: React.FC = () => {
         </div>
       )}
 
+      {/* Botão flutuante para Publicar (Centro da Tela) */}
       {generatedHtml && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -348,8 +369,9 @@ const App: React.FC = () => {
             <div className="space-y-2">
               <button
                 onClick={handlePublishSite}
-                disabled={isPublishing || !generatedHtml}
-                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
+                // O botão bloqueia se isPublishing = true, se não houver HTML gerado, ou (se for projeto novo) se chosenDomain for nulo
+                disabled={isPublishing || !generatedHtml || (!currentProjectSlug && !chosenDomain)}
+                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white px-5 py-4 rounded-2xl shadow-2xl text-sm md:text-base font-bold flex items-center gap-2 border-2 border-white/40"
               >
                 <Globe size={16} /> {isPublishing ? 'Publicando...' : 'Publicar site e gerar domínio'}
               </button>
@@ -369,6 +391,7 @@ const App: React.FC = () => {
         onSubmit={handleLoginSubmit}
       />
 
+      {/* SIDEBAR (Menu Lateral Direto) */}
       <motion.div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
@@ -378,6 +401,8 @@ const App: React.FC = () => {
                 <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded"><Minimize2 size={18} /></button>
               </div>
               <div className="p-5 overflow-y-auto custom-scrollbar space-y-5 max-h-[80vh]">
+                
+                {/* 1. SEÇÃO NOME E IDEIA */}
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Nome</label>
@@ -387,9 +412,9 @@ const App: React.FC = () => {
                     <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia</label>
                     <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none" placeholder="Ex: restaurante familiar..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                   </div>
-                  <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa (https://www.google.com/maps/embed?... )" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
                 </div>
 
+                {/* 2. SEÇÃO CONTATO E MAPA */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={12} /> Contato base</label>
                   <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="Endereço" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
@@ -400,6 +425,7 @@ const App: React.FC = () => {
                   <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="URL embed do mapa (https://www.google.com/maps/embed?... )" value={formData.mapEmbed} onChange={e => setFormData({ ...formData, mapEmbed: e.target.value })} />
                 </div>
 
+                {/* 3. SEÇÃO REDES SOCIAIS E DELIVERY */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={12} /> Redes e Delivery</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -414,6 +440,7 @@ const App: React.FC = () => {
                   <label className="flex items-center gap-2 text-xs text-zinc-300"><input type="checkbox" checked={formData.showForm} onChange={e => setFormData({ ...formData, showForm: e.target.checked })} /> Habilitar formulário de contato</label>
                 </div>
 
+                {/* 4. SEÇÃO LOGO */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between"><span>Logo</span> {formData.logoBase64 && <button onClick={() => setFormData(p => ({ ...p, logoBase64: '' }))} className="text-red-400 text-[10px]"><X size={10} /></button>}</label>
                   {!formData.logoBase64 ? (
@@ -423,6 +450,7 @@ const App: React.FC = () => {
                   )}
                 </div>
 
+                {/* 5. SEÇÃO ESTILO VISUAL */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase"><Layout size={12} className="inline mr-1" /> Estilo</label>
                   <div className="grid grid-cols-1 gap-2">
@@ -432,6 +460,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
+                {/* 6. SEÇÃO COR */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase"><Palette size={12} className="inline mr-1" /> Cor</label>
                   <div className="flex gap-2 flex-wrap">
@@ -441,12 +470,31 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
+                {/* 7. NOVA SEÇÃO: DOMÍNIO */}
+                {/* Ocultamos a escolha de domínio se o projeto já existir e estiver sendo carregado do banco */}
+                {!currentProjectSlug && (
+                  <div className="space-y-2 border-t border-zinc-700 pt-4">
+                    <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={12} /> Endereço do Site</label>
+                    <DomainChecker onDomainSelected={(domain) => setChosenDomain(domain)} />
+                  </div>
+                )}
+
+                {/* 8. BOTÕES DE AÇÃO PRINCIPAIS */}
                 <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2">
                   {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Regerar Textos' : 'Criar Site'}
                 </button>
                 {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-xl text-sm flex items-center justify-center gap-2"><Download size={16} /> Baixar HTML</button>}
-                {generatedHtml && <button onClick={handleSaveProject} disabled={isSavingProject} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white py-2 rounded-xl text-sm font-bold">{isSavingProject ? 'Salvando...' : 'Salvar projeto (GitHub + Firebase)'}</button>}
+                {generatedHtml && (
+                  <button 
+                    onClick={handleSaveProject} 
+                    disabled={isSavingProject || (!currentProjectSlug && !chosenDomain)} 
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-2 rounded-xl text-sm font-bold"
+                  >
+                    {isSavingProject ? 'Salvando...' : 'Salvar projeto (GitHub + Firebase)'}
+                  </button>
+                )}
 
+                {/* 9. LISTAGEM DE PROJETOS SALVOS */}
                 {loggedUserEmail && (
                   <div className="border border-zinc-700 rounded-xl p-3 space-y-2">
                     <div className="flex items-center justify-between">
