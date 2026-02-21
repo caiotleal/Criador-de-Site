@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket, Settings, Palette, Upload, Layout, Download,
-  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin
+  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -20,19 +20,21 @@ const LAYOUT_STYLES = [
   { id: 'layout_cards_moderno', label: 'Cards Moderno', desc: 'Seções em cards' },
 ];
 
+// 10 PALETAS COM DEGRADÊ DE 3 CORES (c4 -> c5 -> c6)
 const COLORS = [
-  // DARK MODE (Tom sobre Tom)
-  { id: 'dark_blue', name: 'Azul Profundo', c1: '#f8fafc', c2: '#93c5fd', c3: '#60a5fa', c4: '#3b82f6', c5: '#475569', c6: '#1e293b', c7: '#172033', light: '#0f172a', dark: '#f8fafc' },
-  { id: 'dark_green', name: 'Verde Musgo', c1: '#ecfdf5', c2: '#6ee7b7', c3: '#34d399', c4: '#10b981', c5: '#047857', c6: '#065f46', c7: '#064e3b', light: '#022c22', dark: '#ecfdf5' },
-  { id: 'dark_purple', name: 'Roxo Noturno', c1: '#faf5ff', c2: '#d8b4fe', c3: '#c084fc', c4: '#a855f7', c5: '#7e22ce', c6: '#581c87', c7: '#4c1875', light: '#3b0764', dark: '#faf5ff' },
-  { id: 'dark_zinc', name: 'Grafite Escuro', c1: '#fafafa', c2: '#e5e5e5', c3: '#d4d4d4', c4: '#a3a3a3', c5: '#525252', c6: '#404040', c7: '#262626', light: '#18181b', dark: '#fafafa' },
-  { id: 'dark_red', name: 'Vinho Tinto', c1: '#fff1f2', c2: '#fda4af', c3: '#fb7185', c4: '#f43f5e', c5: '#be123c', c6: '#881337', c7: '#6b102b', light: '#4c0519', dark: '#fff1f2' },
-  // LIGHT MODE (Tom sobre Tom)
-  { id: 'light_blue', name: 'Azul Céu', c1: '#0f172a', c2: '#1e40af', c3: '#1d4ed8', c4: '#2563eb', c5: '#bfdbfe', c6: '#dbeafe', c7: '#eff6ff', light: '#f8fafc', dark: '#0f172a' },
-  { id: 'light_green', name: 'Menta Suave', c1: '#022c22', c2: '#065f46', c3: '#047857', c4: '#059669', c5: '#a7f3d0', c6: '#d1fae5', c7: '#ecfdf5', light: '#f0fdf4', dark: '#022c22' },
-  { id: 'light_orange', name: 'Pêssego', c1: '#431407', c2: '#9a3412', c3: '#c2410c', c4: '#ea580c', c5: '#fed7aa', c6: '#ffedd5', c7: '#fff7ed', light: '#fffaf5', dark: '#431407' },
-  { id: 'light_purple', name: 'Lavanda', c1: '#3b0764', c2: '#6b21a8', c3: '#7e22ce', c4: '#9333ea', c5: '#e9d5ff', c6: '#f3e8ff', c7: '#faf5ff', light: '#fdfbff', dark: '#3b0764' },
-  { id: 'light_zinc', name: 'Prata Claro', c1: '#18181b', c2: '#3f3f46', c3: '#525252', c4: '#71717a', c5: '#d4d4d4', c6: '#e4e4e7', c7: '#f4f4f5', light: '#fafafa', dark: '#18181b' },
+  // DARK MODE (Fundos escuros)
+  { id: 'cyberpunk', name: 'Cyberpunk', c1: '#09090b', c2: '#18181b', c3: '#27272a', c4: '#06b6d4', c5: '#8b5cf6', c6: '#ec4899', c7: '#fbcfe8', light: '#09090b', dark: '#f8fafc' },
+  { id: 'ocean', name: 'Oceano Profundo', c1: '#020617', c2: '#0f172a', c3: '#1e293b', c4: '#2563eb', c5: '#0d9488', c6: '#10b981', c7: '#ccfbf1', light: '#020617', dark: '#f8fafc' },
+  { id: 'sunset', name: 'Pôr do Sol', c1: '#1a0505', c2: '#2a0a18', c3: '#431407', c4: '#e11d48', c5: '#ea580c', c6: '#eab308', c7: '#fef08a', light: '#1a0505', dark: '#f8fafc' },
+  { id: 'aurora', name: 'Aurora Boreal', c1: '#022c22', c2: '#052e16', c3: '#064e3b', c4: '#10b981', c5: '#0ea5e9', c6: '#8b5cf6', c7: '#e0e7ff', light: '#022c22', dark: '#f8fafc' },
+  { id: 'neon', name: 'Neon Urbano', c1: '#171717', c2: '#262626', c3: '#404040', c4: '#d946ef', c5: '#f43f5e', c6: '#f97316', c7: '#ffe4e6', light: '#0a0a0a', dark: '#ffffff' },
+  
+  // LIGHT MODE (Fundos claros)
+  { id: 'tropical', name: 'Tropical Claro', c1: '#f8fafc', c2: '#f1f5f9', c3: '#e2e8f0', c4: '#0ea5e9', c5: '#22c55e', c6: '#eab308', c7: '#fef08a', light: '#ffffff', dark: '#0f172a' },
+  { id: 'berry', name: 'Frutas Vermelhas', c1: '#fdf2f8', c2: '#fce7f3', c3: '#fbcfe8', c4: '#e11d48', c5: '#c026d3', c6: '#7c3aed', c7: '#ddd6fe', light: '#fffafc', dark: '#4c0519' },
+  { id: 'citrus', name: 'Cítrico', c1: '#fffbeb', c2: '#fef3c7', c3: '#fde68a', c4: '#f59e0b', c5: '#f97316', c6: '#ef4444', c7: '#fecaca', light: '#fffcfa', dark: '#422006' },
+  { id: 'aqua', name: 'Água Marinha', c1: '#f0fdfa', c2: '#ccfbf1', c3: '#99f6e4', c4: '#0d9488', c5: '#0284c7', c6: '#2563eb', c7: '#bfdbfe', light: '#f2ffff', dark: '#042f2e' },
+  { id: 'pastel', name: 'Sonho Pastel', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#9333ea', c5: '#db2777', c6: '#ea580c', c7: '#fed7aa', light: '#fcfaff', dark: '#3b0764' },
 ];
 
 const cleanHtmlForPublishing = (rawHtml: string | null) => {
@@ -166,6 +168,8 @@ const getPreviewHtml = (baseHtml: string | null) => {
         bgColorPicker.addEventListener('input', (e) => {
           if(currentTarget) {
              currentTarget.style.backgroundColor = e.target.value;
+             // Limpa o gradiente se houver, para que a cor sólida funcione
+             currentTarget.style.backgroundImage = 'none'; 
              sendCleanHtml();
           }
         });
@@ -201,7 +205,9 @@ const App: React.FC = () => {
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [publishedDomain, setPublishedDomain] = useState<string | null>(null);
+  
+  // MODAL DE SUCESSO DE PUBLICAÇÃO
+  const [publishModalUrl, setPublishModalUrl] = useState<string | null>(null);
   
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
@@ -209,7 +215,7 @@ const App: React.FC = () => {
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
-    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'dark_blue', logoBase64: ''
+    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'cyberpunk', logoBase64: ''
   });
 
   useEffect(() => {
@@ -285,10 +291,10 @@ const App: React.FC = () => {
     const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-xl shadow-xl mt-4 map-container"><iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-    const formCode = data.showForm ? `<form class="space-y-4 ux-form"><input class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all" style="background-color: ${colors.c4}; color: #fff; border: none;">Enviar mensagem</button></form>` : '';
+    // AQUI ENTRA O NOVO BOTÃO COM GRADIENTE
+    const formCode = data.showForm ? `<form class="space-y-4 ux-form"><input class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg text-white" style="background: linear-gradient(135deg, ${colors.c4}, ${colors.c5}, ${colors.c6}); border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
-    // CSS GLOBAL DE UX/UI (Animações, Hover, Balanço e Fade In)
     const uxStyles = `
       <style id="ux-style">
         html { scroll-behavior: smooth; }
@@ -322,7 +328,7 @@ const App: React.FC = () => {
     `;
 
     let finalHtml = html.replace('</head>', `${uxStyles}</head>`);
-    return finalHtml; // Retorna sempre o HTML limpo, sem o script do editor (que será injetado apenas via getPreviewHtml)
+    return finalHtml; 
   };
 
   const handleGenerate = async () => {
@@ -365,7 +371,6 @@ const App: React.FC = () => {
     
     setIsSavingProject(true);
     try {
-      // GARANTIA MÁXIMA: Limpa o HTML antes de enviar para o DB
       const htmlToSave = cleanHtmlForPublishing(generatedHtml);
 
       if (currentProjectSlug) {
@@ -400,9 +405,15 @@ const App: React.FC = () => {
     try {
       const publishFn = httpsCallable(functions, 'publishUserProject');
       const res: any = await publishFn({ projectSlug: currentProjectSlug, projectId: currentProjectSlug });
-      if (res.data?.publishUrl) setPublishedDomain(res.data.publishUrl.replace(/^https?:\/\//, ''));
-      alert("Site publicado com sucesso! Pode demorar alguns minutos para o link propagar na internet.");
+      
+      let publicUrl = res.data?.publishUrl || `https://${currentProjectSlug}.web.app`;
+      if (!publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
+      
       fetchProjects();
+      
+      // ABRE O MODAL LINDO NO LUGAR DO ALERT
+      setPublishModalUrl(publicUrl);
+      
     } catch (err: any) { alert('Erro ao publicar. O servidor pode estar provisionando sua infraestrutura.'); } 
     finally { setIsPublishing(false); }
   };
@@ -419,7 +430,7 @@ const App: React.FC = () => {
         setCurrentProjectSlug(null);
         setHasUnsavedChanges(false);
         setActiveTab('geral');
-        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'dark_blue', logoBase64: '' });
+        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'cyberpunk', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) {
@@ -431,9 +442,8 @@ const App: React.FC = () => {
     if (!project) return;
     setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
     setAiContent(project.aiContent || null);
-    setGeneratedHtml(cleanHtmlForPublishing(project.generatedHtml)); // Carrega limpo
+    setGeneratedHtml(cleanHtmlForPublishing(project.generatedHtml)); 
     setCurrentProjectSlug(project.projectSlug || project.id || null);
-    if (project.publishUrl) setPublishedDomain(String(project.publishUrl).replace(/^https?:\/\//, ''));
     setOfficialDomain(project.officialDomain || '');
     setRegisterLater(project.officialDomain === 'Pendente');
     setHasUnsavedChanges(false);
@@ -483,7 +493,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR NO TOPO DA TELA */}
+      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR */}
       {generatedHtml && (
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
           <button 
@@ -506,6 +516,53 @@ const App: React.FC = () => {
       )}
 
       <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
+
+      {/* MODAL DE SUCESSO DE PUBLICAÇÃO */}
+      <AnimatePresence>
+        {publishModalUrl && (
+          <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-zinc-900 border border-zinc-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6"
+            >
+              <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                <CheckCircle size={40} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">Site Publicado com Sucesso!</h2>
+                <p className="text-zinc-400 text-sm leading-relaxed">
+                  A sua página já está online. Caso tenha configurado um domínio do Registro.br, pode demorar algumas horas para propagar.
+                </p>
+              </div>
+              
+              <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
+                <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(publishModalUrl);
+                    alert('Link copiado para a área de transferência!');
+                  }}
+                  className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"
+                >
+                  <Copy size={18} /> Copiar Link
+                </button>
+                <button 
+                  onClick={() => window.open(publishModalUrl, '_blank')}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"
+                >
+                  <ExternalLink size={18} /> Abrir Site
+                </button>
+              </div>
+              <button onClick={() => setPublishModalUrl(null)} className="text-zinc-500 hover:text-zinc-300 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* SIDEBAR COMPLETA E INTEGRADA */}
       <motion.div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -537,7 +594,6 @@ const App: React.FC = () => {
 
               <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
                 
-                {/* ETAPA 1: O FORMULÁRIO ENXUTO INICIAL E ABA VISUAL */}
                 {activeTab === 'geral' && (
                   <>
                     <div className="space-y-3">
@@ -555,7 +611,6 @@ const App: React.FC = () => {
                       {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                     </button>
 
-                    {/* OPÇÕES COMPLETAS DE VISUAL */}
                     {generatedHtml && (
                       <div className="pt-5 border-t border-zinc-800 space-y-5">
                         
@@ -572,17 +627,16 @@ const App: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Tom sobre Tom)</label>
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Gradientes 3D)</label>
                           <div className="grid grid-cols-5 gap-3">
                             {COLORS.map(c => (
                               <button 
                                 key={c.id} 
                                 onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} 
-                                className={`w-10 h-10 rounded-full border-[3px] transition-all relative overflow-hidden ${formData.colorId === c.id ? 'border-emerald-500 scale-110 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'border-transparent opacity-70 hover:opacity-100'}`} 
+                                className={`w-10 h-10 rounded-full border-[3px] transition-all relative overflow-hidden ${formData.colorId === c.id ? 'border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]' : 'border-transparent opacity-60 hover:opacity-100'}`} 
                                 title={c.name}
                               >
-                                <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${c.light} 40%, ${c.c7} 60%)` }} />
-                                <div className="absolute bottom-0 right-0 w-3 h-3 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
+                                <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${c.c4}, ${c.c5}, ${c.c6})` }} />
                               </button>
                             ))}
                           </div>
@@ -611,12 +665,12 @@ const App: React.FC = () => {
                           <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={14} /> Contato e Localização</label>
                           
                           <div className="grid grid-cols-2 gap-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone Comercial" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail Comercial" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                           </div>
                           
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço (Ex: Rua Roma, 123 - Centro)" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link Embed do Google Maps (Opcional)" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link Embed do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
                           
                           {/* TOGGLE MODERNO DE FORMULÁRIO */}
                           <div className="pt-2 flex items-center justify-between bg-black/30 p-3 rounded-lg border border-zinc-800">
