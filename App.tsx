@@ -20,21 +20,21 @@ const LAYOUT_STYLES = [
   { id: 'layout_cards_moderno', label: 'Cards Moderno', desc: 'Seções em cards' },
 ];
 
-// 10 PALETAS (5 LIGHT, 5 DARK ALTO CONTRASTE)
+// 10 PALETAS PREMIUM "TOM SOBRE TOM" (Transição Suave / Menor Contraste)
 const COLORS = [
-  // LIGHT MODE
-  { id: 'light_blue', name: 'Azul Clínico (Claro)', c1: '#0f172a', c2: '#1e293b', c3: '#334155', c4: '#2563eb', c5: '#93c5fd', c6: '#dbeafe', c7: '#eff6ff', light: '#ffffff', dark: '#0f172a' },
-  { id: 'light_green', name: 'Verde Natural (Claro)', c1: '#022c22', c2: '#064e3b', c3: '#065f46', c4: '#10b981', c5: '#6ee7b7', c6: '#d1fae5', c7: '#ecfdf5', light: '#ffffff', dark: '#022c22' },
-  { id: 'light_orange', name: 'Laranja Quente (Claro)', c1: '#422006', c2: '#713f12', c3: '#a16207', c4: '#f97316', c5: '#fdba74', c6: '#ffedd5', c7: '#fff7ed', light: '#ffffff', dark: '#422006' },
-  { id: 'light_purple', name: 'Roxo Royal (Claro)', c1: '#3b0764', c2: '#581c87', c3: '#7e22ce', c4: '#9333ea', c5: '#d8b4fe', c6: '#f3e8ff', c7: '#faf5ff', light: '#ffffff', dark: '#3b0764' },
-  { id: 'light_mono', name: 'Minimalista (Claro)', c1: '#000000', c2: '#171717', c3: '#262626', c4: '#404040', c5: '#d4d4d4', c6: '#f5f5f5', c7: '#fafafa', light: '#ffffff', dark: '#000000' },
+  // DARK MODE (Fundos escuros, cards levemente mais claros, textos brancos)
+  { id: 'dark_blue', name: 'Azul Profundo', c1: '#f8fafc', c2: '#93c5fd', c3: '#60a5fa', c4: '#3b82f6', c5: '#475569', c6: '#1e293b', c7: '#172033', light: '#0f172a', dark: '#f8fafc' },
+  { id: 'dark_green', name: 'Verde Musgo', c1: '#ecfdf5', c2: '#6ee7b7', c3: '#34d399', c4: '#10b981', c5: '#047857', c6: '#065f46', c7: '#064e3b', light: '#022c22', dark: '#ecfdf5' },
+  { id: 'dark_purple', name: 'Roxo Noturno', c1: '#faf5ff', c2: '#d8b4fe', c3: '#c084fc', c4: '#a855f7', c5: '#7e22ce', c6: '#581c87', c7: '#4c1875', light: '#3b0764', dark: '#faf5ff' },
+  { id: 'dark_zinc', name: 'Grafite Escuro', c1: '#fafafa', c2: '#e5e5e5', c3: '#d4d4d4', c4: '#a3a3a3', c5: '#525252', c6: '#404040', c7: '#262626', light: '#18181b', dark: '#fafafa' },
+  { id: 'dark_red', name: 'Vinho Tinto', c1: '#fff1f2', c2: '#fda4af', c3: '#fb7185', c4: '#f43f5e', c5: '#be123c', c6: '#881337', c7: '#6b102b', light: '#4c0519', dark: '#fff1f2' },
   
-  // DARK MODE (ALTO CONTRASTE)
-  { id: 'dark_blue', name: 'Azul Neon (Escuro)', c1: '#eff6ff', c2: '#dbeafe', c3: '#bfdbfe', c4: '#3b82f6', c5: '#1d4ed8', c6: '#1e40af', c7: '#1e3a8a', light: '#09090b', dark: '#f8fafc' },
-  { id: 'dark_green', name: 'Verde Matrix (Escuro)', c1: '#ecfdf5', c2: '#d1fae5', c3: '#a7f3d0', c4: '#10b981', c5: '#047857', c6: '#065f46', c7: '#064e3b', light: '#050505', dark: '#f8fafc' },
-  { id: 'dark_red', name: 'Vermelho Sangue (Escuro)', c1: '#fef2f2', c2: '#fee2e2', c3: '#fecaca', c4: '#ef4444', c5: '#b91c1c', c6: '#991b1b', c7: '#7f1d1d', light: '#140000', dark: '#f8fafc' },
-  { id: 'dark_orange', name: 'Âmbar (Escuro)', c1: '#fff7ed', c2: '#ffedd5', c3: '#fed7aa', c4: '#f59e0b', c5: '#c2410c', c6: '#9a3412', c7: '#7c2d12', light: '#120800', dark: '#f8fafc' },
-  { id: 'dark_mono', name: 'Carbono (Escuro)', c1: '#f9fafb', c2: '#f1f5f9', c3: '#e2e8f0', c4: '#f4f4f5', c5: '#475569', c6: '#334155', c7: '#1e293b', light: '#000000', dark: '#ffffff' },
+  // LIGHT MODE (Fundos brancos/gelo, cards levemente cinzas, textos pretos)
+  { id: 'light_blue', name: 'Azul Céu', c1: '#0f172a', c2: '#1e40af', c3: '#1d4ed8', c4: '#2563eb', c5: '#bfdbfe', c6: '#dbeafe', c7: '#eff6ff', light: '#f8fafc', dark: '#0f172a' },
+  { id: 'light_green', name: 'Menta Suave', c1: '#022c22', c2: '#065f46', c3: '#047857', c4: '#059669', c5: '#a7f3d0', c6: '#d1fae5', c7: '#ecfdf5', light: '#f0fdf4', dark: '#022c22' },
+  { id: 'light_orange', name: 'Pêssego', c1: '#431407', c2: '#9a3412', c3: '#c2410c', c4: '#ea580c', c5: '#fed7aa', c6: '#ffedd5', c7: '#fff7ed', light: '#fffaf5', dark: '#431407' },
+  { id: 'light_purple', name: 'Lavanda', c1: '#3b0764', c2: '#6b21a8', c3: '#7e22ce', c4: '#9333ea', c5: '#e9d5ff', c6: '#f3e8ff', c7: '#faf5ff', light: '#fdfbff', dark: '#3b0764' },
+  { id: 'light_zinc', name: 'Prata Claro', c1: '#18181b', c2: '#3f3f46', c3: '#525252', c4: '#71717a', c5: '#d4d4d4', c6: '#e4e4e7', c7: '#f4f4f5', light: '#fafafa', dark: '#18181b' },
 ];
 
 const App: React.FC = () => {
@@ -47,10 +47,7 @@ const App: React.FC = () => {
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
   
-  // Controle de Interface (Tabs)
   const [activeTab, setActiveTab] = useState<'geral' | 'dominio'>('geral');
-  
-  // Controles de Salvamento e Publicação
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -60,21 +57,19 @@ const App: React.FC = () => {
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
 
-  // ESTADO COMPLETO (Inclui address, phone, email, mapEmbed, showForm)
+  // ESTADO COMPLETO 
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
     showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'dark_blue', logoBase64: ''
   });
 
-  // Atualiza visualmente em tempo real as configurações da barra lateral
   useEffect(() => {
     if (aiContent) {
       setGeneratedHtml(renderTemplate(aiContent, formData));
     }
   }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.address, formData.mapEmbed, formData.phone, formData.email]);
 
-  // Listener para capturar edições feitas direto no site (Iframe)
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
       if (event.data?.type === 'CONTENT_EDITED') {
@@ -139,21 +134,24 @@ const App: React.FC = () => {
     replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500 text-white') : '');
     replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600 text-white') : '');
 
-    replaceAll('[[MAP_AREA]]', data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0; border-radius: 8px;" loading="lazy"></iframe>` : '');
-    replaceAll('[[CONTACT_FORM]]', data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-3 rounded-lg font-semibold transition-all" style="background-color: ${colors.c4}; color: ${colors.light}; border: none;">Enviar mensagem</button></form>` : '');
+    const mapCode = data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0; border-radius: 8px; margin-top: 15px;" loading="lazy"></iframe>` : '';
+    replaceAll('[[MAP_AREA]]', mapCode);
+    
+    const formCode = data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-3 rounded-lg font-semibold transition-all" style="background-color: ${colors.c4}; color: #fff; border: none;">Enviar mensagem</button></form>` : '';
+    replaceAll('[[CONTACT_FORM]]', formCode);
 
-    // SCRIPT DO EDITOR VISUAL (Agora com botão de Excluir ❌)
+    // SCRIPT DO EDITOR VISUAL COM O BOTÃO DE LIXEIRA (X)
     const editorScript = `
       <style>
         .custom-editor-toolbar {
-          position: absolute; display: none; background: #18181b; padding: 6px 10px; 
+          position: absolute; display: none; background: #18181b; padding: 6px 12px; 
           border-radius: 8px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-          z-index: 99999; gap: 10px; align-items: center;
+          z-index: 99999; gap: 12px; align-items: center;
         }
         .custom-editor-toolbar input[type="color"] { width: 24px; height: 24px; border: none; cursor: pointer; background: transparent; padding: 0; }
         .custom-editor-toolbar select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px; font-size: 12px; outline: none; cursor: pointer; }
-        .custom-editor-toolbar button { background: transparent; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; transition: transform 0.2s; }
-        .custom-editor-toolbar button:hover { transform: scale(1.2); }
+        .custom-editor-toolbar button { background: #ef444415; border: 1px solid #ef444450; color: #ef4444; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; padding: 4px 8px; transition: all 0.2s; }
+        .custom-editor-toolbar button:hover { background: #ef4444; color: white; }
         .editable-element { transition: outline 0.2s; outline: 2px dashed transparent; outline-offset: 4px; }
         .editable-element:hover { outline-color: rgba(16, 185, 129, 0.4); cursor: text; }
         .editable-element:focus { outline-color: #10b981; }
@@ -168,7 +166,7 @@ const App: React.FC = () => {
           <option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Courier New">Courier</option>
         </select>
         <div style="width: 1px; height: 16px; background: #3f3f46;"></div>
-        <button id="text-delete" title="Apagar Elemento">✖</button>
+        <button id="text-delete" title="Apagar este elemento do site">✖ Excluir</button>
       </div>
 
       <script>
@@ -177,7 +175,7 @@ const App: React.FC = () => {
           let currentTarget = null;
 
           document.querySelectorAll('h1, h2, h3, h4, p, span, a, button, img').forEach(el => {
-            if(el.id === 'text-delete') return; // ignora o botão da barra
+            if(el.id === 'text-delete') return; 
             
             el.setAttribute('contenteditable', 'true');
             el.classList.add('editable-element');
@@ -201,7 +199,6 @@ const App: React.FC = () => {
             });
           });
 
-          // Lógica de Deletar o elemento clicado
           document.getElementById('text-delete').addEventListener('click', () => {
             if (currentTarget) {
               currentTarget.remove();
@@ -384,7 +381,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR */}
+      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR NO TOPO DA TELA */}
       {generatedHtml && (
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
           <button 
@@ -412,7 +409,7 @@ const App: React.FC = () => {
       <motion.div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
-            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -30, opacity: 0 }} className="w-[92vw] max-w-[350px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -30, opacity: 0 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
               <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-700 flex-shrink-0">
                 <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações do Site' : 'Novo Projeto'}</h2>
                 <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors"><Minimize2 size={18} /></button>
@@ -438,6 +435,7 @@ const App: React.FC = () => {
 
               <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
                 
+                {/* ETAPA 1: O FORMULÁRIO ENXUTO INICIAL E ABA VISUAL */}
                 {activeTab === 'geral' && (
                   <>
                     <div className="space-y-3">
@@ -455,11 +453,12 @@ const App: React.FC = () => {
                       {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                     </button>
 
+                    {/* OPÇÕES COMPLETAS DE VISUAL */}
                     {generatedHtml && (
                       <div className="pt-5 border-t border-zinc-800 space-y-5">
                         
                         <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30 text-xs text-emerald-300">
-                          ✨ <strong>Edição Visual:</strong> Clique em qualquer texto no site à direita para alterar cor, tamanho e fonte, ou no "X" para apagá-lo.
+                          ✨ <strong>Dica Mágica:</strong> Clique em qualquer texto no site à direita para alterar cores e fontes, ou no <strong className="text-red-400">X</strong> para excluí-lo!
                         </div>
 
                         {/* LAYOUT E CORES */}
@@ -471,9 +470,20 @@ const App: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Light & Dark)</label>
-                          <div className="grid grid-cols-5 gap-2">
-                            {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110 shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'border-transparent opacity-60 hover:opacity-100'}`} style={{ backgroundColor: c.c4, backgroundImage: `linear-gradient(135deg, ${c.light} 50%, ${c.dark} 50%)` }} title={c.name} />)}
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Tom sobre Tom)</label>
+                          <div className="grid grid-cols-5 gap-3">
+                            {COLORS.map(c => (
+                              <button 
+                                key={c.id} 
+                                onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} 
+                                className={`w-10 h-10 rounded-full border-[3px] transition-all relative overflow-hidden ${formData.colorId === c.id ? 'border-emerald-500 scale-110 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'border-transparent opacity-70 hover:opacity-100'}`} 
+                                title={c.name}
+                              >
+                                {/* Círculo com degradê visualizando o contraste exato da paleta */}
+                                <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${c.light} 40%, ${c.c7} 60%)` }} />
+                                <div className="absolute bottom-0 right-0 w-3 h-3 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
+                              </button>
+                            ))}
                           </div>
                         </div>
 
@@ -481,7 +491,7 @@ const App: React.FC = () => {
                         <div className="space-y-2">
                           <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
                             <span>Sua Logomarca</span>
-                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px]"><X size={12} /></button>}
+                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
                           </label>
                           {!formData.logoBase64 ? (
                             <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors">
@@ -489,43 +499,47 @@ const App: React.FC = () => {
                               <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                             </label>
                           ) : (
-                            <div className="h-12 bg-white/5 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1">
+                            <div className="h-12 bg-zinc-900 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1">
                               <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
                             </div>
                           )}
                         </div>
 
-                        {/* ENDEREÇO, TELEFONE E MAPA */}
-                        <div className="space-y-2 pt-2 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={12} /> Contato e Local</label>
-                          <div className="grid grid-cols-2 gap-2 mt-1">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone Oficial" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
-                          </div>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2 focus:border-emerald-500" placeholder="Endereço Físico (Rua, Número...)" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2 focus:border-emerald-500" placeholder="Link Embed do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                        {/* ENDEREÇO E MAPA */}
+                        <div className="space-y-3 pt-3 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={14} /> Contato e Localização</label>
                           
-                          <div className="pt-3 pb-1">
-                            <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer group">
-                              <input type="checkbox" className="accent-emerald-500 w-4 h-4 cursor-pointer" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} />
-                              <span className="group-hover:text-white transition-colors">Exibir formulário de contato no site</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone Comercial" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail Comercial" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                          </div>
+                          
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço (Ex: Rua Roma, 123 - Centro)" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link Embed do Google Maps (Opcional)" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                          
+                          {/* TOGGLE MODERNO DE FORMULÁRIO */}
+                          <div className="pt-2 flex items-center justify-between bg-black/30 p-3 rounded-lg border border-zinc-800">
+                            <span className="text-xs font-medium text-zinc-300">Formulário no site</span>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" className="sr-only peer" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} />
+                              <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                             </label>
                           </div>
                         </div>
 
                         {/* REDES SOCIAIS E DELIVERY */}
-                        <div className="space-y-2 pt-2 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={12} /> Redes Sociais</label>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="Facebook (Link completo)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="TikTok (Link completo)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                        <div className="space-y-3 pt-3 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={14} /> Redes Sociais</label>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Facebook (Link completo)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="TikTok (Link completo)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
                           
                           <label className="text-xs font-bold text-zinc-500 uppercase mt-4 block">Aplicativos de Delivery</label>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <div className="grid grid-cols-2 gap-2 mt-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="99 Food" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="Keeta" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <div className="grid grid-cols-2 gap-2">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="99 Food" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Keeta" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
                           </div>
                         </div>
 
@@ -534,7 +548,7 @@ const App: React.FC = () => {
                   </>
                 )}
 
-                {/* ABA DOMÍNIO */}
+                {/* ABA DOMÍNIO: ONDE A MÁGICA DOS DNS ACONTECE */}
                 {activeTab === 'dominio' && generatedHtml && (
                   <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                     {!currentProjectSlug ? (
