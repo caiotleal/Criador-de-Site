@@ -28,6 +28,85 @@ const COLORS = [
   { id: 'snow', name: 'Neve', c1: '#ffffff', c2: '#f4f4f5', c3: '#e4e4e7', c4: '#09090b', c5: '#27272a', c6: '#3f3f46', c7: '#52525b', light: '#09090b', dark: '#ffffff' },
 ];
 
+// O SEU SITE DE VENDAS INICIAL (Renderizado quando não há site gerado)
+const PROMO_HTML = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiteCraft - Criação Inteligente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
+    .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  </style>
+</head>
+<body class="antialiased selection:bg-emerald-500 selection:text-white">
+  
+  <nav class="w-full border-b border-white/5 bg-black/50 backdrop-blur-md fixed top-0 z-50">
+    <div class="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
+      <div class="font-black text-2xl tracking-tighter uppercase italic">SiteCraft</div>
+      <div class="text-sm font-bold text-white/50 hidden md:block">Tecnologia Inteligente para o seu Negócio</div>
+    </div>
+  </nav>
+
+  <main class="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
+    
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
+
+    <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
+      <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-emerald-400 mb-6 uppercase">O futuro da web</div>
+      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
+        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-500">segundos.</span>
+      </h1>
+      <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
+        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 relative z-10 animate-up" style="animation-delay: 0.2s;">
+      
+      <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden group">
+        <div class="absolute -right-10 -top-10 opacity-5 transition-opacity group-hover:opacity-10 text-emerald-500">
+          <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </div>
+        <h3 class="text-3xl font-black mb-2 italic uppercase">Teste Grátis</h3>
+        <p class="text-white/50 mb-8">Veja o seu site pronto hoje mesmo.</p>
+        <div class="text-5xl font-black mb-2">R$ 0 <span class="text-lg text-white/40 font-normal">/ 5 dias</span></div>
+        <p class="text-sm text-emerald-400 font-bold mb-8">Após 5 dias, o site é congelado.</p>
+        
+        <ul class="space-y-4 text-white/70">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">✔</span> Geração por IA</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">✔</span> Domínio gratuito (.web.app)</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">✔</span> Formulário de Contato</li>
+        </ul>
+      </div>
+
+      <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden border-indigo-500/30">
+        <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-black tracking-widest px-6 py-2 rounded-bl-3xl uppercase">Mais Assinado</div>
+        <h3 class="text-3xl font-black mb-2 italic uppercase text-indigo-400">Plano Anual</h3>
+        <p class="text-white/50 mb-8">A solução definitiva para o seu negócio.</p>
+        <div class="text-5xl font-black mb-2">R$ 499 <span class="text-lg text-white/40 font-normal">/ 1º ano</span></div>
+        <p class="text-sm text-white/50 font-medium mb-8">Renovação garantida por apenas R$ 100/ano.</p>
+        
+        <ul class="space-y-4 text-white/70">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> 365 dias online sem interrupções</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Apontamento de Domínio (.com.br)</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Alta velocidade e segurança Google</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</body>
+</html>
+`;
+
 const cleanHtmlForPublishing = (rawHtml: string | null) => {
   if (!rawHtml) return '';
   const parser = new DOMParser();
@@ -317,7 +396,6 @@ const App: React.FC = () => {
     } catch (error) { alert("Erro ao excluir o site."); }
   };
 
-  // SIMULAÇÃO DO PAGAMENTO PARA DESBLOQUEAR / RENOVAR POR 1 ANO
   const handleSimulatePayment = async (projectId: string) => {
     if (!window.confirm("Simular pagamento de R$ 499,00 e liberar o site por 1 ano?")) return;
     try {
@@ -366,51 +444,16 @@ const App: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
-      {/* FRAME DO SITE OU CARDS DE VENDAS INICIAIS */}
-      <div className="absolute inset-0 z-0 bg-[#09090b]">
-        {generatedHtml ? (
-          <iframe srcDoc={getPreviewHtml(generatedHtml)} className="w-full h-full border-none bg-white" title="Preview Visual" />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full max-w-5xl mx-auto px-6 animate-in fade-in zoom-in duration-700">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">Crie seu site profissional.</h1>
-              <p className="text-zinc-400 text-lg">Sem programar, sem enrolação. A inteligência artificial cria tudo para você.</p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-6 w-full max-w-4xl">
-              {/* CARD 1: TRIAL */}
-              <div className="bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 p-8 rounded-3xl relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
-                <div className="absolute top-0 right-0 p-4 opacity-10"><Zap size={60} /></div>
-                <h3 className="text-2xl font-black mb-2">Teste Grátis</h3>
-                <p className="text-zinc-400 mb-6">Seu site pronto em minutos.</p>
-                <div className="text-4xl font-black text-white mb-6">R$ 0 <span className="text-lg text-zinc-500 font-normal">/ 5 dias</span></div>
-                <ul className="space-y-3 mb-8 text-sm text-zinc-300">
-                  <li className="flex items-center gap-2"><CheckCircle size={16} className="text-emerald-500"/> Criação com IA Avançada</li>
-                  <li className="flex items-center gap-2"><CheckCircle size={16} className="text-emerald-500"/> Hospedagem Super Rápida</li>
-                  <li className="flex items-center gap-2"><CheckCircle size={16} className="text-emerald-500"/> Subdomínio gratuito (.web.app)</li>
-                </ul>
-              </div>
-
-              {/* CARD 2: ANUAL */}
-              <div className="bg-gradient-to-b from-indigo-900/40 to-zinc-900/50 backdrop-blur-xl border border-indigo-500/30 p-8 rounded-3xl relative overflow-hidden group hover:border-indigo-500 transition-colors shadow-2xl shadow-indigo-500/10">
-                <div className="absolute top-0 right-0 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">MAIS ESCOLHIDO</div>
-                <h3 className="text-2xl font-black mb-2 text-indigo-100">Plano Anual</h3>
-                <p className="text-indigo-200/60 mb-6">Presença digital completa.</p>
-                <div className="text-4xl font-black text-white mb-2">R$ 499 <span className="text-lg text-zinc-500 font-normal">/ primeiro ano</span></div>
-                <p className="text-xs text-zinc-500 mb-6">Renovação por apenas R$ 100/ano.</p>
-                <ul className="space-y-3 mb-8 text-sm text-indigo-100/80">
-                  <li className="flex items-center gap-2"><Star size={16} className="text-indigo-400"/> Tudo do plano grátis</li>
-                  <li className="flex items-center gap-2"><Star size={16} className="text-indigo-400"/> Domínio próprio (.com.br)</li>
-                  <li className="flex items-center gap-2"><Star size={16} className="text-indigo-400"/> Suporte e estabilidade 99.9%</li>
-                </ul>
-              </div>
-            </div>
-            
-            <p className="mt-12 text-sm text-zinc-500 flex items-center gap-2">
-              <ShieldCheck size={16} /> Preencha o menu ao lado para gerar o seu site agora.
-            </p>
-          </div>
-        )}
+      {/* A MÁGICA ACONTECE AQUI: 
+        Se tiver site gerado, mostra o iFrame do site do cliente.
+        Se não tiver, mostra o iFrame do SEU site de vendas (PROMO_HTML). 
+      */}
+      <div className="absolute inset-0 z-0 bg-[#050505]">
+        <iframe 
+          srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
+          className="w-full h-full border-none bg-transparent" 
+          title="Visão Principal" 
+        />
       </div>
 
       {loggedUserEmail && (
@@ -419,7 +462,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR */}
+      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR (Só aparece se o cliente gerou o site dele) */}
       {generatedHtml && (
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
           <button 
@@ -471,7 +514,7 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR DO SISTEMA */}
       <motion.div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
@@ -614,7 +657,6 @@ const App: React.FC = () => {
                               <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-800/50 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
                             </div>
 
-                            {/* BOTÃO DE PAGAMENTO (Aparece se estiver congelado ou em Trial) */}
                             {(!p.paymentStatus || p.paymentStatus !== 'paid' || p.status === 'frozen') && (
                               <button 
                                 onClick={() => handleSimulatePayment(p.id)}
