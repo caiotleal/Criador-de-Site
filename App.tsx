@@ -21,11 +21,13 @@ const LAYOUT_STYLES = [
 ];
 
 const COLORS = [
+  // DARK MODE (Tom sobre Tom)
   { id: 'dark_blue', name: 'Azul Profundo', c1: '#f8fafc', c2: '#93c5fd', c3: '#60a5fa', c4: '#3b82f6', c5: '#475569', c6: '#1e293b', c7: '#172033', light: '#0f172a', dark: '#f8fafc' },
   { id: 'dark_green', name: 'Verde Musgo', c1: '#ecfdf5', c2: '#6ee7b7', c3: '#34d399', c4: '#10b981', c5: '#047857', c6: '#065f46', c7: '#064e3b', light: '#022c22', dark: '#ecfdf5' },
   { id: 'dark_purple', name: 'Roxo Noturno', c1: '#faf5ff', c2: '#d8b4fe', c3: '#c084fc', c4: '#a855f7', c5: '#7e22ce', c6: '#581c87', c7: '#4c1875', light: '#3b0764', dark: '#faf5ff' },
   { id: 'dark_zinc', name: 'Grafite Escuro', c1: '#fafafa', c2: '#e5e5e5', c3: '#d4d4d4', c4: '#a3a3a3', c5: '#525252', c6: '#404040', c7: '#262626', light: '#18181b', dark: '#fafafa' },
   { id: 'dark_red', name: 'Vinho Tinto', c1: '#fff1f2', c2: '#fda4af', c3: '#fb7185', c4: '#f43f5e', c5: '#be123c', c6: '#881337', c7: '#6b102b', light: '#4c0519', dark: '#fff1f2' },
+  // LIGHT MODE (Tom sobre Tom)
   { id: 'light_blue', name: 'Azul Céu', c1: '#0f172a', c2: '#1e40af', c3: '#1d4ed8', c4: '#2563eb', c5: '#bfdbfe', c6: '#dbeafe', c7: '#eff6ff', light: '#f8fafc', dark: '#0f172a' },
   { id: 'light_green', name: 'Menta Suave', c1: '#022c22', c2: '#065f46', c3: '#047857', c4: '#059669', c5: '#a7f3d0', c6: '#d1fae5', c7: '#ecfdf5', light: '#f0fdf4', dark: '#022c22' },
   { id: 'light_orange', name: 'Pêssego', c1: '#431407', c2: '#9a3412', c3: '#c2410c', c4: '#ea580c', c5: '#fed7aa', c6: '#ffedd5', c7: '#fff7ed', light: '#fffaf5', dark: '#431407' },
@@ -33,7 +35,6 @@ const COLORS = [
   { id: 'light_zinc', name: 'Prata Claro', c1: '#18181b', c2: '#3f3f46', c3: '#525252', c4: '#71717a', c5: '#d4d4d4', c6: '#e4e4e7', c7: '#f4f4f5', light: '#fafafa', dark: '#18181b' },
 ];
 
-// FUNÇÃO DE SEGURANÇA: Limpa o HTML de qualquer rastro do nosso editor antes de salvar/publicar
 const cleanHtmlForPublishing = (rawHtml: string | null) => {
   if (!rawHtml) return '';
   if (!rawHtml.includes('editor-toolbar')) return rawHtml;
@@ -41,12 +42,10 @@ const cleanHtmlForPublishing = (rawHtml: string | null) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(rawHtml, 'text/html');
   
-  // Remove scripts e estilos do editor
   const tb = doc.querySelector('#editor-toolbar'); if (tb) tb.remove();
   const sc = doc.querySelector('#editor-script'); if (sc) sc.remove();
   const st = doc.querySelector('#editor-style'); if (st) st.remove();
   
-  // Remove atributos de edição dos elementos do site
   doc.querySelectorAll('.editable-element').forEach(el => {
     el.removeAttribute('contenteditable');
     el.classList.remove('editable-element');
@@ -56,18 +55,16 @@ const cleanHtmlForPublishing = (rawHtml: string | null) => {
   return doc.documentElement.outerHTML;
 };
 
-// FUNÇÃO DE INJEÇÃO: Coloca o editor apenas na visualização do Iframe
 const getPreviewHtml = (baseHtml: string | null) => {
   if (!baseHtml) return '';
-  
-  const clean = cleanHtmlForPublishing(baseHtml); // Garante base limpa
+  const clean = cleanHtmlForPublishing(baseHtml);
   
   const editorScript = `
     <style id="editor-style">
       .custom-editor-toolbar {
         position: absolute; display: none; background: #18181b; padding: 8px; 
         border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-        z-index: 99999; gap: 8px; align-items: center;
+        z-index: 99999; gap: 8px; align-items: center; font-family: sans-serif;
       }
       .color-picker-group { display: flex; align-items: center; gap: 4px; background: #27272a; padding: 2px 6px 2px 8px; border-radius: 6px; border: 1px solid #3f3f46; }
       .color-picker-label { color: #a1a1aa; font-size: 10px; font-weight: bold; }
@@ -224,7 +221,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
       if (event.data?.type === 'CONTENT_EDITED') {
-        setGeneratedHtml(event.data.html); // O HTML que vem agora é LIMPO!
+        setGeneratedHtml(event.data.html);
         setHasUnsavedChanges(true);
       }
     };
@@ -270,28 +267,62 @@ const App: React.FC = () => {
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
     if (data.logoBase64) {
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 w-auto object-contain" alt="Logo" />`);
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-12 w-auto object-contain transition-transform duration-500 hover:scale-110" alt="Logo" />`);
     } else {
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-bold tracking-tight">${data.businessName || 'Sua Empresa'}</span>`);
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${data.businessName || 'Sua Empresa'}</span>`);
     }
 
-    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes}" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
+    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes} shadow-lg" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
 
-    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500 text-white') : '');
+    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-emerald-500 text-white') : '');
     replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600 text-white') : '');
-    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700 text-white') : '');
-    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800 text-white') : '');
+    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-600 text-white') : '');
+    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-900 text-white') : '');
     replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600 text-white') : '');
     replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500 text-white') : '');
     replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600 text-white') : '');
 
-    const mapCode = data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0; border-radius: 8px; margin-top: 15px;" loading="lazy"></iframe>` : '';
+    const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-xl shadow-xl mt-4 map-container"><iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-    const formCode = data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-3 rounded-lg font-semibold transition-all" style="background-color: ${colors.c4}; color: #fff; border: none;">Enviar mensagem</button></form>` : '';
+    const formCode = data.showForm ? `<form class="space-y-4 ux-form"><input class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all" style="background-color: ${colors.c4}; color: #fff; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
-    return html; // Retorna o HTML Puro sem script!
+    // CSS GLOBAL DE UX/UI (Animações, Hover, Balanço e Fade In)
+    const uxStyles = `
+      <style id="ux-style">
+        html { scroll-behavior: smooth; }
+        @keyframes fadeInUp {
+          0% { opacity: 0; transform: translateY(30px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        h1, h2 { animation: fadeInUp 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+        p, h3 { animation: fadeInUp 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+        
+        button, .btn-primary, .icon-btn, a {
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        button:hover, .btn-primary:hover, .icon-btn:hover {
+          transform: translateY(-5px) scale(1.03) !important;
+          filter: brightness(1.15);
+          box-shadow: 0 15px 25px -5px rgba(0,0,0,0.3) !important;
+        }
+        button:active, .icon-btn:active {
+          transform: translateY(0) scale(0.98) !important;
+        }
+
+        .ux-form, .map-container, section > div > div {
+          transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .ux-form:hover, .map-container:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2) !important;
+        }
+      </style>
+    `;
+
+    let finalHtml = html.replace('</head>', `${uxStyles}</head>`);
+    return finalHtml; // Retorna sempre o HTML limpo, sem o script do editor (que será injetado apenas via getPreviewHtml)
   };
 
   const handleGenerate = async () => {
@@ -339,7 +370,7 @@ const App: React.FC = () => {
 
       if (currentProjectSlug) {
         const updateFn = httpsCallable(functions, 'updateSiteProject');
-        await updateFn({ projectId: currentProjectSlug, projectSlug: currentProjectSlug, html: htmlToSave, formData });
+        await updateFn({ projectId: currentProjectSlug, projectSlug: currentProjectSlug, html: htmlToSave, formData, aiContent });
       } else {
         const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, '-');
         const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
@@ -428,13 +459,13 @@ const App: React.FC = () => {
   const handleDownloadZip = () => {
     if (!generatedHtml) return;
     const zip = new JSZip();
-    zip.file('index.html', cleanHtmlForPublishing(generatedHtml)); // Baixa limpo
+    zip.file('index.html', cleanHtmlForPublishing(generatedHtml)); 
     zip.generateAsync({ type: 'blob' }).then(c => saveAs(c, `${formData.businessName || 'site'}.zip`));
   };
 
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
-      {/* FRAME DO SITE: Injeta o script dinamicamente apenas na tela */}
+      {/* FRAME DO SITE */}
       <div className="absolute inset-0 z-0 bg-[#09090b]">
         {generatedHtml ? (
           <iframe srcDoc={getPreviewHtml(generatedHtml)} className="w-full h-full border-none bg-white" title="Preview Visual" />
@@ -452,7 +483,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR */}
+      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR NO TOPO DA TELA */}
       {generatedHtml && (
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
           <button 
@@ -618,7 +649,7 @@ const App: React.FC = () => {
                   </>
                 )}
 
-                {/* ABA DOMÍNIO: ONDE A MÁGICA DOS DNS ACONTECE */}
+                {/* ABA DOMÍNIO */}
                 {activeTab === 'dominio' && generatedHtml && (
                   <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                     {!currentProjectSlug ? (
