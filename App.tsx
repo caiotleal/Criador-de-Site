@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket, Settings, Palette, Upload, Layout, Download,
-  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard
+  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -20,7 +20,14 @@ const LAYOUT_STYLES = [
   { id: 'layout_cards_moderno', label: 'Cards Moderno', desc: 'Seções em cards' },
 ];
 
+// 10 PALETAS DE CORES COM ALTO CONTRASTE E OPÇÕES VIBRANTES
 const COLORS = [
+  { id: 'midnight_blue', name: 'Midnight Blue', c1: '#020617', c2: '#0f172a', c3: '#1e293b', c4: '#3b82f6', c5: '#93c5fd', c6: '#dbeafe', c7: '#eff6ff', light: '#ffffff', dark: '#020617' },
+  { id: 'crimson_red', name: 'Crimson Red', c1: '#3e0a0a', c2: '#5c0f0f', c3: '#8a1717', c4: '#dc2626', c5: '#fca5a5', c6: '#fee2e2', c7: '#fef2f2', light: '#ffffff', dark: '#1c0505' },
+  { id: 'forest_green', name: 'Forest Green', c1: '#052e16', c2: '#064e3b', c3: '#065f46', c4: '#10b981', c5: '#6ee7b7', c6: '#d1fae5', c7: '#ecfdf5', light: '#ffffff', dark: '#022c22' },
+  { id: 'golden_mustard', name: 'Golden Mustard', c1: '#422006', c2: '#713f12', c3: '#a16207', c4: '#eab308', c5: '#fde047', c6: '#fef08a', c7: '#fefce8', light: '#ffffff', dark: '#271204' },
+  { id: 'monochrome_high', name: 'Monochrome High', c1: '#000000', c2: '#171717', c3: '#262626', c4: '#525252', c5: '#d4d4d4', c6: '#f5f5f5', c7: '#fafafa', light: '#ffffff', dark: '#000000' },
+  { id: 'royal_plum', name: 'Royal Plum', c1: '#4a044e', c2: '#701a75', c3: '#86198f', c4: '#d946ef', c5: '#f0abfc', c6: '#fae8ff', c7: '#fdf4ff', light: '#ffffff', dark: '#3b0764' },
   { id: 'teal_pro', name: 'Teal Pro', c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', c5: '#a3f3ff', c6: '#c5f7ff', c7: '#eafffd', light: '#ffffff', dark: '#003333' },
   { id: 'violet_studio', name: 'Violet Studio', c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', c5: '#d8c5ff', c6: '#ebe1ff', c7: '#f6f1ff', light: '#ffffff', dark: '#24103a' },
   { id: 'ocean_navy', name: 'Ocean Navy', c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', c5: '#c3e6ff', c6: '#deefff', c7: '#f2f8ff', light: '#ffffff', dark: '#0a1f33' },
@@ -50,10 +57,11 @@ const App: React.FC = () => {
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
 
+  // ESTADO COMPLETO (Inclui address, mapEmbed, showForm)
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
-    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: ''
+    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'midnight_blue', logoBase64: ''
   });
 
   // Atualiza visualmente em tempo real as configurações da barra lateral
@@ -61,7 +69,7 @@ const App: React.FC = () => {
     if (aiContent) {
       setGeneratedHtml(renderTemplate(aiContent, formData));
     }
-  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm]);
+  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.address, formData.mapEmbed]);
 
   // Listener para capturar edições feitas direto no site (Iframe)
   useEffect(() => {
@@ -129,7 +137,7 @@ const App: React.FC = () => {
     replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600') : '');
 
     replaceAll('[[MAP_AREA]]', data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy"></iframe>` : '');
-    replaceAll('[[CONTACT_FORM]]', data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold">Enviar mensagem</button></form>` : '');
+    replaceAll('[[CONTACT_FORM]]', data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold" style="background-color: ${colors.c4}">Enviar mensagem</button></form>` : '');
 
     // SCRIPT DO EDITOR VISUAL
     const editorScript = `
@@ -283,7 +291,6 @@ const App: React.FC = () => {
     finally { setIsPublishing(false); }
   };
 
-  // A FUNÇÃO DA LIXEIRA
   const handleDeleteSite = async (projectId: string) => {
     if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site do ar. Tem certeza absoluta?")) return;
     try {
@@ -296,7 +303,7 @@ const App: React.FC = () => {
         setCurrentProjectSlug(null);
         setHasUnsavedChanges(false);
         setActiveTab('geral');
-        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: '' });
+        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'midnight_blue', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) {
@@ -414,7 +421,7 @@ const App: React.FC = () => {
 
               <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
                 
-                {/* ETAPA 1: O FORMULÁRIO ENXUTO INICIAL (Sempre visível se for a aba geral, mas read-only/editável) */}
+                {/* ETAPA 1: O FORMULÁRIO ENXUTO INICIAL E ABA VISUAL */}
                 {activeTab === 'geral' && (
                   <>
                     <div className="space-y-3">
@@ -451,7 +458,7 @@ const App: React.FC = () => {
                         <div className="space-y-2">
                           <label className="text-xs font-bold text-zinc-500 uppercase">Tema de Cores</label>
                           <div className="flex gap-2 flex-wrap">
-                            {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: c.c4 }} title={c.name} />)}
+                            {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110 shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: c.c4 }} title={c.name} />)}
                           </div>
                         </div>
 
@@ -473,9 +480,23 @@ const App: React.FC = () => {
                           )}
                         </div>
 
+                        {/* ENDEREÇO E MAPA */}
+                        <div className="space-y-2 pt-2 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={12} /> Localização e Contato</label>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico (Ex: Rua das Flores, 123)" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2 focus:border-emerald-500" placeholder="Link Embed do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                          
+                          <div className="pt-3 pb-1">
+                            <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer group">
+                              <input type="checkbox" className="accent-emerald-500 w-4 h-4 cursor-pointer" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} />
+                              <span className="group-hover:text-white transition-colors">Exibir formulário de contato no site</span>
+                            </label>
+                          </div>
+                        </div>
+
                         {/* REDES SOCIAIS E DELIVERY */}
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={12} /> Redes e Contato</label>
+                        <div className="space-y-2 pt-2 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={12} /> Redes Sociais</label>
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="Facebook (Link completo)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
@@ -498,19 +519,15 @@ const App: React.FC = () => {
                 {activeTab === 'dominio' && generatedHtml && (
                   <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                     
-                    {/* Se o projeto não foi salvo ainda */}
                     {!currentProjectSlug ? (
-                      <>
-                        <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
-                          <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
-                          <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">
-                            Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).
-                          </p>
-                          <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
-                        </div>
-                      </>
+                      <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
+                        <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">
+                          Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).
+                        </p>
+                        <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
+                      </div>
                     ) : (
-                      /* Se o projeto JÁ FOI SALVO: Mostra as instruções de apontamento */
                       <div className="space-y-4">
                         <div className="bg-[#121214] p-5 rounded-2xl border border-zinc-800 shadow-xl">
                           <div className="flex items-center gap-3 mb-4">
