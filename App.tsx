@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Palette, Upload, Layout, Download,
+  Rocket, Settings, Upload, Download,
   Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
@@ -14,25 +14,28 @@ import LoginPage from './components/LoginPage';
 import DomainChecker from './components/DomainChecker';
 
 const LAYOUT_STYLES = [
-  { id: 'layout_split_duplo', label: 'Split Duplo', desc: 'Hero em duas colunas' },
-  { id: 'layout_coluna_simples', label: 'Coluna Simples', desc: 'Fluxo vertical limpo' },
-  { id: 'layout_menu_hamburguer', label: 'Menu Hambúrguer', desc: 'Menu compacto e moderno' },
-  { id: 'layout_cards_moderno', label: 'Cards Moderno', desc: 'Seções em cards' },
+  { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
+  { id: 'layout_modern_split', label: 'Split Dinâmico', desc: 'Metades divididas com entradas laterais' },
+  { id: 'layout_glass_grid', label: 'Grid em Vidro', desc: 'Containers invisíveis em formato grid' },
+  { id: 'layout_minimal_elegance', label: 'Elegância Minimalista', desc: 'Foco total na tipografia e respiro' },
+  { id: 'layout_dynamic_flow', label: 'Fluxo Contínuo', desc: 'Seções em zigue-zague com fade' },
 ];
 
-// NOVAS PALETAS "CLEAN" & "QUIET LUXURY" (Baixo Contraste, Monocromáticas)
+// 10 PALETAS "QUIET LUXURY" (Tom sobre Tom, 7 Cores + Light/Dark)
 const COLORS = [
-  // DARK MODE ELEGANTE
-  { id: 'obsidian', name: 'Obsidiana (Preto)', c1: '#000000', c2: '#0a0a0a', c3: '#121212', c4: '#27272a', c5: '#3f3f46', c6: '#52525b', c7: '#d4d4d8', light: '#000000', dark: '#fafafa' },
-  { id: 'slate', name: 'Ardósia (Cinza Azulado)', c1: '#0f172a', c2: '#1e293b', c3: '#334155', c4: '#475569', c5: '#64748b', c6: '#94a3b8', c7: '#e2e8f0', light: '#0f172a', dark: '#f8fafc' },
-  { id: 'midnight', name: 'Meia-Noite (Azul Profundo)', c1: '#020617', c2: '#0a0f25', c3: '#111835', c4: '#1e2952', c5: '#28356b', c6: '#3d4d8a', c7: '#dbeafe', light: '#020617', dark: '#f8fafc' },
-  { id: 'forest', name: 'Floresta Noturna (Verde)', c1: '#020904', c2: '#051208', c3: '#0a1d0f', c4: '#142e1b', c5: '#1f4229', c6: '#305c3e', c7: '#dcfce7', light: '#020904', dark: '#f0fdf4' },
-  { id: 'espresso', name: 'Espresso (Marrom)', c1: '#0c0502', c2: '#1a0b06', c3: '#29120a', c4: '#3d1c11', c5: '#54281a', c6: '#733926', c7: '#ffedd5', light: '#0c0502', dark: '#fff7ed' },
+  // DARK MODE ELEGANTE (Fundos Escuros, Textos Claros)
+  { id: 'obsidian', name: 'Obsidiana', c1: '#000000', c2: '#0a0a0a', c3: '#171717', c4: '#ffffff', c5: '#d4d4d8', c6: '#a1a1aa', c7: '#71717a', light: '#ffffff', dark: '#000000' },
+  { id: 'slate', name: 'Ardósia', c1: '#020617', c2: '#0f172a', c3: '#1e293b', c4: '#3b82f6', c5: '#60a5fa', c6: '#93c5fd', c7: '#bfdbfe', light: '#f8fafc', dark: '#020617' },
+  { id: 'forest', name: 'Floresta', c1: '#022c22', c2: '#064e3b', c3: '#065f46', c4: '#10b981', c5: '#34d399', c6: '#6ee7b7', c7: '#a7f3d0', light: '#ecfdf5', dark: '#022c22' },
+  { id: 'wine', name: 'Vinho', c1: '#2a0510', c2: '#4c0519', c3: '#881337', c4: '#e11d48', c5: '#f43f5e', c6: '#fb7185', c7: '#fda4af', light: '#fff1f2', dark: '#2a0510' },
+  { id: 'amethyst', name: 'Ametista', c1: '#170326', c2: '#2e1045', c3: '#4a1d6e', c4: '#9333ea', c5: '#a855f7', c6: '#c084fc', c7: '#d8b4fe', light: '#faf5ff', dark: '#170326' },
 
-  // LIGHT MODE SOFISTICADO
-  { id: 'paper', name: 'Papel Arroz (Off-White)', c1: '#fafafa', c2: '#f4f4f5', c3: '#e4e4e7', c4: '#d4d4d8', c5: '#a1a1aa', c6: '#71717a', c7: '#18181b', light: '#ffffff', dark: '#09090b' },
-  { id: 'linen', name: 'Linho (Bege Neutro)', c1: '#fafaf9', c2: '#f5f5f4', c3: '#e7e5e4', c4: '#d6d3d1', c5: '#a8a29e', c6: '#78716c', c7: '#1c1917', light: '#ffffff', dark: '#0c0a09' },
-  { id: 'cloud', name: 'Nuvem (Azul Pálido)', c1: '#f8fafc', c2: '#f1f5f9', c3: '#e2e8f0', c4: '#cbd5e1', c5: '#94a3b8', c6: '#64748b', c7: '#0f172a', light: '#ffffff', dark: '#020617' },
+  // LIGHT MODE SOFISTICADO (Fundos Claros, Textos Escuros)
+  { id: 'snow', name: 'Neve', c1: '#ffffff', c2: '#f4f4f5', c3: '#e4e4e7', c4: '#09090b', c5: '#27272a', c6: '#3f3f46', c7: '#52525b', light: '#09090b', dark: '#ffffff' },
+  { id: 'sky', name: 'Céu Pálido', c1: '#f8fafc', c2: '#f1f5f9', c3: '#e2e8f0', c4: '#1d4ed8', c5: '#2563eb', c6: '#3b82f6', c7: '#60a5fa', light: '#020617', dark: '#ffffff' },
+  { id: 'mint', name: 'Menta Suave', c1: '#f0fdf4', c2: '#dcfce7', c3: '#bbf7d0', c4: '#047857', c5: '#059669', c6: '#10b981', c7: '#34d399', light: '#022c22', dark: '#ffffff' },
+  { id: 'peach', name: 'Pêssego', c1: '#fff7ed', c2: '#ffedd5', c3: '#fed7aa', c4: '#c2410c', c5: '#ea580c', c6: '#f97316', c7: '#fb923c', light: '#431407', dark: '#ffffff' },
+  { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
 ];
 
 const cleanHtmlForPublishing = (rawHtml: string | null) => {
@@ -69,8 +72,8 @@ const getPreviewHtml = (baseHtml: string | null) => {
       .custom-editor-toolbar button#text-delete { background: #ef444415; border: 1px solid #ef444450; color: #ef4444; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; padding: 0 10px; transition: all 0.2s; height: 30px; display: flex; align-items: center; gap: 4px; }
       .custom-editor-toolbar button#text-delete:hover { background: #ef4444; color: white; border-color: #ef4444; }
       .editable-element { transition: all 0.2s; outline: 2px dashed transparent; outline-offset: 2px; }
-      .editable-element:hover { outline-color: rgba(59, 130, 246, 0.5); cursor: pointer; }
-      .editable-element:focus { outline-color: #3b82f6; }
+      .editable-element:hover { outline-color: rgba(160, 160, 160, 0.5); cursor: pointer; }
+      .editable-element:focus { outline-color: #ffffff; }
     </style>
 
     <div id="editor-toolbar" class="custom-editor-toolbar">
@@ -163,7 +166,7 @@ const App: React.FC = () => {
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
-    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'obsidian', logoBase64: ''
+    showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
   });
 
   useEffect(() => {
@@ -200,11 +203,12 @@ const App: React.FC = () => {
   useEffect(() => { fetchProjects(); }, [loggedUserEmail]);
 
   const renderTemplate = (content: any, data: typeof formData) => {
-    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_split_duplo'];
+    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_modern_center'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
     const replaceAll = (token: string, value: string) => { html = html.split(token).join(value); };
 
+    // FORÇA O NOME DA EMPRESA EM MAIÚSCULO
     const companyNameUpper = (data.businessName || 'Sua Empresa').toUpperCase();
 
     replaceAll('{{BUSINESS_NAME}}', companyNameUpper);
@@ -218,69 +222,38 @@ const App: React.FC = () => {
     replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
     replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
     
-    replaceAll('{{ADDRESS}}', data.address || 'Endereço não informado');
-    replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
-    replaceAll('{{EMAIL}}', data.email || 'Email não informado');
+    replaceAll('{{ADDRESS}}', data.address || '');
+    replaceAll('{{PHONE}}', data.phone || data.whatsapp || '');
+    replaceAll('{{EMAIL}}', data.email || '');
 
+    // FAVICON NA ABA DO NAVEGADOR
     let headInjection = '';
     if (data.logoBase64) {
       headInjection = `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-12 w-auto object-contain transition-transform duration-500 hover:scale-105" alt="Logo" />`);
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-8 md:h-10 w-auto object-contain transition-transform hover:scale-105" alt="Logo" />`);
     } else {
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl">${companyNameUpper}</span>`);
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
     const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes} shadow-sm" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
 
-    // BOTÕES SOCIAIS MAIS DISCRETOS (Cores originais, mas menos saturadas se quiser, por hora mantive as oficiais)
     replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-[#25D366] text-white') : '');
     replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-[#E1306C] text-white') : '');
     replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-[#1877F2] text-white') : '');
-    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-[#000000] text-white') : '');
+    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-black text-white') : '');
     replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-[#EA1D2C] text-white') : '');
     replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-[#FFC700] text-black') : '');
     replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-[#FF4B2B] text-white') : '');
 
-    // CONTAINER DO MAPA: Sem borda, apenas sombra suave e "vidro"
-    const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-2xl shadow-md mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
+    const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-8 map-container ux-glass reveal-up"><iframe src="${data.mapEmbed}" width="100%" height="280" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-    // FORMULÁRIO: Inputs sem borda, com fundo translúcido e botão sólido elegante
-    const formCode = data.showForm ? `<form class="space-y-5 ux-form ux-glass p-6 rounded-2xl shadow-md"><input class="w-full bg-black/5 dark:bg-white/10 border-0 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c5}] transition-all placeholder:text-zinc-500" placeholder="Seu nome" /><input class="w-full bg-black/5 dark:bg-white/10 border-0 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c5}] transition-all placeholder:text-zinc-500" placeholder="Seu email" /><textarea class="w-full bg-black/5 dark:bg-white/10 border-0 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c5}] transition-all placeholder:text-zinc-500" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow-md text-white" style="background-color: ${colors.c5}; color: ${colors.dark};">Enviar mensagem</button></form>` : '';
+    // FORMULÁRIO INVISÍVEL GLASSMORPHISM
+    const formCode = data.showForm ? `<form class="space-y-4 ux-glass p-8 md:p-12 rounded-[2rem] reveal-up"><input class="w-full bg-[${colors.c1}]/50 border border-[${colors.c3}]/50 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all placeholder:text-[${colors.light}]/30 text-[${colors.light}]" placeholder="Seu nome" /><input class="w-full bg-[${colors.c1}]/50 border border-[${colors.c3}]/50 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all placeholder:text-[${colors.light}]/30 text-[${colors.light}]" placeholder="Seu email" /><textarea class="w-full bg-[${colors.c1}]/50 border border-[${colors.c3}]/50 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[${colors.c4}] transition-all placeholder:text-[${colors.light}]/30 text-[${colors.light}]" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="w-full py-4 rounded-xl font-bold uppercase tracking-widest btn-hover shadow-lg" style="background-color: ${colors.c4}; color: ${colors.dark}; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
-    const uxStyles = `
-      <style id="ux-style">
-        html { scroll-behavior: smooth; }
-        /* Efeito "Vidro" sutil para containers */
-        .ux-glass {
-          background: rgba(255, 255, 255, 0.03); /* Muito sutil no dark mode */
-          backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.05); /* Borda quase invisível */
-        }
-        /* Em light mode, o vidro precisa ser um pouco mais escuro */
-        @media (prefers-color-scheme: light) {
-           .ux-glass { background: rgba(0, 0, 0, 0.02); border: 1px solid rgba(0, 0, 0, 0.05); }
-           .btn-primary { color: #ffffff !important; } /* Garante contraste no botão */
-        }
-
-        @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-        h1, h2 { animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        p, h3 { animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        
-        /* Hover mais sutil nos botões */
-        button, .btn-primary, .icon-btn, a { transition: all 0.3s ease; }
-        button:hover, .btn-primary:hover, .icon-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
-        button:active, .icon-btn:active { transform: translateY(0) scale(0.99); }
-
-        /* Hover sutil nos containers */
-        .ux-form, .map-container { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .ux-form:hover, .map-container:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15) !important; }
-      </style>
-    `;
-
-    let finalHtml = html.replace('</head>', `${headInjection}${uxStyles}</head>`);
-    return finalHtml;
+    let finalHtml = html.replace('</head>', `${headInjection}</head>`);
+    return finalHtml; 
   };
 
   const handleGenerate = async () => {
@@ -379,7 +352,7 @@ const App: React.FC = () => {
         setCurrentProjectSlug(null);
         setHasUnsavedChanges(false);
         setActiveTab('geral');
-        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'obsidian', logoBase64: '' });
+        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) {
@@ -562,10 +535,6 @@ const App: React.FC = () => {
                     {generatedHtml && (
                       <div className="pt-5 border-t border-zinc-800 space-y-5">
                         
-                        <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30 text-xs text-emerald-300">
-                          ✨ <strong>Dica Mágica:</strong> Clique em qualquer texto ou botão no site à direita para mudar suas cores individualmente!
-                        </div>
-
                         <div className="space-y-2">
                           <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
                           <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
@@ -574,7 +543,7 @@ const App: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Monocromáticos & Clean)</label>
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Cores (Tom sobre Tom)</label>
                           <div className="grid grid-cols-5 gap-3">
                             {COLORS.map(c => (
                               <button 
@@ -591,7 +560,7 @@ const App: React.FC = () => {
 
                         <div className="space-y-2">
                           <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
-                            <span>Sua Logomarca (e Favicon)</span>
+                            <span>Sua Logomarca</span>
                             {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
                           </label>
                           {!formData.logoBase64 ? (
@@ -614,8 +583,8 @@ const App: React.FC = () => {
                             <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                           </div>
                           
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço (Ex: Rua Roma, 123 - Centro)" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link Embed do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
                           
                           <div className="pt-2 flex items-center justify-between bg-black/30 p-3 rounded-lg border border-zinc-800">
                             <span className="text-xs font-medium text-zinc-300">Formulário no site</span>
@@ -632,13 +601,6 @@ const App: React.FC = () => {
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Facebook (Link completo)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="TikTok (Link completo)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
-                          
-                          <label className="text-xs font-bold text-zinc-500 uppercase mt-4 block">Aplicativos de Delivery</label>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <div className="grid grid-cols-2 gap-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="99 Food" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Keeta" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
-                          </div>
                         </div>
 
                       </div>
@@ -690,18 +652,8 @@ const App: React.FC = () => {
                               </div>
                             </div>
                           </div>
-                          
-                          <div className="mt-4 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20 flex gap-2 items-start">
-                            <AlertCircle size={14} className="text-yellow-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-[10px] text-yellow-200/80 leading-relaxed">
-                              Após inserir os dados acima no seu provedor, pode levar até 24 horas para a internet reconhecer o seu domínio. 
-                              Enquanto isso, seu site já funciona neste link provisório: <br/>
-                              <a href={`https://${currentProjectSlug}.web.app`} target="_blank" rel="noreferrer" className="text-indigo-400 font-bold hover:underline mt-1 inline-block">https://{currentProjectSlug}.web.app</a>
-                            </p>
-                          </div>
                         </div>
-
-                        {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>}
+                        <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
                       </div>
                     )}
                   </div>
@@ -733,7 +685,6 @@ const App: React.FC = () => {
                               </div>
                               {p.published && <CheckCircle size={14} className="text-emerald-500 flex-shrink-0" />}
                             </button>
-                            
                             <button 
                               onClick={() => handleDeleteSite(p.id)} 
                               className="w-10 bg-zinc-900 hover:bg-red-500 hover:text-white text-zinc-500 rounded-xl border border-zinc-800 hover:border-red-500 flex items-center justify-center transition-all flex-shrink-0" 
@@ -747,7 +698,6 @@ const App: React.FC = () => {
                     </div>
                   </div>
                 )}
-
               </div>
             </motion.div>
           ) : (
