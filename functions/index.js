@@ -1,4 +1,5 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
@@ -14,102 +15,17 @@ const geminiKey = defineSecret("GEMINI_KEY");
 
 const getGeminiClient = () => {
   const apiKey = geminiKey.value();
-  if (!apiKey) {
-    throw new HttpsError(
-      "failed-precondition",
-      "O Secret GEMINI_KEY não está configurado no ambiente das Cloud Functions.",
-    );
-  }
+  if (!apiKey) throw new HttpsError("failed-precondition", "Secret GEMINI_KEY ausente.");
   return new GoogleGenerativeAI(apiKey);
 };
 
 const slugify = (value = "") =>
-  value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
+  value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
 
 const ensureAuthed = (request) => {
-  if (!request.auth?.uid) {
-    throw new HttpsError("unauthenticated", "Faça login para continuar.");
-  }
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Faça login para continuar.");
   return request.auth.uid;
 };
-
-async function createGithubRepoIfConfigured(repoName) {
-  const token = process.env.GITHUB_TOKEN || "";
-  if (!token) {
-    return { status: "pending_secret", message: "Secret GITHUB_TOKEN não configurado." };
-  }
-
-  const response = await fetch("https://api.github.com/user/repos", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-    body: JSON.stringify({
-      name: repoName,
-      private: true,
-      auto_init: true,
-      description: "Site criado automaticamente pelo Criador de Site",
-    }),
-  });
-
-  if (response.status === 422) {
-    return { status: "already_exists", url: `https://github.com/${repoName}` };
-  }
-
-  if (!response.ok) {
-    const errText = await response.text();
-    return { status: "error", message: errText.slice(0, 400) };
-  }
-
-  const repo = await response.json();
-  return { status: "created", url: repo.html_url, fullName: repo.full_name };
-}
-
-async function createHostingSiteIfPossible(siteId) {
-  const projectId = process.env.GCLOUD_PROJECT;
-  if (!projectId) {
-    return { status: "error", message: "GCLOUD_PROJECT não disponível." };
-  }
-
-  const auth = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/firebase"] });
-  const client = await auth.getClient();
-  const token = await client.getAccessToken();
-
-  const url = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectId}/sites?siteId=${siteId}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token.token || token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ type: "USER_SITE" }),
-  });
-
-  if (response.status === 409) {
-    return { status: "already_exists", defaultUrl: `https://${siteId}.web.app` };
-  }
-
-  if (!response.ok) {
-    const errText = await response.text();
-    return { status: "error", message: errText.slice(0, 400) };
-  }
-
-  const site = await response.json();
-  return {
-    status: "created",
-    site: site.name,
-    defaultUrl: site.defaultUrl || `https://${siteId}.web.app`,
-  };
-}
 
 async function getFirebaseAccessToken() {
   const auth = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/firebase"] });
@@ -118,97 +34,78 @@ async function getFirebaseAccessToken() {
   return token.token || token;
 }
 
-function sha256Hex(content) {
-  return crypto.createHash("sha256").update(content).digest("hex");
+async function configureSiteRetention(siteId) {
+  try {
+    const projectId = process.env.GCLOUD_PROJECT;
+    const token = await getFirebaseAccessToken();
+    const url = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectId}/sites/${siteId}/config?updateMask=maxVersions`;
+    await fetch(url, {
+      method: "PATCH",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ maxVersions: 2 }),
+    });
+  } catch (e) { console.error(`Falha retenção ${siteId}`, e); }
 }
+
+async function createHostingSiteIfPossible(siteId) {
+  const projectId = process.env.GCLOUD_PROJECT;
+  const token = await getFirebaseAccessToken();
+  const url = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectId}/sites?siteId=${siteId}`;
+  
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "USER_SITE" }),
+  });
+
+  if (response.status === 409) return { status: "already_exists", defaultUrl: `https://${siteId}.web.app` };
+  if (!response.ok) return { status: "error", message: (await response.text()).slice(0, 400) };
+  const site = await response.json();
+  return { status: "created", site: site.name, defaultUrl: site.defaultUrl || `https://${siteId}.web.app` };
+}
+
+function sha256Hex(content) { return crypto.createHash("sha256").update(content).digest("hex"); }
 
 async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const token = await getFirebaseAccessToken();
-  
   const htmlBuffer = Buffer.from(htmlContent, "utf-8");
   const gzippedContent = zlib.gzipSync(htmlBuffer);
   const fileHash = sha256Hex(gzippedContent);
 
   const createVersion = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/versions`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+    method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ config: { rewrites: [{ glob: "**", path: "/index.html" }] } }),
   });
 
-  if (!createVersion.ok) {
-    const txt = await createVersion.text();
-    throw new Error(`Falha ao criar versão Hosting: ${txt}`);
-  }
-
+  if (!createVersion.ok) throw new Error(`Falha criar versão: ${await createVersion.text()}`);
   const version = await createVersion.json();
   const versionName = version.name;
 
   const populate = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}:populateFiles`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+    method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ files: { "/index.html": fileHash } }),
   });
 
-  if (!populate.ok) {
-    const txt = await populate.text();
-    throw new Error(`Falha ao preparar upload Hosting: ${txt}`);
-  }
-
+  if (!populate.ok) throw new Error(`Falha populate: ${await populate.text()}`);
   const populateData = await populate.json();
-  const requiredHashes = populateData.uploadRequiredHashes || [];
 
-  if (requiredHashes.includes(fileHash)) {
-    const uploadUrl = `${populateData.uploadUrl}/${fileHash}`;
-
-    const up = await fetch(uploadUrl, {
-      method: "POST",
-      headers: { 
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/octet-stream",
-        "Content-Length": gzippedContent.length.toString() 
-      },
+  if ((populateData.uploadRequiredHashes || []).includes(fileHash)) {
+    const up = await fetch(`${populateData.uploadUrl}/${fileHash}`, {
+      method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/octet-stream", "Content-Length": gzippedContent.length.toString() },
       body: gzippedContent,
     });
-
-    if (!up.ok) {
-      const txt = await up.text();
-      throw new Error(`Falha no upload do arquivo para Hosting: ${txt}`);
-    }
+    if (!up.ok) throw new Error(`Falha upload: ${await up.text()}`);
   }
 
-  const finalize = await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}?updateMask=status`, {
-    method: "PATCH",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+  await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}?updateMask=status`, {
+    method: "PATCH", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ status: "FINALIZED" }),
   });
 
-  if (!finalize.ok) {
-    const txt = await finalize.text();
-    throw new Error(`Falha ao finalizar versão Hosting: ${txt}`);
-  }
-
   const release = await fetch(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/releases?versionName=${encodeURIComponent(versionName)}`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ message: "Deploy automático via Criador de Site" }),
+    method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "Deploy automático" }),
   });
-
-  if (!release.ok) {
-    const txt = await release.text();
-    throw new Error(`Falha ao criar release Hosting: ${txt}`);
-  }
 
   return { versionName, release: await release.json() };
 }
@@ -216,310 +113,201 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
 async function ensureHostingReady(siteId) {
   const existingOrNew = await createHostingSiteIfPossible(siteId);
   if (existingOrNew.status === "created" || existingOrNew.status === "already_exists") {
+    await configureSiteRetention(siteId);
     return existingOrNew;
   }
-  const reason = existingOrNew?.message || "Falha ao provisionar site no Firebase Hosting.";
-  throw new HttpsError("failed-precondition", reason);
+  throw new HttpsError("failed-precondition", existingOrNew?.message || "Falha Hosting.");
 }
 
-exports.generateSite = onCall({
-  cors: true,
-  timeoutSeconds: 60,
-  memory: "256MiB",
-  secrets: [geminiKey],
-}, async (request) => {
+exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB", secrets: [geminiKey] }, async (request) => {
   const genAI = getGeminiClient();
   const { businessName, description } = request.data;
-
   if (!businessName) throw new HttpsError("invalid-argument", "Nome obrigatório");
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    generationConfig: { responseMimeType: "application/json" },
-  });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
 
-  // PROMPT PREMIUM: Inteligência de Ortografia e Design
-  const prompt = `Atue como um redator publicitário sênior e revisor ortográfico.
-    Empresa: "${businessName}".
-    Descrição/Ideia original: "${description}".
-
-    Gere um JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall.
-
-    REGRAS OBRIGATÓRIAS:
-    1. Corrija qualquer erro gramatical ou de digitação da ideia original.
-    2. PADRONIZAÇÃO DE LETRAS:
-       - 'heroTitle', 'aboutTitle' e 'contactCall' DEVEM estar 100% EM LETRAS MAIÚSCULAS (UPPERCASE).
-       - 'heroSubtitle' e 'aboutText' devem ter a primeira letra maiúscula e o restante minúsculo, respeitando a pontuação correta.
-    3. Crie textos curtos, altamente persuasivos, modernos e voltados para conversão de vendas.`;
+  const prompt = `Atue como redator publicitário sênior e revisor ortográfico.
+    Empresa: "${businessName}". Descrição: "${description}".
+    Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall.
+    REGRAS: 1. Corrija ortografia. 2. Primeira letra maiúscula e restante natural, NÃO use caixa alta em tudo. 3. Textos persuasivos para vendas.`;
 
   try {
     const result = await model.generateContent(prompt);
     let text = result.response.text();
-    text = text.replace(/```json/g, "").replace(/```/g, "").replace(/\\n/g, "").trim();
-    return JSON.parse(text);
-  } catch (error) {
-    console.error("Erro generateSite:", error);
-    throw new HttpsError("internal", error.message);
-  }
+    return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").replace(/\\n/g, "").trim());
+  } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
-exports.checkDomainAvailability = onCall({
-  cors: true,
-  timeoutSeconds: 30,
-}, async (request) => {
+exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
   const { desiredDomain } = request.data || {};
-
-  if (!desiredDomain) {
-    throw new HttpsError("invalid-argument", "O domínio desejado é obrigatório.");
-  }
-
   const cleanDomain = slugify(desiredDomain).slice(0, 30);
-  const db = admin.firestore();
-  const snapshot = await db.collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
-
-  let isAvailable = true;
-
-  if (!snapshot.empty) {
-    isAvailable = false;
-  } else {
-    try {
-      const response = await fetch(`https://${cleanDomain}.web.app`);
-      if (response.ok) {
-        isAvailable = false;
-      }
-    } catch (error) {
-      isAvailable = true;
-    }
-  }
-
-  if (isAvailable) {
-    return { available: true, cleanDomain };
-  }
-
-  const suffixes = ["-oficial", "-online", "-web"];
-  const suggestions = suffixes.map(suffix => {
-    const maxBaseLength = 30 - suffix.length;
-    return `${cleanDomain.slice(0, maxBaseLength)}${suffix}`;
-  });
-
-  return {
-    available: false,
-    cleanDomain,
-    message: "Este endereço já está em uso.",
-    suggestions: suggestions
-  };
+  const snap = await admin.firestore().collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
+  
+  if (!snap.empty) return { available: false, cleanDomain, message: "Já em uso." };
+  return { available: true, cleanDomain };
 });
 
-exports.saveSiteProject = onCall({
-  cors: true,
-  timeoutSeconds: 120,
-  memory: "512MiB",
-}, async (request) => {
+exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (request) => {
   const uid = ensureAuthed(request);
-  const {
-    businessName,
-    internalDomain,
-    officialDomain,
-    generatedHtml,
-    formData,
-    aiContent,
-  } = request.data || {};
-
-  if (!businessName || !generatedHtml || !internalDomain) {
-    throw new HttpsError("invalid-argument", "Nome da empresa, domínio interno e HTML são obrigatórios.");
-  }
-
+  const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
   const projectSlug = internalDomain; 
-  const hostingSiteId = projectSlug;
-  const repoName = `site-${projectSlug}`;
 
-  const github = await createGithubRepoIfConfigured(repoName);
-  const hosting = await createHostingSiteIfPossible(hostingSiteId);
+  const hosting = await createHostingSiteIfPossible(projectSlug);
+  await configureSiteRetention(projectSlug);
 
   const now = admin.firestore.FieldValue.serverTimestamp();
-  const db = admin.firestore();
-  const ref = db.collection("users").doc(uid).collection("projects").doc(projectSlug);
-
-  await ref.set({
-    uid,
-    businessName,
-    projectSlug,
-    repoName,
-    hostingSiteId,
-    internalDomain,
-    officialDomain: officialDomain || "Pendente",
-    generatedHtml,
-    formData: formData || {},
-    aiContent: aiContent || {},
-    github,
-    hosting,
-    autoDeploy: true,
-    needsDeploy: true,
-    updatedAt: now,
-    createdAt: now,
+  await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
+    uid, businessName, projectSlug, hostingSiteId: projectSlug, internalDomain,
+    officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
+    hosting, autoDeploy: true, needsDeploy: true, updatedAt: now, createdAt: now, status: "draft"
   }, { merge: true });
 
-  return {
-    success: true,
-    projectSlug,
-    repoName,
-    hostingSiteId,
-    github,
-    hosting,
-    message: "Projeto salvo e infra provisionada com sucesso.",
-  };
+  return { success: true, projectSlug, hostingSiteId: projectSlug };
 });
 
-exports.updateSiteProject = onCall({
-  cors: true,
-  timeoutSeconds: 60,
-  memory: "256MiB",
-}, async (request) => {
+exports.updateSiteProject = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
+  const { targetId, html, formData, aiContent } = request.data;
   
-  const { projectId, projectSlug, html, updatedHtml, formData, aiContent } = request.data || {};
-  const targetId = projectId || projectSlug;
-  const targetHtml = html || updatedHtml;
-
-  if (!targetId || !targetHtml) {
-    throw new HttpsError("invalid-argument", "ID do projeto e HTML são obrigatórios para atualizar.");
-  }
-
-  const db = admin.firestore();
-  const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
-
-  await ref.update({
-    generatedHtml: targetHtml,
-    ...(formData && { formData }),
-    ...(aiContent && { aiContent }),
-    needsDeploy: true,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  await admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId).update({
+    generatedHtml: html, ...(formData && { formData }), ...(aiContent && { aiContent }),
+    needsDeploy: true, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
-
-  return { success: true, message: "Projeto atualizado com sucesso." };
+  return { success: true };
 });
 
 exports.listUserProjects = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
-  const snap = await admin.firestore().collection("users").doc(uid).collection("projects")
-    .orderBy("updatedAt", "desc")
-    .limit(30)
-    .get();
-
-  return {
-    projects: snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
-  };
+  const snap = await admin.firestore().collection("users").doc(uid).collection("projects").orderBy("updatedAt", "desc").get();
+  return { projects: snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) };
 });
 
-exports.publishUserProject = onCall({
-  cors: true,
-  timeoutSeconds: 180,
-  memory: "512MiB",
-}, async (request) => {
+exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "512MiB" }, async (request) => {
   const uid = ensureAuthed(request);
-  const { projectSlug, projectId } = request.data || {};
-  const targetId = projectId || projectSlug;
-
-  if (!targetId) {
-    throw new HttpsError("invalid-argument", "ID do projeto é obrigatório para publicar.");
-  }
+  const { targetId } = request.data;
 
   const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
   const snap = await ref.get();
-
-  if (!snap.exists) {
-    throw new HttpsError("not-found", "Projeto não encontrado para este usuário.");
-  }
-
+  if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
+  
   const project = snap.data();
-  const html = project.generatedHtml;
-  const hostingSiteId = project.hostingSiteId;
+  if (!project.generatedHtml || !project.hostingSiteId) throw new HttpsError("failed-precondition", "Projeto incompleto.");
 
-  if (!html || !hostingSiteId) {
-    throw new HttpsError("failed-precondition", "Projeto sem HTML ou hostingSiteId.");
+  const hostingProvision = await ensureHostingReady(project.hostingSiteId);
+  const deployResult = await deployHtmlToFirebaseHosting(project.hostingSiteId, project.generatedHtml);
+  const publicUrl = hostingProvision.defaultUrl || `https://${project.hostingSiteId}.web.app`;
+
+  // REGRA DE VALIDADE: Se não tem validade (primeira vez), ganha 5 dias de Trial. 
+  // Se já tem validade (foi pago ou ainda no trial), mantém a data existente.
+  let expiresAt = project.expiresAt ? project.expiresAt.toDate() : null;
+  if (!expiresAt) {
+    expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 5); // 5 DIAS GRÁTIS
   }
 
-  try {
-    const hostingProvision = await ensureHostingReady(hostingSiteId);
-    const deployResult = await deployHtmlToFirebaseHosting(hostingSiteId, html);
-    const publicUrl = hostingProvision.defaultUrl || `https://${hostingSiteId}.web.app`;
+  await ref.set({
+    published: true, publishUrl: publicUrl, publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+    status: "published", needsDeploy: false, lastDeploy: deployResult,
+    hosting: { ...(project.hosting || {}), ...hostingProvision },
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
 
-    await ref.set({
-      published: true,
-      publishUrl: publicUrl,
-      publishedAt: admin.firestore.FieldValue.serverTimestamp(),
-      needsDeploy: false,
-      lastDeploy: deployResult,
-      hosting: {
-        ...(project.hosting || {}),
-        ...hostingProvision,
-      },
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-
-    return {
-      success: true,
-      publishUrl: publicUrl,
-      hostingSiteId,
-      deploy: deployResult,
-    };
-  } catch (error) {
-    console.error("Erro publishUserProject:", error);
-    
-    const errorMessage = error.message ? error.message.toLowerCase() : "";
-    if (errorMessage.includes("404") || errorMessage.includes("not found") || errorMessage.includes("deleted")) {
-      await ref.delete();
-      throw new HttpsError(
-        "not-found",
-        "A infraestrutura deste site foi removida do servidor. O projeto foi retirado da sua lista."
-      );
-    }
-
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    throw new HttpsError(
-      "internal",
-      "Falha ao publicar o projeto no Firebase Hosting.",
-      { message: error?.message || "erro desconhecido" },
-    );
-  }
+  return { success: true, publishUrl: publicUrl, expiresAt: expiresAt.toISOString() };
 });
 
-exports.deleteUserProject = onCall({
-  cors: true,
-  timeoutSeconds: 60,
-}, async (request) => {
+exports.deleteUserProject = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
-  const { projectId, projectSlug } = request.data || {};
-  const targetId = projectId || projectSlug;
-
-  if (!targetId) {
-    throw new HttpsError("invalid-argument", "ID do projeto é obrigatório para deletar.");
-  }
-
-  const db = admin.firestore();
-  const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
+  const { targetId } = request.data;
+  const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
   const snap = await ref.get();
 
   if (snap.exists) {
-    const data = snap.data();
-    const siteId = data.hostingSiteId;
-    
+    const siteId = snap.data().hostingSiteId;
     if (siteId) {
       try {
         const projectIdEnv = process.env.GCLOUD_PROJECT;
         const token = await getFirebaseAccessToken();
         await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${siteId}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` }
+          method: "DELETE", headers: { Authorization: `Bearer ${token}` }
         });
-      } catch (e) {
-        console.error("Aviso: Falha ao deletar o site no Firebase Hosting, prosseguindo com a deleção no Firestore.", e);
-      }
+      } catch (e) { console.error("Falha ao deletar site no Hosting", e); }
     }
     await ref.delete();
   }
+  return { success: true };
+});
 
-  return { success: true, message: "Projeto deletado com sucesso." };
+// SIMULAÇÃO DE PAGAMENTO (Renovação por 365 dias)
+exports.renewSiteSubscription = onCall({ cors: true }, async (request) => {
+  const uid = ensureAuthed(request);
+  const { targetId } = request.data;
+
+  const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
+
+  const newExpiration = new Date();
+  newExpiration.setDate(newExpiration.getDate() + 365); // MAIS 1 ANO
+
+  await ref.update({
+    expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
+    status: "published", // Tira do status de 'frozen'
+    paymentStatus: "paid",
+    needsDeploy: true // Força o cliente a clicar em publicar de novo se estava congelado
+  });
+
+  return { success: true, newExpiration: newExpiration.toISOString() };
+});
+
+
+// ==============================================================================
+// CRON JOB DIÁRIO: CONGELAMENTO E EXCLUSÃO POR FALTA DE PAGAMENTO
+// ==============================================================================
+exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
+  const db = admin.firestore();
+  const now = admin.firestore.Timestamp.now();
+  const token = await getFirebaseAccessToken();
+  const projectIdEnv = process.env.GCLOUD_PROJECT;
+  
+  // 1. CONGELAR SITES QUE VENCERAM (Passou os 5 dias ou 365 dias)
+  const expiredSnap = await db.collectionGroup("projects").where("published", "==", true).where("expiresAt", "<=", now).get();
+  let frozenCount = 0;
+
+  for (const doc of expiredSnap.docs) {
+    const data = doc.data();
+    if (data.hostingSiteId) {
+      try {
+        // Tira o site do ar deletando do Hosting
+        await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${data.hostingSiteId}`, {
+          method: "DELETE", headers: { Authorization: `Bearer ${token}` }
+        });
+        frozenCount++;
+      } catch (e) {}
+    }
+    
+    // Marca como congelado e define o prazo fatal de 30 dias para pagar
+    const hardDeleteDate = new Date();
+    hardDeleteDate.setDate(hardDeleteDate.getDate() + 30);
+
+    await doc.ref.update({
+      published: false,
+      status: "frozen",
+      frozenAt: now,
+      hardDeleteAt: admin.firestore.Timestamp.fromDate(hardDeleteDate),
+      needsDeploy: true
+    });
+  }
+
+  // 2. EXCLUIR DEFINITIVAMENTE SITES CONGELADOS HÁ MAIS DE 30 DIAS
+  const frozenSnap = await db.collectionGroup("projects").where("status", "==", "frozen").where("hardDeleteAt", "<=", now).get();
+  let deletedCount = 0;
+
+  for (const doc of frozenSnap.docs) {
+    // Apaga do banco de dados definitivamente
+    await doc.ref.delete();
+    deletedCount++;
+  }
+
+  console.log(`Cron Finalizado: ${frozenCount} congelados. ${deletedCount} excluídos permanentemente.`);
 });
