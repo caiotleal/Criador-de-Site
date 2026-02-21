@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket, Settings, Palette, Upload, Layout, Download,
-  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save
+  Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -36,6 +36,9 @@ const App: React.FC = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
+  
+  // Controle de Interface (Tabs)
+  const [activeTab, setActiveTab] = useState<'geral' | 'dominio'>('geral');
   
   // Controles de Salvamento e Publicação
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
@@ -230,10 +233,14 @@ const App: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  // LÓGICA DE SALVAR / ATUALIZAR CORRIGIDA
   const handleSaveOrUpdateSite = async () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
-    if (!registerLater && !officialDomain && !currentProjectSlug) return alert("Valide seu domínio ou marque 'Vou configurar depois'.");
+    
+    // Se está salvando pela primeira vez, exige que passe pela aba domínio e confirme
+    if (!currentProjectSlug && !registerLater && !officialDomain) {
+      setActiveTab('dominio');
+      return alert("Por favor, configure seu domínio ou marque a opção 'Configurar depois' na aba de Domínio Oficial.");
+    }
     
     setIsSavingProject(true);
     try {
@@ -270,10 +277,31 @@ const App: React.FC = () => {
       const publishFn = httpsCallable(functions, 'publishUserProject');
       const res: any = await publishFn({ projectSlug: currentProjectSlug, projectId: currentProjectSlug });
       if (res.data?.publishUrl) setPublishedDomain(res.data.publishUrl.replace(/^https?:\/\//, ''));
-      alert("Site publicado com sucesso!");
+      alert("Site publicado com sucesso! Pode demorar alguns minutos para o link propagar na internet.");
       fetchProjects();
-    } catch (err: any) { alert('Erro ao publicar.'); } 
+    } catch (err: any) { alert('Erro ao publicar. O servidor pode estar provisionando sua infraestrutura.'); } 
     finally { setIsPublishing(false); }
+  };
+
+  // A FUNÇÃO DA LIXEIRA
+  const handleDeleteSite = async (projectId: string) => {
+    if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site do ar. Tem certeza absoluta?")) return;
+    try {
+      const deleteFn = httpsCallable(functions, 'deleteUserProject');
+      await deleteFn({ projectId, projectSlug: projectId });
+      alert("Site excluído com sucesso.");
+      
+      if (projectId === currentProjectSlug) {
+        setGeneratedHtml(null);
+        setCurrentProjectSlug(null);
+        setHasUnsavedChanges(false);
+        setActiveTab('geral');
+        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'teal_pro', logoBase64: '' });
+      }
+      fetchProjects();
+    } catch (error) {
+      alert("Erro ao excluir o site.");
+    }
   };
 
   const handleLoadProject = (project: any) => {
@@ -286,6 +314,7 @@ const App: React.FC = () => {
     setOfficialDomain(project.officialDomain || '');
     setRegisterLater(project.officialDomain === 'Pendente');
     setHasUnsavedChanges(false);
+    setActiveTab('geral');
   };
 
   const handleLogout = async () => {
@@ -326,7 +355,7 @@ const App: React.FC = () => {
       </div>
 
       {loggedUserEmail && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[90] bg-emerald-700/90 text-white text-xs md:text-sm px-4 py-2 rounded-full shadow-lg border border-emerald-300/30">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[90] bg-emerald-700/90 text-white text-xs md:text-sm px-4 py-2 rounded-full shadow-lg border border-emerald-300/30 backdrop-blur-md">
           ✅ Logado como: <strong>{loggedUserEmail}</strong>
         </div>
       )}
@@ -346,7 +375,7 @@ const App: React.FC = () => {
 
           <button 
             onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
           >
             {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={16} />} Publicar
           </button>
@@ -359,115 +388,219 @@ const App: React.FC = () => {
       <motion.div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
-            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -30, opacity: 0 }} className="w-[92vw] max-w-[340px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -30, opacity: 0 }} className="w-[92vw] max-w-[350px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
               <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-700 flex-shrink-0">
-                <h2 className="font-bold text-sm tracking-wide">Criador de Site</h2>
+                <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações do Site' : 'Novo Projeto'}</h2>
                 <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors"><Minimize2 size={18} /></button>
               </div>
 
-              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-5">
-                
-                {/* ETAPA 1: O FORMULÁRIO ENXUTO INICIAL */}
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Nome do Negócio</label>
-                    <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Ex: Pizzaria Roma" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia Principal</label>
-                    <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
-                  </div>
+              {/* TABS DE NAVEGAÇÃO (Aparece apenas quando o site foi gerado) */}
+              {generatedHtml && (
+                <div className="flex border-b border-zinc-800 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
+                  <button 
+                    onClick={() => setActiveTab('geral')} 
+                    className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}
+                  >
+                    Visual & Dados
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('dominio')} 
+                    className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}
+                  >
+                    Domínio Oficial
+                  </button>
                 </div>
+              )}
 
-                <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-600 transition-colors">
-                  {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Textos c/ IA' : 'Gerar Meu Site'}
-                </button>
-
-                {/* ETAPA 2: CONFIGURAÇÕES COMPLETAS (Só abre após gerar o site) */}
-                {generatedHtml && (
-                  <div className="pt-4 border-t border-zinc-800 space-y-5">
-                    
-                    <div className="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/30 text-xs text-indigo-300">
-                      ✨ <strong>Edição Direta:</strong> Clique em qualquer texto no site à direita para alterar cor, tamanho e fonte.
-                    </div>
-
-                    {/* LAYOUT E CORES */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
-                      <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
-                        {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-zinc-500 uppercase">Cores Principais</label>
-                      <div className="flex gap-2 flex-wrap">
-                        {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: c.c4 }} title={c.name} />)}
+              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
+                
+                {/* ETAPA 1: O FORMULÁRIO ENXUTO INICIAL (Sempre visível se for a aba geral, mas read-only/editável) */}
+                {activeTab === 'geral' && (
+                  <>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Nome do Negócio</label>
+                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Ex: Pizzaria Roma" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia Principal</label>
+                        <textarea className="w-full h-16 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
                       </div>
                     </div>
 
-                    {/* LOGO */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
-                        <span>Sua Logomarca</span>
-                        {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px]"><X size={12} /></button>}
-                      </label>
-                      {!formData.logoBase64 ? (
-                        <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors">
-                          <Upload size={14} /> Fazer Upload
-                          <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                        </label>
-                      ) : (
-                        <div className="h-12 bg-white/5 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1">
-                          <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
+                    <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-600 transition-colors">
+                      {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
+                    </button>
+
+                    {/* OPÇÕES COMPLETAS DE VISUAL */}
+                    {generatedHtml && (
+                      <div className="pt-5 border-t border-zinc-800 space-y-5">
+                        
+                        <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30 text-xs text-emerald-300">
+                          ✨ <strong>Edição Visual:</strong> Clique em qualquer texto no site à direita para alterar cor, tamanho e fonte.
                         </div>
-                      )}
-                    </div>
 
-                    {/* REDES SOCIAIS E DELIVERY */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={12} /> Redes e Contato</label>
-                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs mt-2" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs mt-2" placeholder="Facebook (Link completo)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs mt-2" placeholder="TikTok (Link completo)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
-                      
-                      <label className="text-xs font-bold text-zinc-500 uppercase mt-4 block">Aplicativos de Delivery</label>
-                      <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="99 Food" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2 text-xs" placeholder="Keeta" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
-                      </div>
-                    </div>
+                        {/* LAYOUT E CORES */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
+                          <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
+                            {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                          </select>
+                        </div>
 
-                    {/* DOMÍNIO (Aparece apenas na criação do projeto) */}
-                    {!currentProjectSlug && (
-                      <div className="space-y-2 pt-2 border-t border-zinc-800">
-                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={12} /> Configurar Domínio</label>
-                        <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Tema de Cores</label>
+                          <div className="flex gap-2 flex-wrap">
+                            {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: c.c4 }} title={c.name} />)}
+                          </div>
+                        </div>
+
+                        {/* LOGO */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
+                            <span>Sua Logomarca</span>
+                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px]"><X size={12} /></button>}
+                          </label>
+                          {!formData.logoBase64 ? (
+                            <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors">
+                              <Upload size={14} /> Fazer Upload
+                              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                            </label>
+                          ) : (
+                            <div className="h-12 bg-white/5 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1">
+                              <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* REDES SOCIAIS E DELIVERY */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={12} /> Redes e Contato</label>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="Facebook (Link completo)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2" placeholder="TikTok (Link completo)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                          
+                          <label className="text-xs font-bold text-zinc-500 uppercase mt-4 block">Aplicativos de Delivery</label>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="99 Food" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs" placeholder="Keeta" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                          </div>
+                        </div>
+
                       </div>
                     )}
-
-                    <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-2 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors"><Download size={16} /> Fazer Download HTML</button>
-
-                  </div>
+                  </>
                 )}
 
-                {/* LISTAGEM DE PROJETOS SALVOS (Voltou para o final da Sidebar) */}
+                {/* ABA DOMÍNIO: ONDE A MÁGICA DOS DNS ACONTECE */}
+                {activeTab === 'dominio' && generatedHtml && (
+                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+                    
+                    {/* Se o projeto não foi salvo ainda */}
+                    {!currentProjectSlug ? (
+                      <>
+                        <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                          <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
+                          <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">
+                            Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).
+                          </p>
+                          <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
+                        </div>
+                      </>
+                    ) : (
+                      /* Se o projeto JÁ FOI SALVO: Mostra as instruções de apontamento */
+                      <div className="space-y-4">
+                        <div className="bg-[#121214] p-5 rounded-2xl border border-zinc-800 shadow-xl">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-indigo-500/20 p-2.5 rounded-xl">
+                              <Globe className="text-indigo-400 w-6 h-6" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
+                              <p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-black/60 p-4 rounded-xl border border-zinc-800/50 space-y-4">
+                            <div>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span>
+                              </div>
+                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center group">
+                                <code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span>
+                              </div>
+                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800">
+                                <code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">
+                                  firebase-site-verification={currentProjectSlug}-app
+                                </code>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20 flex gap-2 items-start">
+                            <AlertCircle size={14} className="text-yellow-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-[10px] text-yellow-200/80 leading-relaxed">
+                              Após inserir os dados acima no seu provedor, pode levar até 24 horas para a internet reconhecer o seu domínio. 
+                              Enquanto isso, seu site já funciona neste link provisório: <br/>
+                              <a href={`https://${currentProjectSlug}.web.app`} target="_blank" rel="noreferrer" className="text-indigo-400 font-bold hover:underline mt-1 inline-block">https://{currentProjectSlug}.web.app</a>
+                            </p>
+                          </div>
+                        </div>
+
+                        {generatedHtml && <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* LISTAGEM DE PROJETOS SALVOS (Com Lixeira Rápida) */}
                 {loggedUserEmail && (
-                  <div className="border border-zinc-700 bg-zinc-900/50 rounded-xl p-3 space-y-2 mt-4">
+                  <div className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
                     <div className="flex items-center justify-between">
-                      <p className="text-[11px] text-zinc-400">Logado: {loggedUserEmail}</p>
-                      <button onClick={handleLogout} className="text-[11px] text-red-400 hover:text-red-300 transition-colors">Sair</button>
+                      <p className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2">
+                        <LayoutDashboard size={14} className="text-emerald-500"/>
+                        Meus Projetos
+                      </p>
+                      <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2 py-1 rounded">Sair</button>
                     </div>
-                    <p className="text-xs font-semibold text-zinc-200 border-t border-zinc-800 pt-2">Meus Projetos Salvos</p>
-                    <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1 pr-1">
-                      {savedProjects.length === 0 ? <p className="text-[11px] text-zinc-500 italic">Nenhum projeto ainda.</p> : savedProjects.map((p: any) => (
-                        <button key={p.id} onClick={() => handleLoadProject(p)} className="w-full text-left text-[11px] bg-zinc-800 hover:bg-zinc-700 rounded-lg p-2.5 flex justify-between items-center border border-zinc-700/50 transition-colors">
-                          <span className="font-medium truncate pr-2">{p.businessName || p.id}</span>
-                          {p.published && <CheckCircle size={12} className="text-emerald-500 flex-shrink-0" />}
-                        </button>
-                      ))}
+                    
+                    <div className="max-h-40 overflow-y-auto custom-scrollbar space-y-1.5 pr-1">
+                      {savedProjects.length === 0 ? (
+                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-3 rounded-lg text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
+                      ) : (
+                        savedProjects.map((p: any) => (
+                          <div key={p.id} className="flex items-stretch gap-1.5 group">
+                            {/* Botão de Carregar Projeto */}
+                            <button 
+                              onClick={() => handleLoadProject(p)} 
+                              className={`flex-1 text-left text-xs bg-zinc-900 hover:bg-zinc-800 rounded-xl p-3 flex justify-between items-center border transition-all ${currentProjectSlug === p.id ? 'border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'border-zinc-800'}`}
+                            >
+                              <div className="flex flex-col truncate pr-2">
+                                <span className="font-bold text-zinc-100 truncate">{p.businessName || 'Sem Nome'}</span>
+                                <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{p.id}.web.app</span>
+                              </div>
+                              {p.published && <CheckCircle size={14} className="text-emerald-500 flex-shrink-0" />}
+                            </button>
+                            
+                            {/* O BOTÃO DA LIXEIRA */}
+                            <button 
+                              onClick={() => handleDeleteSite(p.id)} 
+                              className="w-10 bg-zinc-900 hover:bg-red-500 hover:text-white text-zinc-500 rounded-xl border border-zinc-800 hover:border-red-500 flex items-center justify-center transition-all flex-shrink-0" 
+                              title="Apagar Site"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
@@ -475,7 +608,7 @@ const App: React.FC = () => {
               </div>
             </motion.div>
           ) : (
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform"><Settings className="text-white" size={26} /></motion.div>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105"><Settings className="text-white" size={26} /></motion.div>
           )}
         </AnimatePresence>
       </motion.div>
