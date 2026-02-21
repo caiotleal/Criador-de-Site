@@ -1,231 +1,263 @@
-const COMMON_HEAD = `
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+const baseStyles = `
   <style>
-    :root {
-      --color-1: {{COLOR_1}};
-      --color-2: {{COLOR_2}};
-      --color-3: {{COLOR_3}};
-      --color-4: {{COLOR_4}};
-      --color-5: {{COLOR_5}};
-      --color-6: {{COLOR_6}};
-      --color-7: {{COLOR_7}};
-      --color-light: {{COLOR_LIGHT}};
-      --color-dark: {{COLOR_DARK}};
-    }
-
-    * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(180deg, var(--color-7), color-mix(in srgb, var(--color-7) 75%, white));
-      color: var(--color-dark);
+    body { background-color: {{COLOR_1}}; color: {{COLOR_LIGHT}}; overflow-x: hidden; }
+    
+    /* Efeito Vidro (Glassmorphism) Invisível */
+    .ux-glass {
+      background: {{COLOR_2}}40; /* Transparência suave */
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid {{COLOR_3}}50;
     }
-    section[id] { scroll-margin-top: 88px; }
+    
+    /* Tipografia Imponente */
+    .hero-title { font-size: clamp(3rem, 8vw, 7rem); line-height: 0.95; letter-spacing: -0.04em; }
+    .section-title { font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1; letter-spacing: -0.03em; }
 
-    .site-shell { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
-    .nav-clean {
-      position: sticky; top: 0; z-index: 40;
-      background: color-mix(in srgb, var(--color-light) 82%, transparent);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid color-mix(in srgb, var(--color-4) 14%, transparent);
-    }
+    /* Animações de Entrada (Scroll Reveal) */
+    .nav-enter { animation: slideDown 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    .btn-main {
-      background: linear-gradient(120deg, var(--color-3), var(--color-4));
-      color: white; border: 0; border-radius: 14px;
-      padding: 12px 22px; font-weight: 700;
-      transition: transform .2s ease, filter .2s ease;
-    }
-    .btn-main:hover { transform: translateY(-2px); filter: brightness(1.05); }
+    .reveal-up { opacity: 0; transform: translateY(60px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+    .reveal-up.active { opacity: 1; transform: translateY(0); }
 
-    .card-soft {
-      background: color-mix(in srgb, var(--color-light) 88%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-4) 18%, transparent);
-      border-radius: 20px;
-      box-shadow: 0 18px 35px -32px color-mix(in srgb, var(--color-2) 58%, transparent);
-    }
+    .reveal-down { opacity: 0; transform: translateY(-60px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+    .reveal-down.active { opacity: 1; transform: translateY(0); }
 
-    .floating-medias {
-      position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
-      z-index: 70; padding: 8px;
-      background: color-mix(in srgb, var(--color-light) 30%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-light) 45%, transparent);
-      border-radius: 999px; backdrop-filter: blur(12px);
-    }
-    .floating-medias .icon-btn {
-      width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center;
-      text-decoration: none; color: white; font-size: 18px;
-      margin: 6px 0;
-      box-shadow: 0 10px 18px -12px rgba(0,0,0,.45);
-      transition: transform .2s ease, filter .2s ease;
-    }
-    .floating-medias .icon-btn:hover { transform: scale(1.06); filter: brightness(1.05); }
+    .reveal-left { opacity: 0; transform: translateX(-60px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+    .reveal-left.active { opacity: 1; transform: translateX(0); }
 
-    .drag-handle { cursor: move; display: grid; place-items: center; color: var(--color-dark); font-size: 12px; opacity: .7; }
+    .reveal-right { opacity: 0; transform: translateX(60px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+    .reveal-right.active { opacity: 1; transform: translateX(0); }
 
-    @media (max-width: 768px) {
-      .site-shell { padding: 0 16px; }
-      .floating-medias {
-        top: auto; bottom: 12px; right: 12px; transform: none;
-        display: flex; align-items: center; gap: 6px; border-radius: 16px;
-      }
-      .floating-medias .stack { display: flex; gap: 6px; overflow-x: auto; max-width: 74vw; }
-      .floating-medias .icon-btn { margin: 0; width: 40px; height: 40px; font-size: 16px; }
-    }
+    /* Botões Modernos */
+    .btn-hover { transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+    .btn-hover:hover { transform: translateY(-4px) scale(1.02); filter: brightness(1.15); box-shadow: 0 15px 30px -10px {{COLOR_4}}80; }
+    .btn-hover:active { transform: translateY(0) scale(0.98); }
   </style>
+
   <script>
-    tailwind.config = { theme: { extend: { colors: { brand: 'var(--color-4)', ink: 'var(--color-dark)' } } } }
-  </script>
-`;
-
-const FLOATING_MEDIA_PANEL = `
-  <aside id="floating-social" class="floating-medias draggable">
-    <div class="drag-handle" title="Arraste para mover"><i class="fas fa-grip-lines"></i></div>
-    <div class="stack">
-      [[WHATSAPP_BTN]]
-      [[INSTAGRAM_BTN]]
-      [[FACEBOOK_BTN]]
-      [[TIKTOK_BTN]]
-      [[IFOOD_BTN]]
-      [[NOVE_NOVE_BTN]]
-      [[KEETA_BTN]]
-    </div>
-  </aside>
-`;
-
-const DRAG_SCRIPT = `
-  <script>
-    document.querySelectorAll('.draggable').forEach((elmnt) => {
-      let isDragging = false;
-      let startX = 0, startY = 0, startLeft = 0, startTop = 0;
-      const handle = elmnt.querySelector('.drag-handle') || elmnt;
-      const point = (e) => (e.touches && e.touches[0]) ? e.touches[0] : e;
-
-      const move = (e) => {
-        if (!isDragging) return;
-        const p = point(e);
-        elmnt.style.left = startLeft + (p.clientX - startX) + 'px';
-        elmnt.style.top = startTop + (p.clientY - startY) + 'px';
-        elmnt.style.right = 'auto';
-        elmnt.style.transform = 'none';
-      };
-
-      const stop = () => {
-        if (!isDragging) return;
-        isDragging = false;
-        const rect = elmnt.getBoundingClientRect();
-        const snapRight = rect.left > window.innerWidth / 2;
-        elmnt.style.left = snapRight ? 'auto' : '12px';
-        elmnt.style.right = snapRight ? '12px' : 'auto';
-        elmnt.style.top = Math.max(8, Math.min(rect.top, window.innerHeight - rect.height - 8)) + 'px';
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', stop);
-        document.removeEventListener('touchmove', move);
-        document.removeEventListener('touchend', stop);
-      };
-
-      const start = (e) => {
-        const p = point(e);
-        const rect = elmnt.getBoundingClientRect();
-        isDragging = true;
-        startX = p.clientX; startY = p.clientY;
-        startLeft = rect.left; startTop = rect.top;
-        elmnt.style.left = rect.left + 'px';
-        elmnt.style.top = rect.top + 'px';
-        elmnt.style.right = 'auto';
-        elmnt.style.transform = 'none';
-        document.addEventListener('mousemove', move);
-        document.addEventListener('mouseup', stop);
-        document.addEventListener('touchmove', move, { passive: true });
-        document.addEventListener('touchend', stop);
-      };
-
-      handle.addEventListener('mousedown', start);
-      handle.addEventListener('touchstart', start, { passive: true });
+    document.addEventListener("DOMContentLoaded", () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.reveal-up, .reveal-down, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
     });
   </script>
 `;
 
-const BASE_SECTIONS = (hero: string, about: string, contact: string) => `
-  ${hero}
-  ${about}
-  ${contact}
-  ${FLOATING_MEDIA_PANEL}
-  ${DRAG_SCRIPT}
-`;
-
-const NAV = `
-  <nav class="nav-clean">
-    <div class="site-shell h-16 flex items-center justify-between gap-4">
-      <div class="font-extrabold text-xl" style="color:var(--color-2)">[[LOGO_AREA]]</div>
-      <div class="flex gap-5 text-sm font-semibold" style="color:var(--color-2)">
-        <a href="#home">Home</a>
-        <a href="#quem-somos">Quem Somos</a>
-        <a href="#contato">Contato</a>
+const navBar = `
+  <nav class="fixed w-full z-50 ux-glass nav-enter border-b-0">
+    <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+      <div class="flex items-center gap-2">[[LOGO_AREA]]</div>
+      <div class="hidden md:flex items-center gap-8 text-sm font-bold tracking-widest uppercase">
+        <a href="#sobre" class="opacity-60 hover:opacity-100 transition-opacity">Sobre</a>
+        <a href="#contato" class="px-8 py-3 rounded-full font-black tracking-widest btn-hover" style="background-color: {{COLOR_4}}; color: {{COLOR_DARK}};">Solicitar</a>
       </div>
     </div>
   </nav>
 `;
 
-const TEMPLATE_SPLIT = `<!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title></head><body>${NAV}${BASE_SECTIONS(
-`<section id="home" class="site-shell py-12 md:py-20"><div class="grid md:grid-cols-2 gap-8 items-center"><div><h1 class="text-4xl md:text-6xl font-extrabold leading-tight">{{HERO_TITLE}}</h1><p class="mt-4 text-lg" style="color:var(--color-2)">{{HERO_SUBTITLE}}</p><button class="btn-main mt-7">Fale com a equipe</button></div><div class="card-soft p-6"><h3 class="text-xl font-bold mb-3">Nosso diferencial</h3><p style="color:var(--color-2)">Atendimento próximo, experiência no mercado e foco em resultados consistentes.</p></div></div></section>`,
-`<section id="quem-somos" class="site-shell py-10 md:py-14"><div class="card-soft p-7"><h2 class="text-3xl font-bold mb-3">{{ABOUT_TITLE}}</h2><p class="text-lg" style="color:var(--color-2)">{{ABOUT_TEXT}}</p></div></section>`,
-`<section id="contato" class="site-shell pb-14"><h2 class="text-3xl font-bold mb-5">{{CONTACT_CALL}}</h2><div class="grid md:grid-cols-2 gap-6"><div class="card-soft p-6 space-y-2"><p><strong>Endereço:</strong> {{ADDRESS}}</p><p><strong>Telefone:</strong> {{PHONE}}</p><p><strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div><div class="card-soft p-6">[[CONTACT_FORM]]</div></div></section>`
-)}</body></html>`;
-
-const TEMPLATE_ONECOLUMN = `<!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title></head><body>${NAV}${BASE_SECTIONS(
-`<section id="home" class="site-shell py-12 md:py-20 text-center"><h1 class="text-4xl md:text-6xl font-extrabold">{{HERO_TITLE}}</h1><p class="mt-4 max-w-3xl mx-auto text-lg" style="color:var(--color-2)">{{HERO_SUBTITLE}}</p><button class="btn-main mt-7">Fale com a equipe</button><div class="card-soft p-6 mt-8 max-w-4xl mx-auto"><h3 class="text-xl font-bold mb-3">Nosso diferencial</h3><p style="color:var(--color-2)">{{ABOUT_TEXT}}</p></div></section>`,
-`<section id="quem-somos" class="site-shell py-6 md:py-10"><h2 class="text-3xl font-bold mb-3 text-center">{{ABOUT_TITLE}}</h2><p class="text-lg max-w-4xl mx-auto text-center" style="color:var(--color-2)">{{ABOUT_TEXT}}</p></section>`,
-`<section id="contato" class="site-shell pb-14"><div class="card-soft p-6 md:p-8"><h2 class="text-3xl font-bold mb-5">{{CONTACT_CALL}}</h2><div class="grid md:grid-cols-2 gap-6"><div class="space-y-2"><p><strong>Endereço:</strong> {{ADDRESS}}</p><p><strong>Telefone:</strong> {{PHONE}}</p><p><strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div><div>[[CONTACT_FORM]]</div></div></div></section>`
-)}</body></html>`;
-
-const TEMPLATE_HAMBURGUER = `<!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title></head><body>
-  <nav class="nav-clean"><div class="site-shell h-16 flex items-center justify-between"><div class="font-extrabold text-xl" style="color:var(--color-2)">[[LOGO_AREA]]</div><button onclick="document.getElementById('mnav').classList.toggle('hidden')" class="btn-main !py-2 !px-3"><i class='fas fa-bars'></i></button></div><div id="mnav" class="hidden site-shell pb-3 text-sm font-semibold" style="color:var(--color-2)"><a class="mr-4" href="#home">Home</a><a class="mr-4" href="#quem-somos">Quem Somos</a><a href="#contato">Contato</a></div></nav>
-  ${BASE_SECTIONS(
-`<section id='home' class='site-shell py-12 md:py-20'><div class='card-soft p-8'><h1 class='text-4xl md:text-6xl font-extrabold'>{{HERO_TITLE}}</h1><p class='mt-4 text-lg' style='color:var(--color-2)'>{{HERO_SUBTITLE}}</p><button class='btn-main mt-6'>Fale com a equipe</button></div></section>`,
-`<section id='quem-somos' class='site-shell py-4 md:py-8'><div class='grid md:grid-cols-3 gap-6'><div class='card-soft p-6 md:col-span-2'><h2 class='text-3xl font-bold mb-3'>{{ABOUT_TITLE}}</h2><p style='color:var(--color-2)'>{{ABOUT_TEXT}}</p></div><div class='card-soft p-6'><h4 class='font-bold mb-2'>Tempo no mercado</h4><p style='color:var(--color-2)'>Experiência sólida e entrega consistente.</p></div></div></section>`,
-`<section id='contato' class='site-shell pb-14'><h2 class='text-3xl font-bold mb-5'>{{CONTACT_CALL}}</h2><div class='grid md:grid-cols-2 gap-6'><div class='card-soft p-6'>[[CONTACT_FORM]]</div><div class='card-soft p-6 space-y-2'><p><strong>Endereço:</strong> {{ADDRESS}}</p><p><strong>Telefone:</strong> {{PHONE}}</p><p><strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div></div></section>`
-)}
-</body></html>`;
-
-const TEMPLATE_CARDS = `<!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title></head><body>${NAV}${BASE_SECTIONS(
-`<section id='home' class='site-shell py-12 md:py-20'><h1 class='text-4xl md:text-6xl font-extrabold mb-4'>{{HERO_TITLE}}</h1><p class='text-lg mb-8' style='color:var(--color-2)'>{{HERO_SUBTITLE}}</p><div class='grid md:grid-cols-3 gap-4'><div class='card-soft p-5'><h4 class='font-bold'>Diferencial</h4><p style='color:var(--color-2)'>Atendimento humano</p></div><div class='card-soft p-5'><h4 class='font-bold'>Mercado</h4><p style='color:var(--color-2)'>Experiência e confiança</p></div><div class='card-soft p-5'><h4 class='font-bold'>Resultado</h4><p style='color:var(--color-2)'>Foco em conversão</p></div></div></section>`,
-`<section id='quem-somos' class='site-shell py-6 md:py-10'><div class='card-soft p-7'><h2 class='text-3xl font-bold mb-3'>{{ABOUT_TITLE}}</h2><p class='text-lg' style='color:var(--color-2)'>{{ABOUT_TEXT}}</p></div></section>`,
-`<section id='contato' class='site-shell pb-14'><div class='grid md:grid-cols-2 gap-6'><div class='card-soft p-6 space-y-2'><h3 class='text-2xl font-bold mb-2'>{{CONTACT_CALL}}</h3><p><strong>Endereço:</strong> {{ADDRESS}}</p><p><strong>Telefone:</strong> {{PHONE}}</p><p><strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div><div class='card-soft p-6'>[[CONTACT_FORM]]</div></div></section>`
-)}</body></html>`;
-
-const TEMPLATE_SIDEBAR = `<!DOCTYPE html><html lang="pt-BR"><head>${COMMON_HEAD}<title>{{BUSINESS_NAME}}</title></head><body>
-  <div class='md:flex min-h-screen'>
-    <aside class='md:w-64 card-soft md:rounded-none md:border-r md:border-l-0 md:border-t-0 md:border-b-0 p-5 md:sticky md:top-0 md:h-screen'>
-      <div class='font-extrabold text-xl mb-4' style='color:var(--color-2)'>[[LOGO_AREA]]</div>
-      <nav class='space-y-2 text-sm font-semibold' style='color:var(--color-2)'><a class='block' href='#home'>Home</a><a class='block' href='#quem-somos'>Quem Somos</a><a class='block' href='#contato'>Contato</a></nav>
-    </aside>
-    <main class='flex-1'>
-      ${BASE_SECTIONS(
-`<section id='home' class='site-shell py-12 md:py-16'><h1 class='text-4xl md:text-6xl font-extrabold'>{{HERO_TITLE}}</h1><p class='mt-4 text-lg' style='color:var(--color-2)'>{{HERO_SUBTITLE}}</p><button class='btn-main mt-7'>Fale com a equipe</button></section>`,
-`<section id='quem-somos' class='site-shell py-4 md:py-8'><div class='card-soft p-7'><h2 class='text-3xl font-bold mb-3'>{{ABOUT_TITLE}}</h2><p class='text-lg' style='color:var(--color-2)'>{{ABOUT_TEXT}}</p></div></section>`,
-`<section id='contato' class='site-shell pb-14'><h2 class='text-3xl font-bold mb-5'>{{CONTACT_CALL}}</h2><div class='grid md:grid-cols-2 gap-6'><div class='card-soft p-6 space-y-2'><p><strong>Endereço:</strong> {{ADDRESS}}</p><p><strong>Telefone:</strong> {{PHONE}}</p><p><strong>Email:</strong> {{EMAIL}}</p>[[MAP_AREA]]</div><div class='card-soft p-6'>[[CONTACT_FORM]]</div></div></section>`
-)}
-    </main>
-  </div>
-</body></html>`;
-
 export const TEMPLATES: Record<string, string> = {
-  layout_split_duplo: TEMPLATE_SPLIT,
-  layout_coluna_simples: TEMPLATE_ONECOLUMN,
-  layout_menu_hamburguer: TEMPLATE_HAMBURGUER,
-  layout_cards_moderno: TEMPLATE_CARDS,
-  layout_sidebar_profissional: TEMPLATE_SIDEBAR,
+  layout_modern_center: `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
+</head>
+<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
+  ${navBar}
+  <main>
+    <section class="min-h-screen flex flex-col items-center justify-center pt-24 px-4 relative overflow-hidden">
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] bg-[{{COLOR_4}}]/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div class="max-w-5xl mx-auto text-center relative z-10 reveal-up">
+        <h1 class="hero-title font-black mb-8 italic uppercase text-transparent bg-clip-text bg-gradient-to-br from-[{{COLOR_LIGHT}}] to-[{{COLOR_5}}]">{{HERO_TITLE}}</h1>
+        <p class="text-xl md:text-2xl opacity-60 mb-12 max-w-2xl mx-auto font-light">{{HERO_SUBTITLE}}</p>
+        <a href="#contato" class="inline-block px-12 py-5 rounded-full font-black text-lg tracking-widest uppercase btn-hover shadow-2xl" style="background-color: {{COLOR_LIGHT}}; color: {{COLOR_1}};">Falar com Especialista</a>
+      </div>
+    </section>
 
-  // aliases legados
-  brasil_claro: TEMPLATE_SPLIT,
-  samba_noturno: TEMPLATE_CARDS,
-  bairro_forte: TEMPLATE_ONECOLUMN,
-  lovable: TEMPLATE_SPLIT,
-  base_dark: TEMPLATE_CARDS,
-  split: TEMPLATE_ONECOLUMN,
+    <section id="sobre" class="py-32 px-4 max-w-7xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="ux-glass p-12 md:p-16 rounded-[2.5rem] reveal-left">
+          <h2 class="section-title font-black mb-6 italic">{{ABOUT_TITLE}}</h2>
+        </div>
+        <div class="ux-glass p-12 md:p-16 rounded-[2.5rem] reveal-right flex items-center">
+          <p class="text-xl opacity-70 leading-relaxed">{{ABOUT_TEXT}}</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contato" class="py-32 px-4 max-w-4xl mx-auto reveal-up">
+      <div class="text-center mb-16">
+        <h2 class="section-title font-black mb-4 italic">{{CONTACT_CALL}}</h2>
+        <p class="opacity-50 text-lg">{{ADDRESS}} <br/> {{PHONE}} • {{EMAIL}}</p>
+      </div>
+      [[CONTACT_FORM]]
+      [[MAP_AREA]]
+      <div class="flex justify-center gap-4 mt-12">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[FACEBOOK_BTN]][[TIKTOK_BTN]]</div>
+    </section>
+  </main>
+</body></html>`,
+
+  layout_modern_split: `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
+</head>
+<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
+  ${navBar}
+  <main>
+    <section class="min-h-screen flex items-center pt-24 px-4 md:px-12 relative overflow-hidden">
+      <div class="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-12 items-center">
+        <div class="relative z-10 reveal-left">
+          <h1 class="hero-title font-black mb-6 italic uppercase">{{HERO_TITLE}}</h1>
+          <p class="text-xl md:text-2xl opacity-60 mb-10 font-light">{{HERO_SUBTITLE}}</p>
+          <a href="#contato" class="inline-block px-10 py-5 rounded-full font-black tracking-widest uppercase btn-hover" style="background-color: {{COLOR_4}}; color: {{COLOR_DARK}};">Iniciar Projeto</a>
+        </div>
+        <div class="h-[60vh] rounded-[3rem] ux-glass reveal-right relative overflow-hidden flex items-center justify-center">
+           <div class="absolute inset-0 bg-gradient-to-tr from-[{{COLOR_4}}]/20 to-transparent"></div>
+           <div class="w-32 h-32 rounded-full bg-[{{COLOR_4}}]/30 blur-3xl absolute"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sobre" class="py-32 px-4 max-w-7xl mx-auto reveal-up">
+      <div class="ux-glass p-12 md:p-20 rounded-[3rem] text-center">
+        <h2 class="section-title font-black mb-8 italic">{{ABOUT_TITLE}}</h2>
+        <p class="text-2xl opacity-70 leading-relaxed max-w-4xl mx-auto">{{ABOUT_TEXT}}</p>
+      </div>
+    </section>
+
+    <section id="contato" class="py-32 px-4 max-w-3xl mx-auto reveal-up">
+      <h2 class="section-title font-black mb-12 text-center italic">{{CONTACT_CALL}}</h2>
+      [[CONTACT_FORM]]
+      <div class="mt-8 text-center opacity-50">{{ADDRESS}} <br/> {{PHONE}}</div>
+      <div class="flex justify-center gap-4 mt-8">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[TIKTOK_BTN]]</div>
+    </section>
+  </main>
+</body></html>`,
+
+  layout_glass_grid: `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
+</head>
+<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
+  ${navBar}
+  <main class="max-w-7xl mx-auto px-4 pt-32 pb-24 space-y-6">
+    
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="md:col-span-2 ux-glass p-12 md:p-20 rounded-[3rem] reveal-down flex flex-col justify-center min-h-[60vh]">
+        <h1 class="hero-title font-black mb-6 italic uppercase">{{HERO_TITLE}}</h1>
+        <p class="text-xl opacity-60 max-w-xl">{{HERO_SUBTITLE}}</p>
+      </div>
+      <div class="ux-glass p-10 rounded-[3rem] reveal-right flex flex-col justify-between min-h-[60vh]">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-8" style="background: {{COLOR_4}}; color: {{COLOR_DARK}};">✦</div>
+        <div>
+          <h2 class="text-3xl font-black mb-4 italic">{{ABOUT_TITLE}}</h2>
+          <p class="opacity-60">{{ABOUT_TEXT}}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 reveal-up">
+      <div class="ux-glass p-10 md:p-16 rounded-[3rem]">
+        <h2 class="text-4xl font-black mb-8 italic">{{CONTACT_CALL}}</h2>
+        <p class="opacity-50 mb-8">{{ADDRESS}} <br/> {{PHONE}} • {{EMAIL}}</p>
+        <div class="flex gap-4">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]]</div>
+        [[MAP_AREA]]
+      </div>
+      <div class="ux-glass p-10 md:p-16 rounded-[3rem]">
+        [[CONTACT_FORM]]
+      </div>
+    </div>
+
+  </main>
+</body></html>`,
+
+  layout_minimal_elegance: `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
+</head>
+<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
+  ${navBar}
+  <main class="max-w-5xl mx-auto px-6">
+    <section class="min-h-screen flex flex-col justify-center pt-24 reveal-up">
+      <h1 class="text-[4rem] md:text-[8rem] font-black uppercase italic leading-[0.85] tracking-tighter mb-10">{{HERO_TITLE}}</h1>
+      <p class="text-2xl md:text-4xl opacity-50 font-light max-w-3xl leading-snug">{{HERO_SUBTITLE}}</p>
+      <div class="mt-16">
+        <a href="#contato" class="inline-block px-12 py-5 rounded-full font-black tracking-widest uppercase btn-hover" style="background-color: {{COLOR_LIGHT}}; color: {{COLOR_1}};">Descubra Mais</a>
+      </div>
+    </section>
+
+    <section id="sobre" class="py-32 reveal-up border-t border-[{{COLOR_3}}]/30">
+      <h2 class="text-2xl md:text-3xl font-black mb-8 text-[{{COLOR_4}}] uppercase tracking-widest">{{ABOUT_TITLE}}</h2>
+      <p class="text-3xl md:text-5xl font-light leading-tight max-w-4xl">{{ABOUT_TEXT}}</p>
+    </section>
+
+    <section id="contato" class="py-32 reveal-up border-t border-[{{COLOR_3}}]/30">
+      <div class="grid md:grid-cols-2 gap-16">
+        <div>
+          <h2 class="text-[3rem] md:text-[5rem] font-black italic uppercase leading-[0.9] mb-8">{{CONTACT_CALL}}</h2>
+          <div class="opacity-60 space-y-2 text-lg">
+            <p>{{ADDRESS}}</p><p>{{PHONE}}</p><p>{{EMAIL}}</p>
+          </div>
+          <div class="flex gap-4 mt-8">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[FACEBOOK_BTN]]</div>
+        </div>
+        <div class="ux-glass p-8 rounded-3xl">[[CONTACT_FORM]]</div>
+      </div>
+    </section>
+  </main>
+</body></html>`,
+
+  layout_dynamic_flow: `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
+</head>
+<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
+  ${navBar}
+  <main>
+    <section class="min-h-screen flex items-center justify-center pt-24 px-4 text-center reveal-down">
+      <div class="max-w-4xl mx-auto">
+        <div class="inline-block px-6 py-2 rounded-full ux-glass mb-8 text-sm font-bold tracking-widest text-[{{COLOR_4}}] uppercase">Bem-vindo ao futuro</div>
+        <h1 class="hero-title font-black mb-6 italic uppercase">{{HERO_TITLE}}</h1>
+        <p class="text-2xl opacity-60 font-light mb-10">{{HERO_SUBTITLE}}</p>
+      </div>
+    </section>
+
+    <section id="sobre" class="py-32 px-4 bg-[{{COLOR_2}}]/20">
+      <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div class="reveal-left">
+          <h2 class="section-title font-black mb-6 italic">{{ABOUT_TITLE}}</h2>
+          <p class="text-xl opacity-60 leading-relaxed">{{ABOUT_TEXT}}</p>
+        </div>
+        <div class="h-96 ux-glass rounded-[3rem] reveal-right"></div>
+      </div>
+    </section>
+
+    <section id="contato" class="py-32 px-4">
+      <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div class="order-2 md:order-1 ux-glass p-10 rounded-[3rem] reveal-left">[[CONTACT_FORM]]</div>
+        <div class="order-1 md:order-2 reveal-right">
+          <h2 class="section-title font-black mb-6 italic">{{CONTACT_CALL}}</h2>
+          <p class="text-xl opacity-60 mb-8">{{ADDRESS}} <br/> {{PHONE}} • {{EMAIL}}</p>
+          <div class="flex gap-4">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[TIKTOK_BTN]]</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body></html>`
 };
