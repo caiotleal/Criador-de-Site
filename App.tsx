@@ -20,22 +20,174 @@ const LAYOUT_STYLES = [
   { id: 'layout_cards_moderno', label: 'Cards Moderno', desc: 'Seções em cards' },
 ];
 
-// 10 PALETAS PREMIUM "TOM SOBRE TOM" (Transição Suave / Menor Contraste)
 const COLORS = [
-  // DARK MODE (Fundos escuros, cards levemente mais claros, textos brancos)
   { id: 'dark_blue', name: 'Azul Profundo', c1: '#f8fafc', c2: '#93c5fd', c3: '#60a5fa', c4: '#3b82f6', c5: '#475569', c6: '#1e293b', c7: '#172033', light: '#0f172a', dark: '#f8fafc' },
   { id: 'dark_green', name: 'Verde Musgo', c1: '#ecfdf5', c2: '#6ee7b7', c3: '#34d399', c4: '#10b981', c5: '#047857', c6: '#065f46', c7: '#064e3b', light: '#022c22', dark: '#ecfdf5' },
   { id: 'dark_purple', name: 'Roxo Noturno', c1: '#faf5ff', c2: '#d8b4fe', c3: '#c084fc', c4: '#a855f7', c5: '#7e22ce', c6: '#581c87', c7: '#4c1875', light: '#3b0764', dark: '#faf5ff' },
   { id: 'dark_zinc', name: 'Grafite Escuro', c1: '#fafafa', c2: '#e5e5e5', c3: '#d4d4d4', c4: '#a3a3a3', c5: '#525252', c6: '#404040', c7: '#262626', light: '#18181b', dark: '#fafafa' },
   { id: 'dark_red', name: 'Vinho Tinto', c1: '#fff1f2', c2: '#fda4af', c3: '#fb7185', c4: '#f43f5e', c5: '#be123c', c6: '#881337', c7: '#6b102b', light: '#4c0519', dark: '#fff1f2' },
-  
-  // LIGHT MODE (Fundos brancos/gelo, cards levemente cinzas, textos pretos)
   { id: 'light_blue', name: 'Azul Céu', c1: '#0f172a', c2: '#1e40af', c3: '#1d4ed8', c4: '#2563eb', c5: '#bfdbfe', c6: '#dbeafe', c7: '#eff6ff', light: '#f8fafc', dark: '#0f172a' },
   { id: 'light_green', name: 'Menta Suave', c1: '#022c22', c2: '#065f46', c3: '#047857', c4: '#059669', c5: '#a7f3d0', c6: '#d1fae5', c7: '#ecfdf5', light: '#f0fdf4', dark: '#022c22' },
   { id: 'light_orange', name: 'Pêssego', c1: '#431407', c2: '#9a3412', c3: '#c2410c', c4: '#ea580c', c5: '#fed7aa', c6: '#ffedd5', c7: '#fff7ed', light: '#fffaf5', dark: '#431407' },
   { id: 'light_purple', name: 'Lavanda', c1: '#3b0764', c2: '#6b21a8', c3: '#7e22ce', c4: '#9333ea', c5: '#e9d5ff', c6: '#f3e8ff', c7: '#faf5ff', light: '#fdfbff', dark: '#3b0764' },
   { id: 'light_zinc', name: 'Prata Claro', c1: '#18181b', c2: '#3f3f46', c3: '#525252', c4: '#71717a', c5: '#d4d4d4', c6: '#e4e4e7', c7: '#f4f4f5', light: '#fafafa', dark: '#18181b' },
 ];
+
+// FUNÇÃO DE SEGURANÇA: Limpa o HTML de qualquer rastro do nosso editor antes de salvar/publicar
+const cleanHtmlForPublishing = (rawHtml: string | null) => {
+  if (!rawHtml) return '';
+  if (!rawHtml.includes('editor-toolbar')) return rawHtml;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(rawHtml, 'text/html');
+  
+  // Remove scripts e estilos do editor
+  const tb = doc.querySelector('#editor-toolbar'); if (tb) tb.remove();
+  const sc = doc.querySelector('#editor-script'); if (sc) sc.remove();
+  const st = doc.querySelector('#editor-style'); if (st) st.remove();
+  
+  // Remove atributos de edição dos elementos do site
+  doc.querySelectorAll('.editable-element').forEach(el => {
+    el.removeAttribute('contenteditable');
+    el.classList.remove('editable-element');
+    if (el.getAttribute('class') === '') el.removeAttribute('class');
+  });
+  
+  return doc.documentElement.outerHTML;
+};
+
+// FUNÇÃO DE INJEÇÃO: Coloca o editor apenas na visualização do Iframe
+const getPreviewHtml = (baseHtml: string | null) => {
+  if (!baseHtml) return '';
+  
+  const clean = cleanHtmlForPublishing(baseHtml); // Garante base limpa
+  
+  const editorScript = `
+    <style id="editor-style">
+      .custom-editor-toolbar {
+        position: absolute; display: none; background: #18181b; padding: 8px; 
+        border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        z-index: 99999; gap: 8px; align-items: center;
+      }
+      .color-picker-group { display: flex; align-items: center; gap: 4px; background: #27272a; padding: 2px 6px 2px 8px; border-radius: 6px; border: 1px solid #3f3f46; }
+      .color-picker-label { color: #a1a1aa; font-size: 10px; font-weight: bold; }
+      .custom-editor-toolbar input[type="color"] { width: 22px; height: 22px; border: none; cursor: pointer; background: transparent; padding: 0; }
+      .custom-editor-toolbar select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 6px; padding: 4px 8px; font-size: 12px; outline: none; cursor: pointer; height: 30px; }
+      .custom-editor-toolbar button#text-delete { background: #ef444415; border: 1px solid #ef444450; color: #ef4444; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; padding: 0 10px; transition: all 0.2s; height: 30px; display: flex; align-items: center; gap: 4px; }
+      .custom-editor-toolbar button#text-delete:hover { background: #ef4444; color: white; border-color: #ef4444; }
+      .editable-element { transition: all 0.2s; outline: 2px dashed transparent; outline-offset: 2px; }
+      .editable-element:hover { outline-color: rgba(59, 130, 246, 0.5); cursor: pointer; }
+      .editable-element:focus { outline-color: #3b82f6; }
+    </style>
+
+    <div id="editor-toolbar" class="custom-editor-toolbar">
+      <div class="color-picker-group" title="Cor do Texto (Fonte)">
+        <span class="color-picker-label">T</span>
+        <input type="color" id="fore-color-picker" />
+      </div>
+      <div class="color-picker-group" title="Cor do Fundo (Background)">
+        <span class="color-picker-label">F</span>
+        <input type="color" id="bg-color-picker" />
+      </div>
+      <select id="text-size" title="Tamanho da Fonte">
+        <option value="1">Pequeno</option><option value="3" selected>Normal</option><option value="5">Grande</option><option value="7">Gigante</option>
+      </select>
+      <select id="text-font" title="Família da Fonte">
+        <option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Courier New">Courier</option><option value="Verdana">Verdana</option>
+      </select>
+      <div style="width: 1px; height: 20px; background: #3f3f46; margin: 0 4px;"></div>
+      <button id="text-delete" title="Apagar este elemento do site">✖ Excluir</button>
+    </div>
+
+    <script id="editor-script">
+      document.addEventListener('DOMContentLoaded', () => {
+        const toolbar = document.getElementById('editor-toolbar');
+        const foreColorPicker = document.getElementById('fore-color-picker');
+        const bgColorPicker = document.getElementById('bg-color-picker');
+        let currentTarget = null;
+
+        function sendCleanHtml() {
+          const clone = document.documentElement.cloneNode(true);
+          const tb = clone.querySelector('#editor-toolbar'); if (tb) tb.remove();
+          const sc = clone.querySelector('#editor-script'); if (sc) sc.remove();
+          const st = clone.querySelector('#editor-style'); if (st) st.remove();
+          clone.querySelectorAll('.editable-element').forEach(el => {
+            el.removeAttribute('contenteditable');
+            el.classList.remove('editable-element');
+            if (el.getAttribute('class') === '') el.removeAttribute('class');
+          });
+          window.parent.postMessage({ type: 'CONTENT_EDITED', html: clone.outerHTML }, '*');
+        }
+
+        function rgbToHex(rgb) {
+          if (!rgb || rgb === 'transparent' || rgb === 'rgba(0, 0, 0, 0)') return '#000000';
+          const match = rgb.match(/^rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*(\\d+(?:\\.\\d+)?))?\\)$/);
+          if(!match) return '#000000';
+          function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
+          return "#" + hex(match[1]) + hex(match[2]) + hex(match[3]);
+        }
+
+        document.querySelectorAll('h1, h2, h3, h4, p, span, a, button, img, .icon-btn').forEach(el => {
+          if(toolbar.contains(el)) return; 
+          
+          el.setAttribute('contenteditable', 'true');
+          el.classList.add('editable-element');
+          
+          el.addEventListener('focus', (e) => {
+            currentTarget = el;
+            const computedStyle = window.getComputedStyle(el);
+            foreColorPicker.value = rgbToHex(computedStyle.color);
+            bgColorPicker.value = rgbToHex(computedStyle.backgroundColor);
+
+            const rect = el.getBoundingClientRect();
+            toolbar.style.display = 'flex';
+            toolbar.style.top = (rect.top + window.scrollY - 60) + 'px';
+            toolbar.style.left = Math.max(10, rect.left + window.scrollX) + 'px';
+          });
+        });
+
+        document.addEventListener('click', (e) => {
+          if (toolbar.style.display === 'flex' && !toolbar.contains(e.target) && e.target !== currentTarget) {
+             toolbar.style.display = 'none';
+             sendCleanHtml();
+          }
+        });
+
+        document.getElementById('text-delete').addEventListener('click', () => {
+          if (currentTarget) {
+            currentTarget.remove();
+            toolbar.style.display = 'none';
+            sendCleanHtml();
+          }
+        });
+
+        foreColorPicker.addEventListener('input', (e) => {
+          document.execCommand('foreColor', false, e.target.value);
+          sendCleanHtml();
+        });
+
+        bgColorPicker.addEventListener('input', (e) => {
+          if(currentTarget) {
+             currentTarget.style.backgroundColor = e.target.value;
+             sendCleanHtml();
+          }
+        });
+
+        document.getElementById('text-size').addEventListener('change', (e) => {
+          document.execCommand('fontSize', false, e.target.value);
+          sendCleanHtml();
+        });
+
+        document.getElementById('text-font').addEventListener('change', (e) => {
+          document.execCommand('fontName', false, e.target.value);
+          sendCleanHtml();
+        });
+      });
+    <\/script>
+  `;
+  
+  return clean.replace(/<\/body>/i, `${editorScript}</body>`);
+};
 
 const App: React.FC = () => {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
@@ -57,7 +209,6 @@ const App: React.FC = () => {
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
 
-  // ESTADO COMPLETO 
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
@@ -73,7 +224,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
       if (event.data?.type === 'CONTENT_EDITED') {
-        setGeneratedHtml(event.data.html);
+        setGeneratedHtml(event.data.html); // O HTML que vem agora é LIMPO!
         setHasUnsavedChanges(true);
       }
     };
@@ -140,92 +291,7 @@ const App: React.FC = () => {
     const formCode = data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-3 rounded-lg font-semibold transition-all" style="background-color: ${colors.c4}; color: #fff; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
-    // SCRIPT DO EDITOR VISUAL COM O BOTÃO DE LIXEIRA (X)
-    const editorScript = `
-      <style>
-        .custom-editor-toolbar {
-          position: absolute; display: none; background: #18181b; padding: 6px 12px; 
-          border-radius: 8px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-          z-index: 99999; gap: 12px; align-items: center;
-        }
-        .custom-editor-toolbar input[type="color"] { width: 24px; height: 24px; border: none; cursor: pointer; background: transparent; padding: 0; }
-        .custom-editor-toolbar select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px; font-size: 12px; outline: none; cursor: pointer; }
-        .custom-editor-toolbar button { background: #ef444415; border: 1px solid #ef444450; color: #ef4444; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; padding: 4px 8px; transition: all 0.2s; }
-        .custom-editor-toolbar button:hover { background: #ef4444; color: white; }
-        .editable-element { transition: outline 0.2s; outline: 2px dashed transparent; outline-offset: 4px; }
-        .editable-element:hover { outline-color: rgba(16, 185, 129, 0.4); cursor: text; }
-        .editable-element:focus { outline-color: #10b981; }
-      </style>
-
-      <div id="editor-toolbar" class="custom-editor-toolbar">
-        <input type="color" id="text-color" title="Cor do Texto" />
-        <select id="text-size" title="Tamanho">
-          <option value="1">Pequeno</option><option value="3" selected>Normal</option><option value="5">Grande</option><option value="7">Gigante</option>
-        </select>
-        <select id="text-font" title="Fonte">
-          <option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Courier New">Courier</option>
-        </select>
-        <div style="width: 1px; height: 16px; background: #3f3f46;"></div>
-        <button id="text-delete" title="Apagar este elemento do site">✖ Excluir</button>
-      </div>
-
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const toolbar = document.getElementById('editor-toolbar');
-          let currentTarget = null;
-
-          document.querySelectorAll('h1, h2, h3, h4, p, span, a, button, img').forEach(el => {
-            if(el.id === 'text-delete') return; 
-            
-            el.setAttribute('contenteditable', 'true');
-            el.classList.add('editable-element');
-            
-            el.addEventListener('focus', (e) => {
-              currentTarget = el;
-              const rect = el.getBoundingClientRect();
-              toolbar.style.display = 'flex';
-              toolbar.style.top = (rect.top + window.scrollY - 50) + 'px';
-              toolbar.style.left = (rect.left + window.scrollX) + 'px';
-            });
-
-            el.addEventListener('blur', (e) => {
-              setTimeout(() => {
-                if (!toolbar.contains(document.activeElement)) {
-                  toolbar.style.display = 'none';
-                  const cleanHtml = document.documentElement.outerHTML;
-                  window.parent.postMessage({ type: 'CONTENT_EDITED', html: cleanHtml }, '*');
-                }
-              }, 200);
-            });
-          });
-
-          document.getElementById('text-delete').addEventListener('click', () => {
-            if (currentTarget) {
-              currentTarget.remove();
-              toolbar.style.display = 'none';
-              window.parent.postMessage({ type: 'CONTENT_EDITED', html: document.documentElement.outerHTML }, '*');
-            }
-          });
-
-          document.getElementById('text-color').addEventListener('input', (e) => {
-            document.execCommand('foreColor', false, e.target.value);
-            window.parent.postMessage({ type: 'CONTENT_EDITED', html: document.documentElement.outerHTML }, '*');
-          });
-
-          document.getElementById('text-size').addEventListener('change', (e) => {
-            document.execCommand('fontSize', false, e.target.value);
-            window.parent.postMessage({ type: 'CONTENT_EDITED', html: document.documentElement.outerHTML }, '*');
-          });
-
-          document.getElementById('text-font').addEventListener('change', (e) => {
-            document.execCommand('fontName', false, e.target.value);
-            window.parent.postMessage({ type: 'CONTENT_EDITED', html: document.documentElement.outerHTML }, '*');
-          });
-        });
-      </script>
-    `;
-    
-    return html.replace('</body>', `${editorScript}</body>`);
+    return html; // Retorna o HTML Puro sem script!
   };
 
   const handleGenerate = async () => {
@@ -268,9 +334,12 @@ const App: React.FC = () => {
     
     setIsSavingProject(true);
     try {
+      // GARANTIA MÁXIMA: Limpa o HTML antes de enviar para o DB
+      const htmlToSave = cleanHtmlForPublishing(generatedHtml);
+
       if (currentProjectSlug) {
         const updateFn = httpsCallable(functions, 'updateSiteProject');
-        await updateFn({ projectId: currentProjectSlug, projectSlug: currentProjectSlug, html: generatedHtml, formData });
+        await updateFn({ projectId: currentProjectSlug, projectSlug: currentProjectSlug, html: htmlToSave, formData });
       } else {
         const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, '-');
         const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
@@ -280,7 +349,9 @@ const App: React.FC = () => {
           businessName: formData.businessName,
           officialDomain: registerLater ? "Pendente" : officialDomain,
           internalDomain: internalDomain,
-          generatedHtml, formData, aiContent,
+          generatedHtml: htmlToSave, 
+          formData, 
+          aiContent,
         });
         if (res.data?.projectSlug) setCurrentProjectSlug(res.data.projectSlug);
       }
@@ -329,7 +400,7 @@ const App: React.FC = () => {
     if (!project) return;
     setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
     setAiContent(project.aiContent || null);
-    setGeneratedHtml(project.generatedHtml || null);
+    setGeneratedHtml(cleanHtmlForPublishing(project.generatedHtml)); // Carrega limpo
     setCurrentProjectSlug(project.projectSlug || project.id || null);
     if (project.publishUrl) setPublishedDomain(String(project.publishUrl).replace(/^https?:\/\//, ''));
     setOfficialDomain(project.officialDomain || '');
@@ -357,16 +428,16 @@ const App: React.FC = () => {
   const handleDownloadZip = () => {
     if (!generatedHtml) return;
     const zip = new JSZip();
-    zip.file('index.html', generatedHtml);
+    zip.file('index.html', cleanHtmlForPublishing(generatedHtml)); // Baixa limpo
     zip.generateAsync({ type: 'blob' }).then(c => saveAs(c, `${formData.businessName || 'site'}.zip`));
   };
 
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
-      {/* FRAME DO SITE */}
+      {/* FRAME DO SITE: Injeta o script dinamicamente apenas na tela */}
       <div className="absolute inset-0 z-0 bg-[#09090b]">
         {generatedHtml ? (
-          <iframe srcDoc={generatedHtml} className="w-full h-full border-none bg-white" title="Preview Visual" />
+          <iframe srcDoc={getPreviewHtml(generatedHtml)} className="w-full h-full border-none bg-white" title="Preview Visual" />
         ) : (
           <div className="flex flex-col items-center justify-center h-full opacity-20 animate-pulse select-none">
             <Rocket className="w-24 h-24 mb-4" />
@@ -381,7 +452,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR NO TOPO DA TELA */}
+      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR */}
       {generatedHtml && (
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
           <button 
@@ -458,7 +529,7 @@ const App: React.FC = () => {
                       <div className="pt-5 border-t border-zinc-800 space-y-5">
                         
                         <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30 text-xs text-emerald-300">
-                          ✨ <strong>Dica Mágica:</strong> Clique em qualquer texto no site à direita para alterar cores e fontes, ou no <strong className="text-red-400">X</strong> para excluí-lo!
+                          ✨ <strong>Dica Mágica:</strong> Clique em qualquer texto ou botão no site à direita para mudar suas cores individualmente!
                         </div>
 
                         {/* LAYOUT E CORES */}
@@ -479,7 +550,6 @@ const App: React.FC = () => {
                                 className={`w-10 h-10 rounded-full border-[3px] transition-all relative overflow-hidden ${formData.colorId === c.id ? 'border-emerald-500 scale-110 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'border-transparent opacity-70 hover:opacity-100'}`} 
                                 title={c.name}
                               >
-                                {/* Círculo com degradê visualizando o contraste exato da paleta */}
                                 <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${c.light} 40%, ${c.c7} 60%)` }} />
                                 <div className="absolute bottom-0 right-0 w-3 h-3 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
                               </button>
