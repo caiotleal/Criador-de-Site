@@ -20,18 +20,21 @@ const LAYOUT_STYLES = [
   { id: 'layout_cards_moderno', label: 'Cards Moderno', desc: 'Seções em cards' },
 ];
 
-// 10 PALETAS DE CORES COM ALTO CONTRASTE E OPÇÕES VIBRANTES
+// 10 PALETAS (5 LIGHT, 5 DARK ALTO CONTRASTE)
 const COLORS = [
-  { id: 'midnight_blue', name: 'Midnight Blue', c1: '#020617', c2: '#0f172a', c3: '#1e293b', c4: '#3b82f6', c5: '#93c5fd', c6: '#dbeafe', c7: '#eff6ff', light: '#ffffff', dark: '#020617' },
-  { id: 'crimson_red', name: 'Crimson Red', c1: '#3e0a0a', c2: '#5c0f0f', c3: '#8a1717', c4: '#dc2626', c5: '#fca5a5', c6: '#fee2e2', c7: '#fef2f2', light: '#ffffff', dark: '#1c0505' },
-  { id: 'forest_green', name: 'Forest Green', c1: '#052e16', c2: '#064e3b', c3: '#065f46', c4: '#10b981', c5: '#6ee7b7', c6: '#d1fae5', c7: '#ecfdf5', light: '#ffffff', dark: '#022c22' },
-  { id: 'golden_mustard', name: 'Golden Mustard', c1: '#422006', c2: '#713f12', c3: '#a16207', c4: '#eab308', c5: '#fde047', c6: '#fef08a', c7: '#fefce8', light: '#ffffff', dark: '#271204' },
-  { id: 'monochrome_high', name: 'Monochrome High', c1: '#000000', c2: '#171717', c3: '#262626', c4: '#525252', c5: '#d4d4d4', c6: '#f5f5f5', c7: '#fafafa', light: '#ffffff', dark: '#000000' },
-  { id: 'royal_plum', name: 'Royal Plum', c1: '#4a044e', c2: '#701a75', c3: '#86198f', c4: '#d946ef', c5: '#f0abfc', c6: '#fae8ff', c7: '#fdf4ff', light: '#ffffff', dark: '#3b0764' },
-  { id: 'teal_pro', name: 'Teal Pro', c1: '#003333', c2: '#004444', c3: '#006666', c4: '#009c93', c5: '#a3f3ff', c6: '#c5f7ff', c7: '#eafffd', light: '#ffffff', dark: '#003333' },
-  { id: 'violet_studio', name: 'Violet Studio', c1: '#24103a', c2: '#3b1f63', c3: '#5b2b95', c4: '#7b3aed', c5: '#d8c5ff', c6: '#ebe1ff', c7: '#f6f1ff', light: '#ffffff', dark: '#24103a' },
-  { id: 'ocean_navy', name: 'Ocean Navy', c1: '#0a1f33', c2: '#12395c', c3: '#1f5f94', c4: '#2b7fc5', c5: '#c3e6ff', c6: '#deefff', c7: '#f2f8ff', light: '#ffffff', dark: '#0a1f33' },
-  { id: 'sunset_orange', name: 'Sunset Orange', c1: '#4a2108', c2: '#7a330a', c3: '#b34d0f', c4: '#ea580c', c5: '#ffd9bf', c6: '#ffe9da', c7: '#fff5ee', light: '#ffffff', dark: '#4a2108' },
+  // LIGHT MODE
+  { id: 'light_blue', name: 'Azul Clínico (Claro)', c1: '#0f172a', c2: '#1e293b', c3: '#334155', c4: '#2563eb', c5: '#93c5fd', c6: '#dbeafe', c7: '#eff6ff', light: '#ffffff', dark: '#0f172a' },
+  { id: 'light_green', name: 'Verde Natural (Claro)', c1: '#022c22', c2: '#064e3b', c3: '#065f46', c4: '#10b981', c5: '#6ee7b7', c6: '#d1fae5', c7: '#ecfdf5', light: '#ffffff', dark: '#022c22' },
+  { id: 'light_orange', name: 'Laranja Quente (Claro)', c1: '#422006', c2: '#713f12', c3: '#a16207', c4: '#f97316', c5: '#fdba74', c6: '#ffedd5', c7: '#fff7ed', light: '#ffffff', dark: '#422006' },
+  { id: 'light_purple', name: 'Roxo Royal (Claro)', c1: '#3b0764', c2: '#581c87', c3: '#7e22ce', c4: '#9333ea', c5: '#d8b4fe', c6: '#f3e8ff', c7: '#faf5ff', light: '#ffffff', dark: '#3b0764' },
+  { id: 'light_mono', name: 'Minimalista (Claro)', c1: '#000000', c2: '#171717', c3: '#262626', c4: '#404040', c5: '#d4d4d4', c6: '#f5f5f5', c7: '#fafafa', light: '#ffffff', dark: '#000000' },
+  
+  // DARK MODE (ALTO CONTRASTE)
+  { id: 'dark_blue', name: 'Azul Neon (Escuro)', c1: '#eff6ff', c2: '#dbeafe', c3: '#bfdbfe', c4: '#3b82f6', c5: '#1d4ed8', c6: '#1e40af', c7: '#1e3a8a', light: '#09090b', dark: '#f8fafc' },
+  { id: 'dark_green', name: 'Verde Matrix (Escuro)', c1: '#ecfdf5', c2: '#d1fae5', c3: '#a7f3d0', c4: '#10b981', c5: '#047857', c6: '#065f46', c7: '#064e3b', light: '#050505', dark: '#f8fafc' },
+  { id: 'dark_red', name: 'Vermelho Sangue (Escuro)', c1: '#fef2f2', c2: '#fee2e2', c3: '#fecaca', c4: '#ef4444', c5: '#b91c1c', c6: '#991b1b', c7: '#7f1d1d', light: '#140000', dark: '#f8fafc' },
+  { id: 'dark_orange', name: 'Âmbar (Escuro)', c1: '#fff7ed', c2: '#ffedd5', c3: '#fed7aa', c4: '#f59e0b', c5: '#c2410c', c6: '#9a3412', c7: '#7c2d12', light: '#120800', dark: '#f8fafc' },
+  { id: 'dark_mono', name: 'Carbono (Escuro)', c1: '#f9fafb', c2: '#f1f5f9', c3: '#e2e8f0', c4: '#f4f4f5', c5: '#475569', c6: '#334155', c7: '#1e293b', light: '#000000', dark: '#ffffff' },
 ];
 
 const App: React.FC = () => {
@@ -57,11 +60,11 @@ const App: React.FC = () => {
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
 
-  // ESTADO COMPLETO (Inclui address, mapEmbed, showForm)
+  // ESTADO COMPLETO (Inclui address, phone, email, mapEmbed, showForm)
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
-    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'midnight_blue', logoBase64: ''
+    showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'dark_blue', logoBase64: ''
   });
 
   // Atualiza visualmente em tempo real as configurações da barra lateral
@@ -69,7 +72,7 @@ const App: React.FC = () => {
     if (aiContent) {
       setGeneratedHtml(renderTemplate(aiContent, formData));
     }
-  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.address, formData.mapEmbed]);
+  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.address, formData.mapEmbed, formData.phone, formData.email]);
 
   // Listener para capturar edições feitas direto no site (Iframe)
   useEffect(() => {
@@ -116,9 +119,9 @@ const App: React.FC = () => {
     replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
     replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
     
-    replaceAll('{{ADDRESS}}', data.address || '');
-    replaceAll('{{PHONE}}', data.phone || data.whatsapp || '');
-    replaceAll('{{EMAIL}}', data.email || '');
+    replaceAll('{{ADDRESS}}', data.address || 'Endereço não informado');
+    replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
+    replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
     if (data.logoBase64) {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 w-auto object-contain" alt="Logo" />`);
@@ -128,27 +131,29 @@ const App: React.FC = () => {
 
     const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes}" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
 
-    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500') : '');
-    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600') : '');
-    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700') : '');
-    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800') : '');
-    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600') : '');
-    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500') : '');
-    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600') : '');
+    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-green-500 text-white') : '');
+    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-pink-600 text-white') : '');
+    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-blue-700 text-white') : '');
+    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-slate-800 text-white') : '');
+    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-red-600 text-white') : '');
+    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-yellow-500 text-white') : '');
+    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-orange-600 text-white') : '');
 
-    replaceAll('[[MAP_AREA]]', data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0;" loading="lazy"></iframe>` : '');
-    replaceAll('[[CONTACT_FORM]]', data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu nome" /><input class="w-full border border-slate-300 rounded-lg p-2" placeholder="Seu email" /><textarea class="w-full border border-slate-300 rounded-lg p-2" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-2 rounded-lg font-semibold" style="background-color: ${colors.c4}">Enviar mensagem</button></form>` : '');
+    replaceAll('[[MAP_AREA]]', data.mapEmbed ? `<iframe src="${data.mapEmbed}" width="100%" height="220" style="border:0; border-radius: 8px;" loading="lazy"></iframe>` : '');
+    replaceAll('[[CONTACT_FORM]]', data.showForm ? `<form class="space-y-3"><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu nome" /><input class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" placeholder="Seu email" /><textarea class="w-full border border-slate-300/30 bg-transparent rounded-lg p-3 text-sm focus:outline-none focus:border-[${colors.c4}]" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-3 rounded-lg font-semibold transition-all" style="background-color: ${colors.c4}; color: ${colors.light}; border: none;">Enviar mensagem</button></form>` : '');
 
-    // SCRIPT DO EDITOR VISUAL
+    // SCRIPT DO EDITOR VISUAL (Agora com botão de Excluir ❌)
     const editorScript = `
       <style>
         .custom-editor-toolbar {
-          position: absolute; display: none; background: #18181b; padding: 6px; 
-          border-radius: 8px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-          z-index: 99999; gap: 8px; align-items: center;
+          position: absolute; display: none; background: #18181b; padding: 6px 10px; 
+          border-radius: 8px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+          z-index: 99999; gap: 10px; align-items: center;
         }
-        .custom-editor-toolbar input[type="color"] { width: 24px; height: 24px; border: none; cursor: pointer; background: transparent; }
-        .custom-editor-toolbar select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px; font-size: 12px; outline: none; }
+        .custom-editor-toolbar input[type="color"] { width: 24px; height: 24px; border: none; cursor: pointer; background: transparent; padding: 0; }
+        .custom-editor-toolbar select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px; font-size: 12px; outline: none; cursor: pointer; }
+        .custom-editor-toolbar button { background: transparent; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; transition: transform 0.2s; }
+        .custom-editor-toolbar button:hover { transform: scale(1.2); }
         .editable-element { transition: outline 0.2s; outline: 2px dashed transparent; outline-offset: 4px; }
         .editable-element:hover { outline-color: rgba(16, 185, 129, 0.4); cursor: text; }
         .editable-element:focus { outline-color: #10b981; }
@@ -162,20 +167,26 @@ const App: React.FC = () => {
         <select id="text-font" title="Fonte">
           <option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Courier New">Courier</option>
         </select>
+        <div style="width: 1px; height: 16px; background: #3f3f46;"></div>
+        <button id="text-delete" title="Apagar Elemento">✖</button>
       </div>
 
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           const toolbar = document.getElementById('editor-toolbar');
+          let currentTarget = null;
 
-          document.querySelectorAll('h1, h2, h3, h4, p, span, button').forEach(el => {
+          document.querySelectorAll('h1, h2, h3, h4, p, span, a, button, img').forEach(el => {
+            if(el.id === 'text-delete') return; // ignora o botão da barra
+            
             el.setAttribute('contenteditable', 'true');
             el.classList.add('editable-element');
             
             el.addEventListener('focus', (e) => {
+              currentTarget = el;
               const rect = el.getBoundingClientRect();
               toolbar.style.display = 'flex';
-              toolbar.style.top = (rect.top + window.scrollY - 45) + 'px';
+              toolbar.style.top = (rect.top + window.scrollY - 50) + 'px';
               toolbar.style.left = (rect.left + window.scrollX) + 'px';
             });
 
@@ -188,6 +199,15 @@ const App: React.FC = () => {
                 }
               }, 200);
             });
+          });
+
+          // Lógica de Deletar o elemento clicado
+          document.getElementById('text-delete').addEventListener('click', () => {
+            if (currentTarget) {
+              currentTarget.remove();
+              toolbar.style.display = 'none';
+              window.parent.postMessage({ type: 'CONTENT_EDITED', html: document.documentElement.outerHTML }, '*');
+            }
           });
 
           document.getElementById('text-color').addEventListener('input', (e) => {
@@ -244,7 +264,6 @@ const App: React.FC = () => {
   const handleSaveOrUpdateSite = async () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
     
-    // Se está salvando pela primeira vez, exige que passe pela aba domínio e confirme
     if (!currentProjectSlug && !registerLater && !officialDomain) {
       setActiveTab('dominio');
       return alert("Por favor, configure seu domínio ou marque a opção 'Configurar depois' na aba de Domínio Oficial.");
@@ -253,11 +272,9 @@ const App: React.FC = () => {
     setIsSavingProject(true);
     try {
       if (currentProjectSlug) {
-        // Atualiza projeto existente
         const updateFn = httpsCallable(functions, 'updateSiteProject');
         await updateFn({ projectId: currentProjectSlug, projectSlug: currentProjectSlug, html: generatedHtml, formData });
       } else {
-        // Cria projeto novo
         const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, '-');
         const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
         
@@ -303,7 +320,7 @@ const App: React.FC = () => {
         setCurrentProjectSlug(null);
         setHasUnsavedChanges(false);
         setActiveTab('geral');
-        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'midnight_blue', logoBase64: '' });
+        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_split_duplo', colorId: 'dark_blue', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) {
@@ -367,7 +384,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR NO TOPO DA TELA */}
+      {/* BARRA FLUTUANTE DE SALVAR / PUBLICAR */}
       {generatedHtml && (
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
           <button 
@@ -401,7 +418,7 @@ const App: React.FC = () => {
                 <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors"><Minimize2 size={18} /></button>
               </div>
 
-              {/* TABS DE NAVEGAÇÃO (Aparece apenas quando o site foi gerado) */}
+              {/* TABS DE NAVEGAÇÃO */}
               {generatedHtml && (
                 <div className="flex border-b border-zinc-800 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
                   <button 
@@ -421,7 +438,6 @@ const App: React.FC = () => {
 
               <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
                 
-                {/* ETAPA 1: O FORMULÁRIO ENXUTO INICIAL E ABA VISUAL */}
                 {activeTab === 'geral' && (
                   <>
                     <div className="space-y-3">
@@ -439,12 +455,11 @@ const App: React.FC = () => {
                       {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                     </button>
 
-                    {/* OPÇÕES COMPLETAS DE VISUAL */}
                     {generatedHtml && (
                       <div className="pt-5 border-t border-zinc-800 space-y-5">
                         
                         <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30 text-xs text-emerald-300">
-                          ✨ <strong>Edição Visual:</strong> Clique em qualquer texto no site à direita para alterar cor, tamanho e fonte.
+                          ✨ <strong>Edição Visual:</strong> Clique em qualquer texto no site à direita para alterar cor, tamanho e fonte, ou no "X" para apagá-lo.
                         </div>
 
                         {/* LAYOUT E CORES */}
@@ -456,9 +471,9 @@ const App: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase">Tema de Cores</label>
-                          <div className="flex gap-2 flex-wrap">
-                            {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-8 h-8 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110 shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'border-transparent opacity-50 hover:opacity-100'}`} style={{ backgroundColor: c.c4 }} title={c.name} />)}
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Light & Dark)</label>
+                          <div className="grid grid-cols-5 gap-2">
+                            {COLORS.map(c => <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full border-2 transition-all ${formData.colorId === c.id ? 'border-white scale-110 shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'border-transparent opacity-60 hover:opacity-100'}`} style={{ backgroundColor: c.c4, backgroundImage: `linear-gradient(135deg, ${c.light} 50%, ${c.dark} 50%)` }} title={c.name} />)}
                           </div>
                         </div>
 
@@ -480,10 +495,14 @@ const App: React.FC = () => {
                           )}
                         </div>
 
-                        {/* ENDEREÇO E MAPA */}
+                        {/* ENDEREÇO, TELEFONE E MAPA */}
                         <div className="space-y-2 pt-2 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={12} /> Localização e Contato</label>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico (Ex: Rua das Flores, 123)" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={12} /> Contato e Local</label>
+                          <div className="grid grid-cols-2 gap-2 mt-1">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone Oficial" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                          </div>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2 focus:border-emerald-500" placeholder="Endereço Físico (Rua, Número...)" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
                           <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs mt-2 focus:border-emerald-500" placeholder="Link Embed do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
                           
                           <div className="pt-3 pb-1">
@@ -515,10 +534,9 @@ const App: React.FC = () => {
                   </>
                 )}
 
-                {/* ABA DOMÍNIO: ONDE A MÁGICA DOS DNS ACONTECE */}
+                {/* ABA DOMÍNIO */}
                 {activeTab === 'dominio' && generatedHtml && (
                   <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-                    
                     {!currentProjectSlug ? (
                       <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
                         <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
@@ -578,7 +596,7 @@ const App: React.FC = () => {
                   </div>
                 )}
                 
-                {/* LISTAGEM DE PROJETOS SALVOS (Com Lixeira Rápida) */}
+                {/* LISTAGEM DE PROJETOS SALVOS */}
                 {loggedUserEmail && (
                   <div className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
                     <div className="flex items-center justify-between">
@@ -595,7 +613,6 @@ const App: React.FC = () => {
                       ) : (
                         savedProjects.map((p: any) => (
                           <div key={p.id} className="flex items-stretch gap-1.5 group">
-                            {/* Botão de Carregar Projeto */}
                             <button 
                               onClick={() => handleLoadProject(p)} 
                               className={`flex-1 text-left text-xs bg-zinc-900 hover:bg-zinc-800 rounded-xl p-3 flex justify-between items-center border transition-all ${currentProjectSlug === p.id ? 'border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'border-zinc-800'}`}
@@ -607,7 +624,6 @@ const App: React.FC = () => {
                               {p.published && <CheckCircle size={14} className="text-emerald-500 flex-shrink-0" />}
                             </button>
                             
-                            {/* O BOTÃO DA LIXEIRA */}
                             <button 
                               onClick={() => handleDeleteSite(p.id)} 
                               className="w-10 bg-zinc-900 hover:bg-red-500 hover:text-white text-zinc-500 rounded-xl border border-zinc-800 hover:border-red-500 flex items-center justify-center transition-all flex-shrink-0" 
