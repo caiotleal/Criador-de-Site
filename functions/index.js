@@ -125,7 +125,6 @@ function sha256Hex(content) {
 async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
   const token = await getFirebaseAccessToken();
   
-  // Compactação GZIP exigida pela API do Firebase
   const htmlBuffer = Buffer.from(htmlContent, "utf-8");
   const gzippedContent = zlib.gzipSync(htmlBuffer);
   const fileHash = sha256Hex(gzippedContent);
@@ -219,7 +218,6 @@ async function ensureHostingReady(siteId) {
   if (existingOrNew.status === "created" || existingOrNew.status === "already_exists") {
     return existingOrNew;
   }
-
   const reason = existingOrNew?.message || "Falha ao provisionar site no Firebase Hosting.";
   throw new HttpsError("failed-precondition", reason);
 }
@@ -240,8 +238,19 @@ exports.generateSite = onCall({
     generationConfig: { responseMimeType: "application/json" },
   });
 
-  const prompt = `Atue como redator senior. Empresa: "${businessName}". Descrição: "${description}".
-    Gere um JSON com: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall. Textos curtos e modernos.`;
+  // PROMPT PREMIUM: Inteligência de Ortografia e Design
+  const prompt = `Atue como um redator publicitário sênior e revisor ortográfico.
+    Empresa: "${businessName}".
+    Descrição/Ideia original: "${description}".
+
+    Gere um JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall.
+
+    REGRAS OBRIGATÓRIAS:
+    1. Corrija qualquer erro gramatical ou de digitação da ideia original.
+    2. PADRONIZAÇÃO DE LETRAS:
+       - 'heroTitle', 'aboutTitle' e 'contactCall' DEVEM estar 100% EM LETRAS MAIÚSCULAS (UPPERCASE).
+       - 'heroSubtitle' e 'aboutText' devem ter a primeira letra maiúscula e o restante minúsculo, respeitando a pontuação correta.
+    3. Crie textos curtos, altamente persuasivos, modernos e voltados para conversão de vendas.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -254,7 +263,53 @@ exports.generateSite = onCall({
   }
 });
 
-// Atualizado para a nova lógica baseada no `internalDomain`
+exports.checkDomainAvailability = onCall({
+  cors: true,
+  timeoutSeconds: 30,
+}, async (request) => {
+  const { desiredDomain } = request.data || {};
+
+  if (!desiredDomain) {
+    throw new HttpsError("invalid-argument", "O domínio desejado é obrigatório.");
+  }
+
+  const cleanDomain = slugify(desiredDomain).slice(0, 30);
+  const db = admin.firestore();
+  const snapshot = await db.collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
+
+  let isAvailable = true;
+
+  if (!snapshot.empty) {
+    isAvailable = false;
+  } else {
+    try {
+      const response = await fetch(`https://${cleanDomain}.web.app`);
+      if (response.ok) {
+        isAvailable = false;
+      }
+    } catch (error) {
+      isAvailable = true;
+    }
+  }
+
+  if (isAvailable) {
+    return { available: true, cleanDomain };
+  }
+
+  const suffixes = ["-oficial", "-online", "-web"];
+  const suggestions = suffixes.map(suffix => {
+    const maxBaseLength = 30 - suffix.length;
+    return `${cleanDomain.slice(0, maxBaseLength)}${suffix}`;
+  });
+
+  return {
+    available: false,
+    cleanDomain,
+    message: "Este endereço já está em uso.",
+    suggestions: suggestions
+  };
+});
+
 exports.saveSiteProject = onCall({
   cors: true,
   timeoutSeconds: 120,
@@ -263,8 +318,8 @@ exports.saveSiteProject = onCall({
   const uid = ensureAuthed(request);
   const {
     businessName,
-    internalDomain, // Novo ID seguro
-    officialDomain, // Novo formato do domínio
+    internalDomain,
+    officialDomain,
     generatedHtml,
     formData,
     aiContent,
@@ -315,7 +370,6 @@ exports.saveSiteProject = onCall({
   };
 });
 
-// Atualizado para aceitar o novo formato (html vs updatedHtml)
 exports.updateSiteProject = onCall({
   cors: true,
   timeoutSeconds: 60,
@@ -323,7 +377,6 @@ exports.updateSiteProject = onCall({
 }, async (request) => {
   const uid = ensureAuthed(request);
   
-  // O Front-end pode enviar projectId ou projectSlug e html ou updatedHtml
   const { projectId, projectSlug, html, updatedHtml, formData, aiContent } = request.data || {};
   const targetId = projectId || projectSlug;
   const targetHtml = html || updatedHtml;
@@ -358,7 +411,6 @@ exports.listUserProjects = onCall({ cors: true }, async (request) => {
   };
 });
 
-// Atualizado para pegar a variável projectId também
 exports.publishUserProject = onCall({
   cors: true,
   timeoutSeconds: 180,
@@ -434,7 +486,6 @@ exports.publishUserProject = onCall({
   }
 });
 
-// NOVA FUNÇÃO: Deletar site (Apaga banco de dados e tenta remover o projeto do Hosting)
 exports.deleteUserProject = onCall({
   cors: true,
   timeoutSeconds: 60,
@@ -455,7 +506,6 @@ exports.deleteUserProject = onCall({
     const data = snap.data();
     const siteId = data.hostingSiteId;
     
-    // Tenta remover o site do Firebase Hosting via API REST
     if (siteId) {
       try {
         const projectIdEnv = process.env.GCLOUD_PROJECT;
@@ -468,7 +518,6 @@ exports.deleteUserProject = onCall({
         console.error("Aviso: Falha ao deletar o site no Firebase Hosting, prosseguindo com a deleção no Firestore.", e);
       }
     }
-
     await ref.delete();
   }
 
