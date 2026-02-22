@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Download, Loader2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User
+  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, User
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -32,64 +32,6 @@ const COLORS = [
   { id: 'peach', name: 'Pêssego', c1: '#fff7ed', c2: '#ffedd5', c3: '#fed7aa', c4: '#c2410c', c5: '#ea580c', c6: '#f97316', c7: '#fb923c', light: '#431407', dark: '#ffffff' },
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
 ];
-
-const PROMO_HTML = `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SiteCraft - Criação Inteligente</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
-    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
-    .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-  </style>
-</head>
-<body class="antialiased selection:bg-blue-500 selection:text-white">
-  <main class="pt-20 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
-    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
-
-    <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
-      <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-blue-400 mb-6 uppercase">O futuro da web</div>
-      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
-        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">segundos.</span>
-      </h1>
-      <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
-        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu e veja a mágica acontecer.
-      </p>
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-8 relative z-10 animate-up" style="animation-delay: 0.2s;">
-      <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden group">
-        <h3 class="text-3xl font-black mb-2 italic uppercase">Teste Grátis</h3>
-        <p class="text-white/50 mb-8">Veja o seu site pronto hoje mesmo.</p>
-        <div class="text-5xl font-black mb-2">R$ 0 <span class="text-lg text-white/40 font-normal">/ 5 dias</span></div>
-        <p class="text-sm text-blue-400 font-bold mb-8">Após 5 dias, o site é congelado.</p>
-        <ul class="space-y-4 text-white/70">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Geração por IA</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Domínio gratuito (.web.app)</li>
-        </ul>
-      </div>
-
-      <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden border-indigo-500/30 bg-indigo-950/10">
-        <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-black tracking-widest px-6 py-2 rounded-bl-3xl uppercase">Mais Assinado</div>
-        <h3 class="text-3xl font-black mb-2 italic uppercase text-indigo-400">Plano Anual</h3>
-        <p class="text-white/50 mb-8">A solução definitiva para o seu negócio.</p>
-        <div class="text-5xl font-black mb-2">R$ 499 <span class="text-lg text-white/40 font-normal">/ 1º ano</span></div>
-        <p class="text-sm text-white/50 font-medium mb-8">Renovação garantida por apenas R$ 100/ano.</p>
-        <ul class="space-y-4 text-white/70">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> 365 dias online sem interrupções</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Apontamento de Domínio (.com.br)</li>
-        </ul>
-      </div>
-    </div>
-  </main>
-</body>
-</html>
-`;
 
 const cleanHtmlForPublishing = (rawHtml: string | null) => {
   if (!rawHtml) return '';
@@ -182,7 +124,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
 const App: React.FC = () => {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(true); // O MENU DA ESQUERDA AGORA
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [aiContent, setAiContent] = useState<any>(null);
   
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -241,6 +183,7 @@ const App: React.FC = () => {
   const renderTemplate = (content: any, data: typeof formData) => {
     let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_modern_center'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
+
     const replaceAll = (token: string, value: string) => { html = html.split(token).join(value); };
     const companyNameUpper = (data.businessName || 'Sua Empresa').toUpperCase();
 
@@ -268,6 +211,7 @@ const App: React.FC = () => {
     }
 
     const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes} shadow-sm" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
+
     replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-[#25D366] text-white') : '');
     replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-[#E1306C] text-white') : '');
     replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-[#1877F2] text-white') : '');
@@ -373,16 +317,6 @@ const App: React.FC = () => {
     } catch (error) { alert("Erro ao excluir o site."); }
   };
 
-  const handleSimulatePayment = async (projectId: string) => {
-    if (!window.confirm("Simular pagamento de R$ 499,00 e liberar o site por 1 ano?")) return;
-    try {
-      const payFn = httpsCallable(functions, 'renewSiteSubscription');
-      await payFn({ targetId: projectId });
-      alert("Pagamento confirmado! O site está liberado por mais 365 dias.\nPor favor, clique em PUBLICAR para reativá-lo no ar.");
-      fetchProjects();
-    } catch (error) { alert("Erro ao processar pagamento."); }
-  };
-
   const handleLoadProject = (project: any) => {
     if (!project) return;
     setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
@@ -393,7 +327,6 @@ const App: React.FC = () => {
     setRegisterLater(project.officialDomain === 'Pendente');
     setHasUnsavedChanges(false);
     setActiveTab('geral');
-    setIsMenuOpen(false); // Fecha o menu lateral ao carregar para mostrar o site inteiro
   };
 
   const handleLogout = async () => {
@@ -407,46 +340,30 @@ const App: React.FC = () => {
     setIsLoginOpen(false);
   };
 
-  const getStatusBadge = (project: any) => {
-    if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">CONGELADO</span>;
-    if (project.expiresAt) {
-      const daysLeft = Math.ceil((new Date(project.expiresAt._seconds * 1000).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-      if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">VENCIDO</span>;
-      if (daysLeft <= 5) return <span className="text-[9px] bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold ml-2">TRIAL ({daysLeft}d)</span>;
-      return <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold ml-2">ATIVO</span>;
-    }
-    return <span className="text-[9px] bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full font-bold ml-2">RASCUNHO</span>;
+  const handleDownloadZip = () => {
+    if (!generatedHtml) return;
+    const zip = new JSZip();
+    zip.file('index.html', cleanHtmlForPublishing(generatedHtml)); 
+    zip.generateAsync({ type: 'blob' }).then(c => saveAs(c, `${formData.businessName || 'site'}.zip`));
   };
 
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
       
-      {/* A MÁGICA DE POSICIONAMENTO DO IFRAME:
-        Se o menu lateral (360px) estiver aberto, empurra o site para a direita.
-      */}
-      <div className={`absolute top-0 right-0 bottom-0 z-0 bg-[#050505] transition-all duration-500 ease-in-out ${isMenuOpen ? 'left-0 md:left-[360px]' : 'left-0'}`}>
-        <iframe 
-          srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
-          className="w-full h-full border-none bg-transparent" 
-          title="Visão Principal" 
-        />
+      {/* FRAME DO SITE: Ocupa toda a tela */}
+      <div className="absolute inset-0 z-0 bg-[#050505]">
+        {generatedHtml ? (
+          <iframe srcDoc={getPreviewHtml(generatedHtml)} className="w-full h-full border-none bg-transparent" title="Preview Visual" />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full opacity-20 animate-pulse select-none">
+            <Rocket className="w-24 h-24 mb-4" />
+            <h2 className="text-2xl font-bold">O seu site vai aparecer aqui</h2>
+          </div>
+        )}
       </div>
 
-      {/* TOP BAR: BOTÃO DE LOGIN E SALVAR/PUBLICAR NO TOPO DIREITO */}
-      <div className="fixed top-6 right-6 z-[85] flex items-center gap-3">
-        {generatedHtml && (
-          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-1.5 rounded-2xl shadow-2xl flex items-center gap-2">
-            <button onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'hover:bg-emerald-500/10 text-emerald-400' : 'text-zinc-600 cursor-not-allowed'}`}>
-              {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
-              {currentProjectSlug ? 'Atualizar' : 'Salvar'}
-            </button>
-            <div className="w-px h-6 bg-zinc-700 mx-1"></div>
-            <button onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-zinc-600 cursor-not-allowed'}`}>
-              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={16} />} Publicar
-            </button>
-          </motion.div>
-        )}
-
+      {/* TOP BAR: LADO ESQUERDO (Ações Globais e Usuário) */}
+      <div className="fixed top-6 left-6 z-[85] flex items-center gap-3">
         <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-1.5 rounded-2xl shadow-2xl flex items-center">
           {!loggedUserEmail ? (
             <button onClick={() => setIsLoginOpen(true)} className="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-zinc-700">
@@ -459,6 +376,19 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
+
+        {generatedHtml && (
+          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-1.5 rounded-2xl shadow-2xl flex items-center gap-2">
+            <button onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'hover:bg-emerald-500/10 text-emerald-400' : 'text-zinc-600 cursor-not-allowed'}`}>
+              {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
+              {currentProjectSlug ? 'Atualizar' : 'Salvar'}
+            </button>
+            <div className="w-px h-6 bg-zinc-700 mx-1"></div>
+            <button onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-zinc-600 cursor-not-allowed'}`}>
+              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={16} />} Publicar
+            </button>
+          </motion.div>
+        )}
       </div>
 
       <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
@@ -481,6 +411,144 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* NOVA SIDEBAR FIXA NA ESQUERDA
-      */}
-      <motion.div
+      {/* MENU FLUTUANTE NA DIREITA */}
+      <motion.div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[90] flex flex-col items-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <AnimatePresence>
+          {isMenuOpen ? (
+            <motion.div initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 30, opacity: 0 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+              <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-700 flex-shrink-0">
+                <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações' : 'Novo Projeto'}</h2>
+                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors"><Minimize2 size={18} /></button>
+              </div>
+
+              {generatedHtml && (
+                <div className="flex border-b border-zinc-800 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
+                  <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Visual & Dados</button>
+                  <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Domínio</button>
+                </div>
+              )}
+
+              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
+                {activeTab === 'geral' && (
+                  <>
+                    <div className="space-y-3">
+                      <div><label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Negócio</label><input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} /></div>
+                      <div><label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia</label><textarea className="w-full h-16 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} /></div>
+                    </div>
+
+                    <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-600 transition-colors">
+                      {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
+                    </button>
+
+                    {generatedHtml && (
+                      <div className="pt-5 border-t border-zinc-800 space-y-5">
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
+                          <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
+                            {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Cores (Tom sobre Tom)</label>
+                          <div className="grid grid-cols-5 gap-3">
+                            {COLORS.map(c => (
+                              <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-zinc-400 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-zinc-900`} title={c.name}>
+                                <div className="absolute inset-0" style={{ backgroundColor: c.c1 }} />
+                                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between"><span>Sua Logomarca (Favicon)</span>{formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}</label>
+                          {!formData.logoBase64 ? (
+                            <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={14} /> Fazer Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
+                          ) : (
+                            <div className="h-12 bg-zinc-900 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
+                          )}
+                        </div>
+                        <div className="space-y-3 pt-3 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={14} /> Contato e Localização</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                          </div>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {activeTab === 'dominio' && generatedHtml && (
+                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+                    {!currentProjectSlug ? (
+                      <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
+                        <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">Antes de salvar, precisamos saber se vai usar um domínio oficial (Registro.br).</p>
+                        <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="bg-[#121214] p-5 rounded-2xl border border-zinc-800 shadow-xl">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-6 h-6" /></div>
+                            <div><h3 className="font-bold text-white text-sm">Apontamento DNS</h3><p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p></div>
+                          </div>
+                          <div className="bg-black/60 p-4 rounded-xl border border-zinc-800/50 space-y-4">
+                            <div>
+                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
+                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center group"><code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code></div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
+                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800"><code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
+                            </div>
+                          </div>
+                        </div>
+                        <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {loggedUserEmail && (
+                  <div className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
+                      <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2 py-1 rounded">Sair</button>
+                    </div>
+                    <div className="max-h-40 overflow-y-auto custom-scrollbar space-y-1.5 pr-1">
+                      {savedProjects.length === 0 ? (
+                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-3 rounded-lg text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
+                      ) : (
+                        savedProjects.map((p: any) => (
+                          <div key={p.id} className="flex items-stretch gap-1.5 group">
+                            <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-900 hover:bg-zinc-800 rounded-xl p-3 flex justify-between items-center border transition-all ${currentProjectSlug === p.id ? 'border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'border-zinc-800'}`}>
+                              <div className="flex flex-col truncate pr-2">
+                                <span className="font-bold text-zinc-100 truncate">{p.businessName || 'Sem Nome'}</span>
+                                <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{p.id}.web.app</span>
+                              </div>
+                            </button>
+                            <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-900 hover:bg-red-500 hover:text-white text-zinc-500 rounded-xl border border-zinc-800 hover:border-red-500 flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105">
+              <Settings className="text-white" size={26} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+};
+
+export default App;
