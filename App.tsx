@@ -44,15 +44,9 @@ const PROMO_HTML = `
   <title>SiteCraft - Criação Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* CSS para ocultar a barra de rolagem no iframe, mantendo o scroll funcionando */
-    html, body { 
-      -ms-overflow-style: none; /* IE and Edge */
-      scrollbar-width: none; /* Firefox */
-      background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; 
-    }
-    ::-webkit-scrollbar { 
-      display: none; /* Chrome, Safari and Opera */
-    }
+    /* Oculta barras de rolagem nativas */
+    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
+    ::-webkit-scrollbar { display: none; }
     
     .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
     .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
@@ -466,321 +460,323 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
-      
-      {/* LEFT SIDE: PREVIEW DO SITE E CONTROLES FLUTUANTES */}
-      <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
-        <iframe 
-          srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
-          className="w-full h-full border-none bg-transparent" 
-          title="Visão Principal" 
-        />
+    <>
+      {/* CSS Global Injetado no React para ocultar as barras de rolagem nativas na aplicação inteira */}
+      <style>{`
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-        {/* LOGO FIXA (CANTO SUPERIOR ESQUERDO) */}
-        <div className="absolute top-6 left-8 z-[85] font-black text-2xl tracking-tighter uppercase italic text-white drop-shadow-md select-none pointer-events-none">
-          SiteCraft
+      <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
+        
+        {/* LEFT SIDE: PREVIEW DO SITE 100% LIMPO */}
+        <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
+          <iframe 
+            srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
+            className="w-full h-full border-none bg-transparent" 
+            title="Visão Principal" 
+          />
+
+          {/* BOTÃO PARA ABRIR O MENU SE ESTIVER FECHADO */}
+          <AnimatePresence>
+            {!isMenuOpen && (
+              <motion.div 
+                initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                onClick={() => setIsMenuOpen(true)} 
+                className="absolute bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
+              >
+                <Settings className="text-white" size={26} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* BARRA DE AÇÕES (CANTO SUPERIOR DIREITO, RELATIVO AO PREVIEW) */}
-        <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute top-6 right-6 z-[85] flex items-center gap-4">
-          
-          {generatedHtml && (
-            <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
-              <button 
-                onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-              >
-                {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
-                <span className="hidden xl:inline">{currentProjectSlug ? 'Atualizar' : 'Salvar'}</span>
-              </button>
+        <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
 
-              <div className="w-px h-6 bg-zinc-700 mx-1"></div>
-
-              <button 
-                onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+        {/* MODAL DE SUCESSO DE PUBLICAÇÃO */}
+        <AnimatePresence>
+          {publishModalUrl && (
+            <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="bg-zinc-900 border border-zinc-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6"
               >
-                {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={16} />} 
-                <span className="hidden xl:inline">Publicar</span>
-              </button>
+                <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                  <CheckCircle size={40} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Site Publicado com Sucesso!</h2>
+                  <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br, pode demorar algumas horas para propagar.</p>
+                </div>
+                <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
+                  <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"><Copy size={18} /> Copiar Link</button>
+                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"><ExternalLink size={18} /> Abrir Site</button>
+                </div>
+                <button onClick={() => setPublishModalUrl(null)} className="text-zinc-500 hover:text-zinc-300 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
+              </motion.div>
             </div>
           )}
+        </AnimatePresence>
 
-          <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 px-5 py-3 rounded-2xl shadow-2xl flex items-center">
-            {loggedUserEmail ? (
-              <div className="flex items-center gap-2 text-sm font-medium text-zinc-300 cursor-help" title={`Logado como: ${loggedUserEmail}`}>
-                <User size={18} className="text-emerald-400" />
-                <span className="hidden md:block max-w-[120px] truncate">{loggedUserEmail.split('@')[0]}</span>
-              </div>
-            ) : (
-              <button onClick={() => setIsLoginOpen(true)} className="flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-                <LogIn size={18} />
-                <span>Login</span>
-              </button>
-            )}
-          </div>
-        </motion.div>
-
-        {/* BOTÃO PARA ABRIR O MENU SE ESTIVER FECHADO */}
-        <AnimatePresence>
-          {!isMenuOpen && (
+        {/* RIGHT SIDE: CONTAINER ANIMADO COM O CARD FLUTUANTE ARREDONDADO */}
+        <AnimatePresence initial={false}>
+          {isMenuOpen && (
             <motion.div 
-              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-              onClick={() => setIsMenuOpen(true)} 
-              className="absolute bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
+              initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
+              animate={{ width: 420, paddingLeft: 16, paddingRight: 24 }} 
+              exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
+              transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+              className="flex-shrink-0 h-screen flex flex-col justify-center overflow-hidden relative z-50 bg-[#050505]"
             >
-              <Settings className="text-white" size={26} />
+              {/* O CARD FLUTUANTE (Estilo Premium Arredondado) */}
+              <motion.div 
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 20, opacity: 0 }}
+                transition={{ delay: 0.1 }}
+                className="w-full h-[95vh] bg-[#0c0c0e] border border-zinc-800 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative"
+              >
+                
+                {/* CABEÇALHO DO CARD (Logo SiteCraft + Login) */}
+                <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-800/50 flex-shrink-0">
+                  <div className="font-black text-xl tracking-tighter uppercase italic text-white select-none">
+                    SiteCraft
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {loggedUserEmail ? (
+                      <button className="text-zinc-400 hover:text-emerald-400 transition-colors" title={`Logado como: ${loggedUserEmail}`}>
+                        <User size={18} />
+                      </button>
+                    ) : (
+                      <button onClick={() => setIsLoginOpen(true)} className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                        <LogIn size={16} /> Login
+                      </button>
+                    )}
+                    <div className="w-px h-4 bg-zinc-800"></div>
+                    <button onClick={() => setIsMenuOpen(false)} className="text-zinc-500 hover:text-white transition-colors" title="Esconder Painel">
+                      <X size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* TABS (Aba Visual e Aba Domínio) */}
+                {generatedHtml && (
+                  <div className="flex border-b border-zinc-800/50 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
+                    <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Visual & Dados</button>
+                    <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Domínio Oficial</button>
+                  </div>
+                )}
+
+                {/* ÁREA DE SCROLL INTERNO DO FORMULÁRIO */}
+                <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6">
+                  
+                  {activeTab === 'geral' && (
+                    <>
+                      {/* STATUS DO PROJETO COM TOOLTIP DE INFO */}
+                      {currentProjectSlug && (
+                        <div className="group relative flex items-center justify-between bg-zinc-900 p-3.5 rounded-xl border border-zinc-800/80 -mt-2">
+                          <div className="flex items-center gap-2 cursor-help">
+                            <Info size={14} className="text-zinc-500" />
+                            <span className="text-xs text-zinc-300 font-bold uppercase tracking-wider">Status do Site</span>
+                          </div>
+                          {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
+                          
+                          {/* Tooltip Hover */}
+                          <div className="absolute hidden group-hover:block top-full left-0 mt-2 w-full bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs p-3.5 rounded-xl shadow-xl z-50 text-center leading-relaxed">
+                            Esta informação mostra se o seu site está no período de teste, ativo ou vencido. Projetos vencidos ficam invisíveis para o público.
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
+                          <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label>
+                          <textarea className="w-full h-20 bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 text-sm resize-none focus:border-emerald-500 outline-none transition-colors" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
+                        </div>
+                      </div>
+
+                      <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-700 transition-colors shadow-sm">
+                        {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
+                      </button>
+
+                      {generatedHtml && (
+                        <div className="pt-6 border-t border-zinc-800/50 space-y-6">
+                          <div className="space-y-2.5">
+                            <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
+                            <select className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
+                              {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                            </select>
+                          </div>
+                          <div className="space-y-2.5">
+                            <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Cores)</label>
+                            <div className="grid grid-cols-5 gap-3">
+                              {COLORS.map(c => (
+                                <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-zinc-400 scale-110' : 'opacity-50 hover:opacity-100'} ring-offset-[#0c0c0e]`} title={c.name}>
+                                  <div className="absolute inset-0" style={{ backgroundColor: c.c1 }} />
+                                  <div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2.5">
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
+                              <span>Sua Logomarca (Favicon)</span>
+                              {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
+                            </label>
+                            {!formData.logoBase64 ? (
+                              <label className="cursor-pointer border border-dashed border-zinc-700 hover:border-emerald-500 rounded-xl p-4 flex justify-center gap-2 text-xs text-zinc-400 transition-colors bg-zinc-900/50"><Upload size={14} /> Fazer Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
+                            ) : (
+                              <div className="h-14 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-2"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
+                            )}
+                          </div>
+
+                          {/* REDES SOCIAIS E CONTATO */}
+                          <div className="space-y-3 pt-5 border-t border-zinc-800/50">
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                            </div>
+                          </div>
+
+                          {/* DELIVERY */}
+                          <div className="space-y-3 pt-2">
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Delivery (Opcional)</label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="col-span-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                            </div>
+                          </div>
+
+                          {/* LOCALIZAÇÃO E EMAIL */}
+                          <div className="space-y-3 pt-5 border-t border-zinc-800/50">
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                            </div>
+                            <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {activeTab === 'dominio' && generatedHtml && (
+                    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+                      {!currentProjectSlug ? (
+                        <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/30">
+                          <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
+                          <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
+                          <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 shadow-xl">
+                            <div className="flex items-center gap-3 mb-5">
+                              <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-5 h-5" /></div>
+                              <div>
+                                <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
+                                <p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p>
+                              </div>
+                            </div>
+                            <div className="bg-[#050505] p-4 rounded-xl border border-zinc-800/50 space-y-4">
+                              <div>
+                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
+                                <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code></div>
+                              </div>
+                              <div>
+                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
+                                <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
+                              </div>
+                            </div>
+                          </div>
+                          <button onClick={handleDownloadZip} className="w-full border border-zinc-800 hover:bg-zinc-800 text-zinc-300 py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {loggedUserEmail && (
+                    <div className="mt-8 border-t border-zinc-800/50 pt-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
+                        <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2.5 py-1 rounded-lg">Sair</button>
+                      </div>
+                      
+                      <div className="max-h-52 overflow-y-auto space-y-2">
+                        {savedProjects.length === 0 ? (
+                          <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-4 rounded-xl text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
+                        ) : (
+                          savedProjects.map((p: any) => (
+                            <div key={p.id} className="flex flex-col gap-1.5 bg-zinc-900 border border-zinc-800 rounded-xl p-2.5">
+                              <div className="flex items-stretch gap-2 group">
+                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-800/50 hover:bg-zinc-800 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-500/50' : ''}`}>
+                                  <div className="flex flex-col truncate pr-2">
+                                    <span className="font-bold text-zinc-100 truncate flex items-center gap-2">
+                                      {p.businessName || 'Sem Nome'} 
+                                      {getStatusBadge(p)}
+                                    </span>
+                                    <span className="text-[9px] text-zinc-500 font-mono mt-1">{p.id}.web.app</span>
+                                  </div>
+                                </button>
+                                <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-800/50 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
+                              </div>
+
+                              {(!p.paymentStatus || p.paymentStatus !== 'paid' || p.status === 'frozen') && (
+                                <button 
+                                  onClick={() => handleSimulatePayment(p.id)}
+                                  className="w-full mt-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                                >
+                                  <CreditCard size={12} /> Assinar 1 Ano (R$ 499)
+                                </button>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* RODAPÉ DO CARD: BOTÕES DE SALVAR E PUBLICAR */}
+                {generatedHtml && (
+                  <div className="p-4 border-t border-zinc-800/50 bg-[#0c0c0e] flex items-center gap-3 flex-shrink-0">
+                    <button 
+                      onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
+                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+                    >
+                      {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />}
+                      {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
+                    </button>
+
+                    <button 
+                      onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
+                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+                    >
+                      {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={14} />} 
+                      Publicar Site
+                    </button>
+                  </div>
+                )}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
-
-      {/* MODAL DE SUCESSO DE PUBLICAÇÃO */}
-      <AnimatePresence>
-        {publishModalUrl && (
-          <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-zinc-900 border border-zinc-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6"
-            >
-              <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
-                <CheckCircle size={40} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Site Publicado com Sucesso!</h2>
-                <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br, pode demorar algumas horas para propagar.</p>
-              </div>
-              <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
-                <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"><Copy size={18} /> Copiar Link</button>
-                <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"><ExternalLink size={18} /> Abrir Site</button>
-              </div>
-              <button onClick={() => setPublishModalUrl(null)} className="text-zinc-500 hover:text-zinc-300 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* RIGHT SIDE: CONTAINER ANIMADO QUE EMPURRA O SITE, MAS MANTÉM O CARD FLUTUANTE */}
-      <AnimatePresence initial={false}>
-        {isMenuOpen && (
-          <motion.div 
-            initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
-            animate={{ width: 400, paddingLeft: 16, paddingRight: 24 }} 
-            exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
-            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-            className="flex-shrink-0 h-screen flex flex-col justify-center overflow-hidden relative z-50 bg-[#050505]"
-          >
-            {/* O CARD FLUTUANTE ORIGINAL */}
-            <motion.div 
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 20, opacity: 0 }}
-              transition={{ delay: 0.1 }}
-              className="w-full bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]"
-            >
-              <div className="flex justify-between items-center px-4 py-4 border-b border-zinc-700 flex-shrink-0">
-                <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações do Site' : 'Novo Projeto'}</h2>
-                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors text-zinc-400 hover:text-white" title="Esconder Painel">
-                  <X size={18} />
-                </button>
-              </div>
-
-              {generatedHtml && (
-                <div className="flex border-b border-zinc-800 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
-                  <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Visual & Dados</button>
-                  <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Domínio Oficial</button>
-                </div>
-              )}
-
-              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-8">
-                
-                {activeTab === 'geral' && (
-                  <>
-                    {/* STATUS DO PROJETO COM TOOLTIP DE INFO */}
-                    {currentProjectSlug && (
-                      <div className="group relative flex items-center justify-between bg-zinc-800/40 p-3 rounded-xl border border-zinc-700/50 -mt-2">
-                        <div className="flex items-center gap-2 cursor-help">
-                          <Info size={14} className="text-zinc-400" />
-                          <span className="text-xs text-zinc-300 font-bold uppercase tracking-wider">Status do Site</span>
-                        </div>
-                        {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
-                        
-                        {/* Tooltip Hover */}
-                        <div className="absolute hidden group-hover:block top-full left-0 mt-2 w-full bg-zinc-800 border border-zinc-600 text-zinc-200 text-xs p-3 rounded-xl shadow-xl z-50 text-center leading-relaxed">
-                          Esta informação mostra se o seu site está no período de teste, ativo ou vencido. Projetos vencidos ficam invisíveis para o público, sendo necessário realizar a assinatura.
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Nome do Negócio</label>
-                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia Principal</label>
-                        <textarea className="w-full h-16 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
-                      </div>
-                    </div>
-
-                    <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-600 transition-colors shadow-sm">
-                      {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
-                    </button>
-
-                    {generatedHtml && (
-                      <div className="pt-5 border-t border-zinc-800 space-y-5">
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
-                          <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
-                            {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Cores)</label>
-                          <div className="grid grid-cols-5 gap-3">
-                            {COLORS.map(c => (
-                              <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-zinc-400 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-zinc-900`} title={c.name}>
-                                <div className="absolute inset-0" style={{ backgroundColor: c.c1 }} />
-                                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
-                            <span>Sua Logomarca (Favicon)</span>
-                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
-                          </label>
-                          {!formData.logoBase64 ? (
-                            <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={14} /> Fazer Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
-                          ) : (
-                            <div className="h-12 bg-zinc-900 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
-                          )}
-                        </div>
-
-                        {/* REDES SOCIAIS E CONTATO */}
-                        <div className="space-y-3 pt-4 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={14} /> Redes Sociais</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
-                          </div>
-                        </div>
-
-                        {/* DELIVERY */}
-                        <div className="space-y-3 pt-3">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Zap size={14} /> Delivery (Opcional)</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="col-span-2 w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
-                          </div>
-                        </div>
-
-                        {/* LOCALIZAÇÃO E EMAIL */}
-                        <div className="space-y-3 pt-4 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={14} /> Contato e Localização</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
-                          </div>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {activeTab === 'dominio' && generatedHtml && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-                    {!currentProjectSlug ? (
-                      <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
-                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
-                        <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
-                        <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="bg-[#121214] p-5 rounded-2xl border border-zinc-800 shadow-xl">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-6 h-6" /></div>
-                            <div>
-                              <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
-                              <p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p>
-                            </div>
-                          </div>
-                          <div className="bg-black/60 p-4 rounded-xl border border-zinc-800/50 space-y-4">
-                            <div>
-                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
-                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center group"><code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code></div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
-                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800"><code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
-                            </div>
-                          </div>
-                        </div>
-                        <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {loggedUserEmail && (
-                  <div className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
-                      <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2 py-1 rounded">Sair</button>
-                    </div>
-                    
-                    <div className="max-h-52 overflow-y-auto custom-scrollbar space-y-2 pr-1">
-                      {savedProjects.length === 0 ? (
-                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-3 rounded-lg text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
-                      ) : (
-                        savedProjects.map((p: any) => (
-                          <div key={p.id} className="flex flex-col gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-2">
-                            <div className="flex items-stretch gap-1.5 group">
-                              <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-800/50 hover:bg-zinc-800 rounded-lg p-2.5 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-500/50' : ''}`}>
-                                <div className="flex flex-col truncate pr-2">
-                                  <span className="font-bold text-zinc-100 truncate flex items-center gap-2">
-                                    {p.businessName || 'Sem Nome'} 
-                                    {getStatusBadge(p)}
-                                  </span>
-                                  <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{p.id}.web.app</span>
-                                </div>
-                              </button>
-                              <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-800/50 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
-                            </div>
-
-                            {(!p.paymentStatus || p.paymentStatus !== 'paid' || p.status === 'frozen') && (
-                              <button 
-                                onClick={() => handleSimulatePayment(p.id)}
-                                className="w-full mt-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
-                              >
-                                <CreditCard size={12} /> Assinar 1 Ano (R$ 499)
-                              </button>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    </>
   );
 };
 
