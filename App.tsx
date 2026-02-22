@@ -222,6 +222,9 @@ const App: React.FC = () => {
   const [publishModalUrl, setPublishModalUrl] = useState<string | null>(null);
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
+  
+  // Controle visual do botão da Stripe
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
@@ -284,7 +287,6 @@ const App: React.FC = () => {
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    // 1. Injeta o FontAwesome no site do cliente para garantir que os ícones funcionem perfeitamente.
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
     if (data.logoBase64) {
@@ -294,10 +296,6 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
-    // Função original de criação de botões.
-    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes} shadow-sm" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
-
-    // Remove os placeholders antigos de dentro do layout do site (para não ficarem duplicados)
     replaceAll('[[WHATSAPP_BTN]]', '');
     replaceAll('[[INSTAGRAM_BTN]]', '');
     replaceAll('[[FACEBOOK_BTN]]', '');
@@ -306,7 +304,6 @@ const App: React.FC = () => {
     replaceAll('[[NOVE_NOVE_BTN]]', '');
     replaceAll('[[KEETA_BTN]]', '');
 
-    // 2. CRIAÇÃO DOS BOTÕES FLUTUANTES DIRETAMENTE DENTRO DO SITE DO CLIENTE
     let floatingButtons = '';
     const addFloatingBtn = (label: string, icon: string, href: string, classes: string) => {
       floatingButtons += `<a href="${href}" target="_blank" class="${classes}" title="${label}" aria-label="${label}" style="width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;"><i class="${icon}"></i></a>`;
@@ -329,7 +326,6 @@ const App: React.FC = () => {
           ${floatingButtons}
         </div>
       `;
-      // Injeta os botões flutuantes no final do body do site do cliente
       html = html.replace('</body>', `${floatingContainer}</body>`);
     }
 
@@ -433,15 +429,23 @@ const App: React.FC = () => {
     } catch (error) { alert("Erro ao excluir o site."); }
   };
 
-  const handleSimulatePayment = async (projectId: string) => {
-    if (!window.confirm("Simular pagamento de R$ 499,00 e liberar o site por 1 ano?")) return;
+  // NOVA FUNÇÃO: Integração direta com a Stripe
+  const handleStripeCheckout = async (projectId: string) => {
+    setCheckoutLoading(projectId);
     try {
-      const payFn = httpsCallable(functions, 'renewSiteSubscription');
-      await payFn({ targetId: projectId });
-      alert("Pagamento confirmado! O site está liberado por mais 365 dias.\nPor favor, clique em PUBLICAR para reativá-lo no ar.");
-      fetchProjects();
-    } catch (error) {
-      alert("Erro ao processar pagamento.");
+      // Aqui chamaremos a nossa futura Cloud Function que se comunicará com a Stripe
+      const checkoutFn = httpsCallable(functions, 'createStripeCheckout');
+      const res: any = await checkoutFn({ targetId: projectId, plan: 'annual_499' });
+      
+      if (res.data?.url) {
+        window.location.href = res.data.url; // Redireciona o cliente para pagar na Stripe
+      } else {
+        alert("Erro ao gerar link de pagamento. Tente novamente.");
+      }
+    } catch (error: any) {
+      alert("Erro de conexão com o banco: " + error.message);
+    } finally {
+      setCheckoutLoading(null);
     }
   };
 
@@ -496,7 +500,6 @@ const App: React.FC = () => {
 
       <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
         
-        {/* LEFT SIDE: PREVIEW DO SITE 100% LIMPO (Os ícones vão aparecer AQUI DENTRO no canto inferior direito) */}
         <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
           <iframe 
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
@@ -546,7 +549,6 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* RIGHT SIDE: O FORMULÁRIO PARA PREENCHER OS DADOS */}
         <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.div 
@@ -750,10 +752,12 @@ const App: React.FC = () => {
 
                               {(!p.paymentStatus || p.paymentStatus !== 'paid' || p.status === 'frozen') && (
                                 <button 
-                                  onClick={() => handleSimulatePayment(p.id)}
-                                  className="w-full mt-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                                  onClick={() => handleStripeCheckout(p.id)}
+                                  disabled={checkoutLoading === p.id}
+                                  className="w-full mt-1 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  <CreditCard size={12} /> Assinar 1 Ano (R$ 499)
+                                  {checkoutLoading === p.id ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />} 
+                                  {checkoutLoading === p.id ? 'Gerando Link...' : 'Assinar 1 Ano (R$ 499)'}
                                 </button>
                               )}
                             </div>
