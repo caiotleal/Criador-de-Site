@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, LayoutDashboard, MapPin, Copy, ExternalLink, User, Image as ImageIcon
+  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, User
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -33,6 +33,7 @@ const COLORS = [
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
 ];
 
+// O SEU SITE DE VENDAS INICIAL VOLTOU AQUI (100% preservado)
 const PROMO_HTML = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -63,7 +64,7 @@ const PROMO_HTML = `
     </div>
 
     <div class="grid md:grid-cols-2 gap-8 relative z-10 animate-up" style="animation-delay: 0.2s;">
-      <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden group border-zinc-800">
+      <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden group">
         <h3 class="text-3xl font-black mb-2 italic uppercase">Teste Grátis</h3>
         <p class="text-white/50 mb-8">Veja o seu site pronto hoje mesmo.</p>
         <div class="text-5xl font-black mb-2">R$ 0 <span class="text-lg text-white/40 font-normal">/ 5 dias</span></div>
@@ -191,30 +192,25 @@ const App: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState<'geral' | 'dominio'>('geral');
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
-  
-  // CONTROLE DO FLUXO DE BOTÕES (UX)
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [needsDeployLocal, setNeedsDeployLocal] = useState(false); // Libera o Publicar após Salvar
   
   const [publishModalUrl, setPublishModalUrl] = useState<string | null>(null);
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
 
   const [formData, setFormData] = useState({
-    businessName: '', description: '', 
-    whatsapp: '', instagram: '', facebook: '', tiktok: '', youtube: '', linkedin: '',
-    ifood: '', noveNove: '', keeta: '', zeDelivery: '', rappi: '',
-    phone: '', email: '', address: '', mapEmbed: '',
-    showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '', heroImageBase64: ''
+    businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '',
+    ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
+    showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
   });
 
   useEffect(() => {
     if (aiContent) {
       setGeneratedHtml(renderTemplate(aiContent, formData));
     }
-  }, [formData]);
+  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.address, formData.mapEmbed, formData.phone, formData.email]);
 
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
@@ -261,11 +257,10 @@ const App: React.FC = () => {
     replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
     replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
     
-    replaceAll('{{ADDRESS}}', data.address || '');
-    replaceAll('{{PHONE}}', data.phone || data.whatsapp || '');
-    replaceAll('{{EMAIL}}', data.email || '');
+    replaceAll('{{ADDRESS}}', data.address || 'Endereço não informado');
+    replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
+    replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    // LOGO E FAVICON
     let headInjection = '';
     if (data.logoBase64) {
       headInjection = `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
@@ -274,35 +269,19 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
-    // IMAGEM PRINCIPAL (HERO MEDIA) NO LUGAR DO CONTAINER VAZIO
-    if (data.heroImageBase64) {
-      // Injeta nos templates que possuem área de imagem desenhada (Split e Flow)
-      const imgTag = `<img src="${data.heroImageBase64}" class="w-full h-full object-cover opacity-80" alt="Destaque" />`;
-      html = html.replace(/<div class="absolute inset-0 bg-gradient-to-tr from-\[\{\{COLOR_4\}\}\]\/20 to-transparent"><\/div>/g, imgTag);
-      html = html.replace(/<div class="h-64 md:h-80 ux-glass rounded-\[2rem\] reveal-right"><\/div>/g, `<div class="h-64 md:h-80 ux-glass rounded-[2rem] reveal-right overflow-hidden">${imgTag}</div>`);
-    }
-
     const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes} shadow-sm" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
 
-    // REDES SOCIAIS COMPLETAS
     replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-[#25D366] text-white') : '');
     replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-[#E1306C] text-white') : '');
     replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-[#1877F2] text-white') : '');
-    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-[#000000] text-white border border-white/20') : '');
-    replaceAll('[[YOUTUBE_BTN]]', data.youtube ? actionBtn('YouTube', 'fab fa-youtube', data.youtube.startsWith('http') ? data.youtube : `https://${data.youtube}`, 'bg-[#FF0000] text-white') : '');
-    replaceAll('[[LINKEDIN_BTN]]', data.linkedin ? actionBtn('LinkedIn', 'fab fa-linkedin-in', data.linkedin.startsWith('http') ? data.linkedin : `https://${data.linkedin}`, 'bg-[#0077b5] text-white') : '');
-
-    // APPS DE DELIVERY
-    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-motorcycle', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-[#EA1D2C] text-white') : '');
-    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-utensils', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-[#FFC700] text-black') : '');
+    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-[#000000] text-white') : '');
+    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-[#EA1D2C] text-white') : '');
+    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-[#FFC700] text-black') : '');
     replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-[#FF4B2B] text-white') : '');
-    replaceAll('[[ZE_DELIVERY_BTN]]', data.zeDelivery ? actionBtn('Zé Delivery', 'fas fa-beer', data.zeDelivery.startsWith('http') ? data.zeDelivery : `https://${data.zeDelivery}`, 'bg-[#FFD700] text-black') : '');
-    replaceAll('[[RAPPI_BTN]]', data.rappi ? actionBtn('Rappi', 'fas fa-box', data.rappi.startsWith('http') ? data.rappi : `https://${data.rappi}`, 'bg-[#FF4500] text-white') : '');
 
     const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-    // FORMULÁRIO COM TOGGLE
     const formCode = data.showForm ? `<form class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]"><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu nome" /><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu email" /><textarea class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
@@ -339,17 +318,6 @@ const App: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleHeroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData(p => ({ ...p, heroImageBase64: reader.result as string }));
-      setHasUnsavedChanges(true);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSaveOrUpdateSite = async () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
     if (!currentProjectSlug && !registerLater && !officialDomain) {
@@ -374,13 +342,14 @@ const App: React.FC = () => {
         if (res.data?.projectSlug) setCurrentProjectSlug(res.data.projectSlug);
       }
       setHasUnsavedChanges(false);
-      setNeedsDeployLocal(true); // SALVOU, AGORA LIBERA O BOTÃO DE PUBLICAR
       fetchProjects();
+      alert("Site salvo com sucesso!");
     } catch (err: any) { alert('Erro ao salvar o site.'); } 
     finally { setIsSavingProject(false); }
   };
 
   const handlePublishSite = async () => {
+    if (hasUnsavedChanges) return alert("Salve suas alterações antes de publicar.");
     setIsPublishing(true);
     try {
       const publishFn = httpsCallable(functions, 'publishUserProject');
@@ -388,7 +357,6 @@ const App: React.FC = () => {
       let publicUrl = res.data?.publishUrl || `https://${currentProjectSlug}.web.app`;
       if (!publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
       fetchProjects();
-      setNeedsDeployLocal(false); // PUBLICOU, AGORA DESABILITA ATÉ TER NOVA ALTERAÇÃO
       setPublishModalUrl(publicUrl);
     } catch (err: any) { alert('Erro ao publicar: ' + err.message); } 
     finally { setIsPublishing(false); }
@@ -401,8 +369,8 @@ const App: React.FC = () => {
       await deleteFn({ targetId: projectId });
       alert("Site excluído com sucesso.");
       if (projectId === currentProjectSlug) {
-        setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setNeedsDeployLocal(false); setActiveTab('geral');
-        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', youtube: '', linkedin: '', ifood: '', noveNove: '', keeta: '', zeDelivery: '', rappi: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '', heroImageBase64: '' });
+        setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
+        setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) { alert("Erro ao excluir o site."); }
@@ -417,7 +385,6 @@ const App: React.FC = () => {
     setOfficialDomain(project.officialDomain || '');
     setRegisterLater(project.officialDomain === 'Pendente');
     setHasUnsavedChanges(false);
-    setNeedsDeployLocal(project.needsDeploy || false);
     setActiveTab('geral');
   };
 
@@ -439,19 +406,6 @@ const App: React.FC = () => {
     zip.generateAsync({ type: 'blob' }).then(c => saveAs(c, `${formData.businessName || 'site'}.zip`));
   };
 
-  const getStatusBadge = (project: any) => {
-    if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">CONGELADO</span>;
-    if (project.expiresAt) {
-      const daysLeft = Math.ceil((new Date(project.expiresAt._seconds * 1000).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-      if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">EXPIRADO</span>;
-      if (project.published && !project.needsDeploy) {
-        if (daysLeft <= 5) return <span className="text-[9px] bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold ml-2">TRIAL ({daysLeft}d)</span>;
-        return <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold ml-2">PUBLICADO</span>;
-      }
-    }
-    return <span className="text-[9px] bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full font-bold ml-2">RASCUNHO</span>;
-  };
-
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
       
@@ -464,17 +418,17 @@ const App: React.FC = () => {
         />
       </div>
 
-      {/* LOGIN DISCRETO NO TOPO DIREITO (ÍCONE PEQUENO) */}
-      <div className="absolute top-4 right-6 z-[85]">
+      {/* MENU SUPERIOR ESQUERDO: LOGIN DISCRETO */}
+      <div className="absolute top-4 left-6 z-[85]">
         {!loggedUserEmail ? (
-          <button onClick={() => setIsLoginOpen(true)} className="w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md text-zinc-400 hover:text-white rounded-full transition-colors flex items-center justify-center border border-white/10" title="Acessar Conta">
-            <User size={18}/>
+          <button onClick={() => setIsLoginOpen(true)} className="px-4 py-2 bg-transparent hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 border border-transparent hover:border-white/10">
+            <User size={14}/> Entrar na Conta
           </button>
         ) : (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-zinc-400 text-xs shadow-xl">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/5 text-zinc-400 text-xs font-medium shadow-xl">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span className="max-w-[100px] truncate">{loggedUserEmail}</span>
-            <button onClick={handleLogout} className="ml-1 hover:text-red-400 transition-colors" title="Sair"><X size={14}/></button>
+            <span className="max-w-[120px] truncate">{loggedUserEmail}</span>
+            <button onClick={handleLogout} className="ml-2 hover:text-red-400 transition-colors p-1" title="Sair"><X size={12}/></button>
           </div>
         )}
       </div>
@@ -487,7 +441,7 @@ const App: React.FC = () => {
           <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="bg-zinc-900 border border-zinc-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6">
               <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30"><CheckCircle size={40} /></div>
-              <div><h2 className="text-2xl font-bold text-white mb-2">Site Publicado!</h2><p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online.</p></div>
+              <div><h2 className="text-2xl font-bold text-white mb-2">Site Publicado!</h2><p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br, pode demorar algumas horas para propagar.</p></div>
               <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden"><code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code></div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"><Copy size={18} /> Copiar Link</button>
@@ -500,20 +454,20 @@ const App: React.FC = () => {
       </AnimatePresence>
 
       {/* MENU FLUTUANTE NA DIREITA */}
-      <motion.div className="fixed top-20 bottom-4 right-4 z-[90] flex flex-col items-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div className="fixed top-4 bottom-4 right-4 z-[90] flex flex-col items-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
             <motion.div initial={{ x: 400, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 400, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full">
               
               <div className="flex justify-between items-center px-5 py-4 border-b border-zinc-800 flex-shrink-0">
-                <h2 className="font-bold text-sm tracking-wide text-zinc-200">{generatedHtml ? 'Painel de Edição' : 'Novo Projeto'}</h2>
+                <h2 className="font-bold text-sm tracking-wide text-zinc-200">{generatedHtml ? 'Configurações' : 'Novo Projeto'}</h2>
                 <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-800 text-zinc-400 hover:text-white p-1.5 rounded transition-colors"><Minimize2 size={16} /></button>
               </div>
 
               {generatedHtml && (
                 <div className="flex border-b border-zinc-800 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
                   <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Visual & Dados</button>
-                  <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Domínio & Acesso</button>
+                  <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Domínio Oficial</button>
                 </div>
               )}
 
@@ -532,33 +486,27 @@ const App: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* BOTÃO MÁGICO DA IA */}
                     <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-500/20">
                       {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={16} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                     </button>
 
-                    {/* FLUXO DE UX: BOTÕES DE SALVAR E PUBLICAR EMBUTIDOS AQUI */}
+                    {/* BOTÕES DE SALVAR E PUBLICAR EMBUTIDOS AQUI, COM OS AVISOS EM HOVER */}
                     {generatedHtml && (
                       <div className="grid grid-cols-2 gap-3 pt-2">
-                        {/* BOTÃO ATUALIZAR/SALVAR: Só ativa se houver mudanças */}
                         <button 
                           onClick={handleSaveOrUpdateSite} 
-                          disabled={!hasUnsavedChanges && currentProjectSlug !== null}
-                          title={(!hasUnsavedChanges && currentProjectSlug) ? "Altere alguma cor, texto ou campo abaixo para habilitar." : "Salvar projeto atual no banco de dados."}
-                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 
-                            ${hasUnsavedChanges || !currentProjectSlug ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600 shadow-md' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
+                          disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
+                          title={(!hasUnsavedChanges && currentProjectSlug) ? "Mude alguma cor ou texto para poder salvar novamente." : "Salvar o projeto atual."}
+                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
                         >
                           {isSavingProject ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save size={14} />}
-                          {currentProjectSlug ? 'Atualizar' : 'Salvar'}
+                          {currentProjectSlug ? 'Atualizar' : 'Salvar Site'}
                         </button>
-                        
-                        {/* BOTÃO PUBLICAR: Só ativa após Atualizar e se não houver pendências */}
                         <button 
                           onClick={handlePublishSite} 
-                          disabled={!needsDeployLocal || hasUnsavedChanges}
-                          title={hasUnsavedChanges ? "Clique em 'Atualizar' primeiro para salvar as mudanças." : (!needsDeployLocal ? "O site já está publicado na versão mais recente." : "Colocar as alterações ao vivo na internet!")}
-                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 
-                            ${needsDeployLocal && !hasUnsavedChanges ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
+                          disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
+                          title={!currentProjectSlug ? "Salve o projeto primeiro para habilitar a publicação." : (hasUnsavedChanges ? "Salve as edições pendentes antes de publicar." : "Colocar o site no ar!")}
+                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
                         >
                           {isPublishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe size={14} />} Publicar
                         </button>
@@ -585,40 +533,16 @@ const App: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* UPLOAD DE LOGO */}
                         <div className="space-y-3">
                           <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between items-center">
-                            <span>Logomarca (Ícone/Favicon)</span>
+                            <span>Sua Logomarca (Favicon)</span>
                             {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold px-2 py-1 bg-red-500/10 rounded">Remover</button>}
                           </label>
                           {!formData.logoBase64 ? (
-                            <label className="cursor-pointer border-2 border-dashed border-zinc-700 hover:border-emerald-500 bg-zinc-900/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={18} /> Subir Logo<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
+                            <label className="cursor-pointer border-2 border-dashed border-zinc-700 hover:border-emerald-500 bg-zinc-900/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={18} /> Clique para Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
                           ) : (
                             <div className="h-16 bg-zinc-900 border border-zinc-700 rounded-xl flex items-center justify-center overflow-hidden p-2"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
                           )}
-                        </div>
-
-                        {/* UPLOAD DE IMAGEM PRINCIPAL */}
-                        <div className="space-y-3">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between items-center">
-                            <span>Imagem de Destaque (Opcional)</span>
-                            {formData.heroImageBase64 && <button onClick={() => { setFormData(p => ({ ...p, heroImageBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold px-2 py-1 bg-red-500/10 rounded">Remover</button>}
-                          </label>
-                          {!formData.heroImageBase64 ? (
-                            <label className="cursor-pointer border-2 border-dashed border-zinc-700 hover:border-indigo-500 bg-zinc-900/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-xs text-zinc-400 transition-colors"><ImageIcon size={18} /> Subir Foto do Local/Produto<input type="file" accept="image/*" onChange={handleHeroImageUpload} className="hidden" /></label>
-                          ) : (
-                            <div className="h-24 bg-zinc-900 border border-zinc-700 rounded-xl flex items-center justify-center overflow-hidden p-1"><img src={formData.heroImageBase64} className="h-full w-full object-cover rounded-lg" alt="Destaque" /></div>
-                          )}
-                        </div>
-
-                        <div className="space-y-4 pt-4 border-t border-zinc-800">
-                          <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-zinc-800">
-                            <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">Formulário no Site</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} />
-                              <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                            </label>
-                          </div>
                         </div>
 
                         <div className="space-y-4 pt-4 border-t border-zinc-800">
@@ -632,10 +556,88 @@ const App: React.FC = () => {
                         </div>
 
                         <div className="space-y-4 pt-4 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 items-center"><Phone size={14} className="text-emerald-500" /> Redes Sociais Completas</label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="WhatsApp (Números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 items-center"><Phone size={14} className="text-emerald-500" /> Redes Sociais</label>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {activeTab === 'dominio' && generatedHtml && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                    {!currentProjectSlug ? (
+                      <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/30">
+                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-3"><Globe size={18}/> Domínio Oficial</h4>
+                        <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
+                        <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
+                      </div>
+                    ) : (
+                      <div className="space-y-5">
+                        <div className="bg-[#121214] p-6 rounded-3xl border border-zinc-800 shadow-xl">
+                          <div className="flex items-center gap-4 mb-6">
+                            <div className="bg-indigo-500/20 p-3 rounded-2xl text-indigo-400"><Globe size={24} /></div>
+                            <div><h3 className="font-bold text-white text-base">Apontamento DNS</h3><p className="text-xs text-zinc-400 mt-1">Configure no Registro.br</p></div>
+                          </div>
+                          <div className="bg-black/60 p-4 rounded-2xl border border-zinc-800/50 space-y-4">
+                            <div>
+                              <div className="flex justify-between items-center mb-2"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
+                              <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-emerald-400 text-sm font-bold select-all">199.36.158.100</code></div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between items-center mb-2"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
+                              <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-indigo-300 text-xs break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
+                            </div>
+                          </div>
+                        </div>
+                        <button onClick={handleDownloadZip} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors"><Download size={18} /> Baixar Código do Site</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {loggedUserEmail && (
+                  <div className="pt-6 border-t border-zinc-800 space-y-4 pb-12">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14}/>Meus Projetos</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {savedProjects.length === 0 ? (
+                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-4 rounded-xl text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
+                      ) : (
+                        savedProjects.map((p: any) => (
+                          <div key={p.id} className="flex flex-col gap-1 bg-zinc-900/50 border border-zinc-800 rounded-xl p-2 group hover:bg-zinc-900 transition-colors">
+                            <div className="flex items-stretch gap-1.5">
+                              <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs rounded-lg p-2.5 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-500/50 bg-emerald-500/5' : ''}`}>
+                                <div className="flex flex-col truncate pr-2">
+                                  <span className="font-bold text-zinc-100 truncate flex items-center gap-2">
+                                    {p.businessName || 'Sem Nome'} 
+                                  </span>
+                                  <span className="text-[9px] text-zinc-500 font-mono mt-1">{p.id}.web.app</span>
+                                </div>
+                              </button>
+                              <button onClick={() => handleDeleteSite(p.id)} className="w-10 hover:bg-red-500/20 hover:text-red-400 text-zinc-600 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={16} /></button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]">
+              <Settings className="text-white" size={26} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+    </div>
+  );
+};
+
+export default App;
