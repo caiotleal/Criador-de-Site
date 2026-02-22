@@ -284,7 +284,6 @@ const App: React.FC = () => {
       }
       setHasUnsavedChanges(false);
       fetchProjects();
-      alert("Site salvo com sucesso!");
     } catch (err: any) { alert('Erro ao salvar o site.'); } 
     finally { setIsSavingProject(false); }
   };
@@ -348,16 +347,30 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white flex">
-      
-      {/* FRAME DO SITE: Desloca para a direita quando o menu da esquerda está aberto */}
-      <div className={`absolute top-0 right-0 bottom-0 z-0 bg-[#050505] transition-all duration-500 ease-in-out ${isMenuOpen ? 'left-0 md:left-[380px]' : 'left-0'}`}>
+    <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
+      {/* FRAME DO SITE: Ocupa toda a tela */}
+      <div className="absolute inset-0 z-0 bg-[#050505]">
         {generatedHtml ? (
           <iframe srcDoc={getPreviewHtml(generatedHtml)} className="w-full h-full border-none bg-transparent" title="Preview Visual" />
         ) : (
           <div className="flex flex-col items-center justify-center h-full opacity-20 animate-pulse select-none">
             <Rocket className="w-24 h-24 mb-4" />
             <h2 className="text-2xl font-bold">O seu site vai aparecer aqui</h2>
+          </div>
+        )}
+      </div>
+
+      {/* MENU SUPERIOR DISCRETO (Login) */}
+      <div className="absolute top-4 left-6 z-[85]">
+        {!loggedUserEmail ? (
+          <button onClick={() => setIsLoginOpen(true)} className="px-4 py-2 bg-transparent hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 border border-transparent hover:border-white/10">
+            <User size={14}/> Entrar na Conta
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/5 text-zinc-400 text-xs font-medium shadow-xl">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="max-w-[120px] truncate">{loggedUserEmail}</span>
+            <button onClick={handleLogout} className="ml-2 hover:text-red-400 transition-colors p-1" title="Sair"><X size={12}/></button>
           </div>
         )}
       </div>
@@ -382,146 +395,106 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* MENU LATERAL FIXO (AGORA NA ESQUERDA) */}
-      <motion.div className="fixed top-4 left-4 bottom-4 md:top-6 md:left-6 md:bottom-6 z-[90] flex flex-col items-start pointer-events-none" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      {/* MENU LATERAL DIREITO (FORMULÁRIO E AÇÕES) */}
+      <motion.div className="fixed top-4 bottom-4 right-4 z-[90] flex flex-col items-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
-            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -30, opacity: 0 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full pointer-events-auto">
+            <motion.div initial={{ x: 400, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 400, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full">
               
-              {/* CABEÇALHO DO MENU + LOGIN DISCRETO */}
               <div className="flex justify-between items-center px-5 py-4 border-b border-zinc-800 flex-shrink-0">
-                <div className="flex flex-col gap-0.5">
-                  <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações' : 'Novo Projeto'}</h2>
-                  {!loggedUserEmail ? (
-                    <button onClick={() => setIsLoginOpen(true)} className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 transition-colors">
-                      <User size={10}/> Fazer Login
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-400" title={loggedUserEmail}>
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <span className="truncate max-w-[120px]">{loggedUserEmail.split('@')[0]}</span>
-                    </div>
-                  )}
-                </div>
-                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-2 rounded-lg transition-colors text-zinc-400 hover:text-white"><Minimize2 size={16} /></button>
+                <h2 className="font-bold text-sm tracking-wide text-zinc-200">{generatedHtml ? 'Configurações' : 'Novo Projeto'}</h2>
+                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-800 text-zinc-400 hover:text-white p-1.5 rounded transition-colors"><Minimize2 size={16} /></button>
               </div>
 
-              {/* TABS DE NAVEGAÇÃO */}
               {generatedHtml && (
                 <div className="flex border-b border-zinc-800 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
-                  <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Visual & Dados</button>
-                  <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Domínio</button>
+                  <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Visual & Dados</button>
+                  <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}>Domínio Oficial</button>
                 </div>
               )}
 
-              {/* AÇÕES FLUTUANTES AGORA INTEGRADAS NO MENU (Exibidas só quando possível) */}
-              {generatedHtml && (
-                <div className="p-4 border-b border-zinc-800 bg-black/20 flex flex-col gap-2 flex-shrink-0">
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
-                      className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-                    >
-                      {isSavingProject ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save size={14} />}
-                      {currentProjectSlug ? 'Atualizar' : 'Salvar'}
-                    </button>
-                    <button 
-                      onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                      className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-                    >
-                      {isPublishing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Globe size={14} />} Publicar
-                    </button>
-                  </div>
-                  <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800/50 hover:bg-zinc-700 text-zinc-300 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-zinc-700 transition-colors">
-                    {isGenerating ? <Loader2 className="animate-spin w-3 h-3" /> : <RefreshCw size={14} />} Recriar com IA
-                  </button>
-                </div>
-              )}
-
-              {/* CONTEÚDO COM SCROLL */}
               <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-6">
                 
                 {activeTab === 'geral' && (
                   <>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Nome do Negócio</label>
-                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Ex: Pizzaria Roma" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
+                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
+                        <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-sm focus:border-emerald-500 transition-colors" placeholder="Ex: Studio Code" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia Principal</label>
-                        <textarea className="w-full h-16 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
+                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label>
+                        <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-xl p-3 text-sm resize-none focus:border-emerald-500 transition-colors" placeholder="Descreva seus serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
                       </div>
                     </div>
 
-                    {/* BOTÃO PRIMÁRIO (Aparece apenas se o site não existir ainda) */}
-                    {!generatedHtml && (
-                      <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 transition-transform hover:-translate-y-1">
-                        {isGenerating ? <Loader2 className="animate-spin" /> : <Rocket size={18} />} Gerar Meu Site
-                      </button>
+                    <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-500/20">
+                      {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={16} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
+                    </button>
+
+                    {/* AÇÕES DE SALVAR E PUBLICAR EMBUTIDAS NO FORMULÁRIO COM HOVER EXPLICATIVO */}
+                    {generatedHtml && (
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                        <button 
+                          onClick={handleSaveOrUpdateSite} 
+                          disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
+                          title={(!hasUnsavedChanges && currentProjectSlug) ? "Altere alguma cor ou texto do site para poder salvar novamente." : "Salvar projeto atual"}
+                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
+                        >
+                          {isSavingProject ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save size={14} />}
+                          {currentProjectSlug ? 'Atualizar' : 'Salvar Site'}
+                        </button>
+                        <button 
+                          onClick={handlePublishSite} 
+                          disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
+                          title={!currentProjectSlug ? "Salve o projeto primeiro para liberar a publicação." : (hasUnsavedChanges ? "Salve as alterações pendentes para publicar." : "Colocar o site no ar!")}
+                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
+                        >
+                          {isPublishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe size={14} />} Publicar
+                        </button>
+                      </div>
                     )}
 
                     {generatedHtml && (
-                      <div className="pt-2 border-zinc-800 space-y-5">
-                        <div className="space-y-2">
+                      <div className="pt-6 border-t border-zinc-800 space-y-6">
+                        <div className="space-y-3">
                           <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
-                          <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
+                          <select className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
                             {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                           </select>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <label className="text-xs font-bold text-zinc-500 uppercase">Cores (Tom sobre Tom)</label>
                           <div className="grid grid-cols-5 gap-3">
                             {COLORS.map(c => (
-                              <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-zinc-400 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-zinc-900`} title={c.name}>
+                              <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-full aspect-square rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-emerald-500 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-2 ring-offset-zinc-900`} title={c.name}>
                                 <div className="absolute inset-0" style={{ backgroundColor: c.c1 }} />
-                                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
                               </button>
                             ))}
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
-                            <span>Sua Logomarca</span>
-                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
+                        <div className="space-y-3">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between items-center">
+                            <span>Sua Logomarca (Favicon)</span>
+                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold px-2 py-1 bg-red-500/10 rounded">Remover</button>}
                           </label>
                           {!formData.logoBase64 ? (
-                            <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors">
-                              <Upload size={14} /> Fazer Upload
-                              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                            </label>
+                            <label className="cursor-pointer border-2 border-dashed border-zinc-700 hover:border-emerald-500 bg-zinc-900/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={18} /> Clique para Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
                           ) : (
-                            <div className="h-12 bg-zinc-900 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1">
-                              <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
-                            </div>
+                            <div className="h-16 bg-zinc-900 border border-zinc-700 rounded-xl flex items-center justify-center overflow-hidden p-2"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
                           )}
                         </div>
 
-                        <div className="space-y-3 pt-3 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={14} /> Contato e Localização</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                        <div className="space-y-4 pt-4 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 items-center"><MapPin size={14} className="text-emerald-500"/> Contato e Local</label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                           </div>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <div className="pt-2 flex items-center justify-between bg-black/30 p-3 rounded-lg border border-zinc-800">
-                            <span className="text-xs font-medium text-zinc-300">Formulário no site</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} />
-                              <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="space-y-3 pt-3 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Phone size={14} /> Redes Sociais</label>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Facebook (Link completo)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="TikTok (Link completo)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
                         </div>
                       </div>
                     )}
@@ -529,69 +502,67 @@ const App: React.FC = () => {
                 )}
 
                 {activeTab === 'dominio' && generatedHtml && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                     {!currentProjectSlug ? (
-                      <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
-                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
-                        <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">Antes de salvar, precisamos saber se vai usar um domínio oficial (Registro.br).</p>
+                      <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/30">
+                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-3"><Globe size={18}/> Domínio Oficial</h4>
+                        <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
                         <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        <div className="bg-[#121214] p-5 rounded-2xl border border-zinc-800 shadow-xl">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-6 h-6" /></div>
-                            <div><h3 className="font-bold text-white text-sm">Apontamento DNS</h3><p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p></div>
+                      <div className="space-y-5">
+                        <div className="bg-[#121214] p-6 rounded-3xl border border-zinc-800 shadow-xl">
+                          <div className="flex items-center gap-4 mb-6">
+                            <div className="bg-indigo-500/20 p-3 rounded-2xl text-indigo-400"><Globe size={24} /></div>
+                            <div><h3 className="font-bold text-white text-base">Apontamento DNS</h3><p className="text-xs text-zinc-400 mt-1">Configure no Registro.br</p></div>
                           </div>
-                          <div className="bg-black/60 p-4 rounded-xl border border-zinc-800/50 space-y-4">
+                          <div className="bg-black/60 p-4 rounded-2xl border border-zinc-800/50 space-y-4">
                             <div>
-                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
-                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center group"><code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code></div>
+                              <div className="flex justify-between items-center mb-2"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
+                              <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-emerald-400 text-sm font-bold select-all">199.36.158.100</code></div>
                             </div>
                             <div>
-                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
-                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800"><code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
+                              <div className="flex justify-between items-center mb-2"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
+                              <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-indigo-300 text-xs break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
                             </div>
                           </div>
                         </div>
-                        <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
+                        <button onClick={handleDownloadZip} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors"><Download size={18} /> Baixar Código do Site</button>
                       </div>
                     )}
                   </div>
                 )}
                 
                 {loggedUserEmail && (
-                  <div className="pt-6 border-t border-zinc-800 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-zinc-500"/>Meus Projetos</p>
-                      <button onClick={handleLogout} className="text-[10px] font-bold text-zinc-500 hover:text-red-400 transition-colors uppercase px-2 py-1 rounded">Sair</button>
-                    </div>
-                    <div className="max-h-40 overflow-y-auto custom-scrollbar space-y-1.5 pr-1">
+                  <div className="pt-6 border-t border-zinc-800 space-y-4">
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14}/>Meus Projetos</p>
+                    <div className="space-y-2">
                       {savedProjects.length === 0 ? (
-                        <p className="text-xs text-zinc-600 italic text-center py-2">Nenhum projeto ainda.</p>
+                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-4 rounded-xl text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
                       ) : (
                         savedProjects.map((p: any) => (
                           <div key={p.id} className="flex items-stretch gap-1.5 group">
-                            <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-900 hover:bg-zinc-800 rounded-xl p-3 flex justify-between items-center border transition-all ${currentProjectSlug === p.id ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-zinc-800'}`}>
+                            <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-900 hover:bg-zinc-800 rounded-xl p-3 flex justify-between items-center border transition-all ${currentProjectSlug === p.id ? 'border-emerald-500/50 shadow-lg' : 'border-zinc-800'}`}>
                               <div className="flex flex-col truncate pr-2">
                                 <span className="font-bold text-zinc-100 truncate">{p.businessName || 'Sem Nome'}</span>
-                                <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{p.id}.web.app</span>
+                                <span className="text-[9px] text-zinc-500 font-mono mt-1">{p.id}.web.app</span>
                               </div>
                               {p.published && <CheckCircle size={14} className="text-emerald-500 flex-shrink-0" />}
                             </button>
-                            <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-900 hover:bg-red-500 hover:text-white text-zinc-600 rounded-xl border border-zinc-800 hover:border-red-500 flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
+                            <button onClick={() => handleDeleteSite(p.id)} className="w-12 bg-zinc-900 hover:bg-red-500/20 hover:text-red-400 text-zinc-600 border border-zinc-800 rounded-xl flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={16} /></button>
                           </div>
                         ))
                       )}
                     </div>
                   </div>
                 )}
+
               </div>
             </motion.div>
           ) : (
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="fixed bottom-6 left-6 pointer-events-auto w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105">
+            <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]">
               <Settings className="text-white" size={26} />
-            </motion.div>
+            </motion.button>
           )}
         </AnimatePresence>
       </motion.div>
