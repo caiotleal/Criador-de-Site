@@ -295,15 +295,39 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
-    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes} shadow-sm" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
+    // Limpeza de placeholders antigos espalhados na template
+    replaceAll('[[WHATSAPP_BTN]]', '');
+    replaceAll('[[INSTAGRAM_BTN]]', '');
+    replaceAll('[[FACEBOOK_BTN]]', '');
+    replaceAll('[[TIKTOK_BTN]]', '');
+    replaceAll('[[IFOOD_BTN]]', '');
+    replaceAll('[[NOVE_NOVE_BTN]]', '');
+    replaceAll('[[KEETA_BTN]]', '');
 
-    replaceAll('[[WHATSAPP_BTN]]', data.whatsapp ? actionBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-[#25D366] text-white') : '');
-    replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-[#E1306C] text-white') : '');
-    replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-[#1877F2] text-white') : '');
-    replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-[#000000] text-white') : '');
-    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-motorcycle', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-[#EA1D2C] text-white') : '');
-    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-car', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-[#FFC700] text-black') : '');
-    replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-[#FF4B2B] text-white') : '');
+    // NOVA LÓGICA: BOTÕES FLUTUANTES NO CANTO INFERIOR DIREITO DO SITE
+    let floatingHtml = '';
+    const addFloatBtn = (icon: string, href: string, bg: string, color: string, label: string) => {
+      floatingHtml += `<a href="${href}" target="_blank" class="float-btn" style="background-color: ${bg}; color: ${color};" title="${label}"><i class="${icon}"></i></a>`;
+    };
+
+    if (data.whatsapp) addFloatBtn('fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, '#25D366', '#fff', 'WhatsApp');
+    if (data.instagram) addFloatBtn('fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, '#E1306C', '#fff', 'Instagram');
+    if (data.facebook) addFloatBtn('fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, '#1877F2', '#fff', 'Facebook');
+    if (data.tiktok) addFloatBtn('fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, '#000000', '#fff', 'TikTok');
+    if (data.ifood) addFloatBtn('fas fa-motorcycle', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, '#EA1D2C', '#fff', 'iFood');
+    if (data.noveNove) addFloatBtn('fas fa-car', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, '#FFC700', '#000', '99 Food');
+    if (data.keeta) addFloatBtn('fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, '#FF4B2B', '#fff', 'Keeta');
+
+    if (floatingHtml) {
+      const floatStyle = `
+      <style>
+        .floating-actions { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 99999; }
+        .float-btn { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s ease; text-decoration: none; outline: none; }
+        .float-btn:hover { transform: scale(1.1) translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+      </style>`;
+      headInjection += floatStyle;
+      html = html.replace('</body>', `<div class="floating-actions">${floatingHtml}</div></body>`);
+    }
 
     const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
