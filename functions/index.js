@@ -6,6 +6,12 @@ const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
 const crypto = require("crypto");
 const zlib = require("zlib");
+const { onRequest } = require("firebase-functions/v2/https");
+
+// ============================================================================
+// CONFIGURAÇÃO DA STRIPE (COLOQUE SUA CHAVE SECRETA AQUI)
+// ============================================================================
+const stripe = require("stripe")("sk_test_SUA_CHAVE_SECRETA_AQUI");
 
 if (!admin.apps.length) admin.initializeApp();
 
@@ -242,7 +248,7 @@ exports.deleteUserProject = onCall({ cors: true }, async (request) => {
   return { success: true };
 });
 
-// SIMULAÇÃO DO PAGAMENTO: Adiciona 365 dias
+// SIMULAÇÃO DE RENOVAÇÃO MANUAL (Você pode apagar isso depois, pois a Stripe vai fazer automático)
 exports.renewSiteSubscription = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
   const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
@@ -258,11 +264,73 @@ exports.renewSiteSubscription = onCall({ cors: true }, async (request) => {
     expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
     status: "published", 
     paymentStatus: "paid",
-    needsDeploy: true // Força o usuário a clicar em publicar para o site voltar ao ar
+    needsDeploy: true
   });
 
   return { success: true, newExpiration: newExpiration.toISOString() };
 });
+
+
+// ==============================================================================
+// WEBHOOK DA STRIPE (A MÁGICA QUE LIBERA O SITE)
+// ==============================================================================
+exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+  
+  // COLOQUE AQUI A CHAVE WHSEC QUE A STRIPE VAI TE DAR NO PAINEL DE WEBHOOKS
+  const endpointSecret = "whsec_SEU_SEGREDO_WEBHOOK_AQUI"; 
+
+  let event;
+
+  try {
+    // A Stripe exige ler o buffer raw. Se falhar, é porque o Firebase parseou o body.
+    event = stripe.webhooks.constructEvent(req.rawBody || req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error("Erro na assinatura do Webhook:", err.message);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+  // Verifica se o pagamento foi completado com sucesso
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    
+    // Pegamos o ID do projeto que nós enviamos pelo link no App.tsx
+    const projectId = session.client_reference_id; 
+
+    if (projectId) {
+      try {
+        const db = admin.firestore();
+        
+        // Busca o projeto usando o collectionGroup para não precisar do UID do usuário
+        const projectQuery = await db.collectionGroup("projects").where("projectSlug", "==", projectId).get();
+        
+        if (!projectQuery.empty) {
+          const projectRef = projectQuery.docs[0].ref;
+          
+          const newExpiration = new Date();
+          newExpiration.setDate(newExpiration.getDate() + 365); // Adiciona 1 ano de acesso
+
+          await projectRef.update({
+            status: "published", // Retira o site do status de "frozen"
+            paymentStatus: "paid",
+            expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
+            needsDeploy: true // Avisa o sistema que o site precisa ser publicado de novo para ficar visível
+          });
+          
+          console.log(`PAGAMENTO APROVADO! Projeto ${projectId} renovado por 1 ano.`);
+        } else {
+          console.error(`Projeto ${projectId} não encontrado no banco de dados após o pagamento.`);
+        }
+      } catch (error) {
+        console.error(`Erro fatal ao atualizar o projeto ${projectId} no Firebase:`, error);
+      }
+    }
+  }
+
+  res.status(200).send({ received: true });
+});
+
 
 // ==============================================================================
 // CRON JOB DIÁRIO: CONGELAMENTO E EXCLUSÃO
