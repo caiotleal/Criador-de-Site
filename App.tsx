@@ -44,7 +44,16 @@ const PROMO_HTML = `
   <title>SiteCraft - Criação Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
+    /* CSS para ocultar a barra de rolagem no iframe, mantendo o scroll funcionando */
+    html, body { 
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+      background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; 
+    }
+    ::-webkit-scrollbar { 
+      display: none; /* Chrome, Safari and Opera */
+    }
+    
     .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
     .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -122,6 +131,9 @@ const getPreviewHtml = (baseHtml: string | null) => {
   
   const editorScript = `
     <style id="editor-style">
+      html, body { -ms-overflow-style: none; scrollbar-width: none; }
+      ::-webkit-scrollbar { display: none; }
+      
       .custom-editor-toolbar { position: absolute; display: none; background: #18181b; padding: 8px; border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 99999; gap: 8px; align-items: center; font-family: sans-serif; }
       .color-picker-group { display: flex; align-items: center; gap: 4px; background: #27272a; padding: 2px 6px 2px 8px; border-radius: 6px; border: 1px solid #3f3f46; }
       .color-picker-label { color: #a1a1aa; font-size: 10px; font-weight: bold; }
@@ -680,96 +692,4 @@ const App: React.FC = () => {
                             <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
                             <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                           </div>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {activeTab === 'dominio' && generatedHtml && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-                    {!currentProjectSlug ? (
-                      <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
-                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
-                        <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
-                        <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="bg-[#121214] p-5 rounded-2xl border border-zinc-800 shadow-xl">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-6 h-6" /></div>
-                            <div>
-                              <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
-                              <p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p>
-                            </div>
-                          </div>
-                          <div className="bg-black/60 p-4 rounded-xl border border-zinc-800/50 space-y-4">
-                            <div>
-                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
-                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center group"><code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code></div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
-                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800"><code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
-                            </div>
-                          </div>
-                        </div>
-                        <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {loggedUserEmail && (
-                  <div className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
-                      <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2 py-1 rounded">Sair</button>
-                    </div>
-                    
-                    <div className="max-h-52 overflow-y-auto custom-scrollbar space-y-2 pr-1">
-                      {savedProjects.length === 0 ? (
-                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-3 rounded-lg text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
-                      ) : (
-                        savedProjects.map((p: any) => (
-                          <div key={p.id} className="flex flex-col gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-2">
-                            <div className="flex items-stretch gap-1.5 group">
-                              <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-800/50 hover:bg-zinc-800 rounded-lg p-2.5 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-500/50' : ''}`}>
-                                <div className="flex flex-col truncate pr-2">
-                                  <span className="font-bold text-zinc-100 truncate flex items-center gap-2">
-                                    {p.businessName || 'Sem Nome'} 
-                                    {getStatusBadge(p)}
-                                  </span>
-                                  <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{p.id}.web.app</span>
-                                </div>
-                              </button>
-                              <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-800/50 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
-                            </div>
-
-                            {(!p.paymentStatus || p.paymentStatus !== 'paid' || p.status === 'frozen') && (
-                              <button 
-                                onClick={() => handleSimulatePayment(p.id)}
-                                className="w-full mt-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
-                              >
-                                <CreditCard size={12} /> Assinar 1 Ano (R$ 499)
-                              </button>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-export default App;
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-
