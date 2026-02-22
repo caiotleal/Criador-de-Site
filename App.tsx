@@ -35,7 +35,6 @@ const COLORS = [
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
 ];
 
-// LANDING PAGE DE VENDAS INICIAL (Sem Navbar, pois a logo ficará flutuante no React)
 const PROMO_HTML = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -281,7 +280,6 @@ const App: React.FC = () => {
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    // Injeção essencial do FontAwesome
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
     if (data.logoBase64) {
@@ -456,7 +454,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white flex">
+    <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
       
       {/* LEFT SIDE: PREVIEW DO SITE E CONTROLES FLUTUANTES */}
       <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
@@ -555,20 +553,27 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* RIGHT SIDE: SIDEBAR FIXA E ANIMADA */}
+      {/* RIGHT SIDE: CONTAINER ANIMADO QUE EMPURRA O SITE, MAS MANTÉM O CARD FLUTUANTE */}
       <AnimatePresence initial={false}>
         {isMenuOpen && (
           <motion.div 
-            initial={{ width: 0 }} 
-            animate={{ width: 360 }} 
-            exit={{ width: 0 }} 
-            transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
-            className="flex-shrink-0 h-full bg-zinc-900/95 backdrop-blur-xl border-l border-zinc-700 shadow-2xl z-50 overflow-hidden relative"
+            initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
+            animate={{ width: 400, paddingLeft: 16, paddingRight: 24 }} 
+            exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
+            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+            className="flex-shrink-0 h-screen flex flex-col justify-center overflow-hidden relative z-50 bg-[#050505]"
           >
-            <div className="w-[360px] h-full flex flex-col absolute top-0 left-0">
+            {/* O CARD FLUTUANTE ORIGINAL */}
+            <motion.div 
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 20, opacity: 0 }}
+              transition={{ delay: 0.1 }}
+              className="w-full bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]"
+            >
               <div className="flex justify-between items-center px-4 py-4 border-b border-zinc-700 flex-shrink-0">
                 <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações do Site' : 'Novo Projeto'}</h2>
-                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors text-zinc-400 hover:text-white" title="Fechar Menu">
+                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors text-zinc-400 hover:text-white" title="Esconder Painel">
                   <X size={18} />
                 </button>
               </div>
@@ -580,7 +585,7 @@ const App: React.FC = () => {
                 </div>
               )}
 
-              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
+              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-8">
                 
                 {activeTab === 'geral' && (
                   <>
@@ -651,7 +656,7 @@ const App: React.FC = () => {
                         <div className="space-y-3 pt-4 border-t border-zinc-800">
                           <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={14} /> Redes Sociais</label>
                           <div className="grid grid-cols-2 gap-2">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="WhatsApp (só os números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
                             <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                             <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
                             <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
@@ -759,7 +764,7 @@ const App: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
