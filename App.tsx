@@ -35,7 +35,7 @@ const COLORS = [
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
 ];
 
-// LANDING PAGE DE VENDAS INICIAL (Renderizado quando não há site gerado)
+// LANDING PAGE DE VENDAS INICIAL (Sem Navbar, pois a logo ficará flutuante no React)
 const PROMO_HTML = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -53,7 +53,7 @@ const PROMO_HTML = `
   </style>
 </head>
 <body class="antialiased selection:bg-blue-500 selection:text-white">
-  <main class="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
+  <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
 
@@ -281,7 +281,7 @@ const App: React.FC = () => {
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    // Injeção essencial do FontAwesome para garantir que os ícones oficiais das redes sociais funcionem
+    // Injeção essencial do FontAwesome
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
     if (data.logoBase64) {
@@ -456,57 +456,74 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
-      {/* FRAME DO SITE OU LANDING PAGE DE VENDAS */}
-      <div className="absolute inset-0 z-0 bg-[#050505]">
+    <div className="w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white flex">
+      
+      {/* LEFT SIDE: PREVIEW DO SITE E CONTROLES FLUTUANTES */}
+      <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
         <iframe 
           srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
           className="w-full h-full border-none bg-transparent" 
           title="Visão Principal" 
         />
-      </div>
 
-      {/* BARRA SUPERIOR DIREITA (Logo SiteCraft, Login, Salvar e Publicar) */}
-      <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] flex items-center gap-4">
-        
-        {generatedHtml && (
-          <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
-            <button 
-              onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-            >
-              {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
-              <span className="hidden md:inline">{currentProjectSlug ? 'Atualizar' : 'Salvar'}</span>
-            </button>
-
-            <div className="w-px h-6 bg-zinc-700 mx-1"></div>
-
-            <button 
-              onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-            >
-              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={16} />} 
-              <span className="hidden md:inline">Publicar</span>
-            </button>
-          </div>
-        )}
-
-        <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
-          <div className="font-black text-xl tracking-tighter uppercase italic text-white select-none">SiteCraft</div>
-          <div className="w-px h-6 bg-zinc-700"></div>
-          {loggedUserEmail ? (
-            <div className="flex items-center gap-2 text-sm font-medium text-zinc-300 cursor-help" title={`Logado como: ${loggedUserEmail}`}>
-              <User size={18} className="text-emerald-400" />
-              <span className="hidden md:block max-w-[120px] truncate">{loggedUserEmail.split('@')[0]}</span>
-            </div>
-          ) : (
-            <button onClick={() => setIsLoginOpen(true)} className="flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-              <LogIn size={18} />
-              <span className="hidden md:block">Login</span>
-            </button>
-          )}
+        {/* LOGO FIXA (CANTO SUPERIOR ESQUERDO) */}
+        <div className="absolute top-6 left-8 z-[85] font-black text-2xl tracking-tighter uppercase italic text-white drop-shadow-md select-none pointer-events-none">
+          SiteCraft
         </div>
-      </motion.div>
+
+        {/* BARRA DE AÇÕES (CANTO SUPERIOR DIREITO, RELATIVO AO PREVIEW) */}
+        <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute top-6 right-6 z-[85] flex items-center gap-4">
+          
+          {generatedHtml && (
+            <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
+              <button 
+                onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+              >
+                {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
+                <span className="hidden xl:inline">{currentProjectSlug ? 'Atualizar' : 'Salvar'}</span>
+              </button>
+
+              <div className="w-px h-6 bg-zinc-700 mx-1"></div>
+
+              <button 
+                onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+              >
+                {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={16} />} 
+                <span className="hidden xl:inline">Publicar</span>
+              </button>
+            </div>
+          )}
+
+          <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 px-5 py-3 rounded-2xl shadow-2xl flex items-center">
+            {loggedUserEmail ? (
+              <div className="flex items-center gap-2 text-sm font-medium text-zinc-300 cursor-help" title={`Logado como: ${loggedUserEmail}`}>
+                <User size={18} className="text-emerald-400" />
+                <span className="hidden md:block max-w-[120px] truncate">{loggedUserEmail.split('@')[0]}</span>
+              </div>
+            ) : (
+              <button onClick={() => setIsLoginOpen(true)} className="flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
+                <LogIn size={18} />
+                <span>Login</span>
+              </button>
+            )}
+          </div>
+        </motion.div>
+
+        {/* BOTÃO PARA ABRIR O MENU SE ESTIVER FECHADO */}
+        <AnimatePresence>
+          {!isMenuOpen && (
+            <motion.div 
+              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+              onClick={() => setIsMenuOpen(true)} 
+              className="absolute bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
+            >
+              <Settings className="text-white" size={26} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
 
@@ -538,14 +555,22 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* SIDEBAR DO SISTEMA */}
-      <motion.div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <AnimatePresence>
-          {isMenuOpen ? (
-            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -30, opacity: 0 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-              <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-700 flex-shrink-0">
+      {/* RIGHT SIDE: SIDEBAR FIXA E ANIMADA */}
+      <AnimatePresence initial={false}>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ width: 0 }} 
+            animate={{ width: 360 }} 
+            exit={{ width: 0 }} 
+            transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+            className="flex-shrink-0 h-full bg-zinc-900/95 backdrop-blur-xl border-l border-zinc-700 shadow-2xl z-50 overflow-hidden relative"
+          >
+            <div className="w-[360px] h-full flex flex-col absolute top-0 left-0">
+              <div className="flex justify-between items-center px-4 py-4 border-b border-zinc-700 flex-shrink-0">
                 <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações do Site' : 'Novo Projeto'}</h2>
-                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors"><Minimize2 size={18} /></button>
+                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors text-zinc-400 hover:text-white" title="Fechar Menu">
+                  <X size={18} />
+                </button>
               </div>
 
               {generatedHtml && (
@@ -569,7 +594,7 @@ const App: React.FC = () => {
                         {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
                         
                         {/* Tooltip Hover */}
-                        <div className="absolute hidden group-hover:block bottom-full left-0 mb-2 w-full bg-zinc-900 border border-zinc-700 text-zinc-300 text-[10px] p-3 rounded-xl shadow-xl z-10 text-center leading-relaxed">
+                        <div className="absolute hidden group-hover:block top-full left-0 mt-2 w-full bg-zinc-800 border border-zinc-600 text-zinc-200 text-xs p-3 rounded-xl shadow-xl z-50 text-center leading-relaxed">
                           Esta informação mostra se o seu site está no período de teste, ativo ou vencido. Projetos vencidos ficam invisíveis para o público, sendo necessário realizar a assinatura.
                         </div>
                       </div>
@@ -734,12 +759,10 @@ const App: React.FC = () => {
                   </div>
                 )}
               </div>
-            </motion.div>
-          ) : (
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105"><Settings className="text-white" size={26} /></motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
