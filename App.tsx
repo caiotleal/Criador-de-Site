@@ -44,10 +44,8 @@ const PROMO_HTML = `
   <title>SiteCraft - Criação Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Oculta barras de rolagem nativas */
     html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { display: none; }
-    
     .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
     .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -286,6 +284,7 @@ const App: React.FC = () => {
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
+    // 1. Injeta o FontAwesome no site do cliente para garantir que os ícones funcionem perfeitamente.
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
     if (data.logoBase64) {
@@ -295,7 +294,10 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
-    // Limpeza de placeholders antigos espalhados na template
+    // Função original de criação de botões.
+    const actionBtn = (label: string, icon: string, href: string, classes: string) => `<a href="${href}" target="_blank" class="icon-btn ${classes} shadow-sm" title="${label}" aria-label="${label}"><i class="${icon}"></i></a>`;
+
+    // Remove os placeholders antigos de dentro do layout do site (para não ficarem duplicados)
     replaceAll('[[WHATSAPP_BTN]]', '');
     replaceAll('[[INSTAGRAM_BTN]]', '');
     replaceAll('[[FACEBOOK_BTN]]', '');
@@ -304,29 +306,31 @@ const App: React.FC = () => {
     replaceAll('[[NOVE_NOVE_BTN]]', '');
     replaceAll('[[KEETA_BTN]]', '');
 
-    // NOVA LÓGICA: BOTÕES FLUTUANTES NO CANTO INFERIOR DIREITO DO SITE
-    let floatingHtml = '';
-    const addFloatBtn = (icon: string, href: string, bg: string, color: string, label: string) => {
-      floatingHtml += `<a href="${href}" target="_blank" class="float-btn" style="background-color: ${bg}; color: ${color};" title="${label}"><i class="${icon}"></i></a>`;
+    // 2. CRIAÇÃO DOS BOTÕES FLUTUANTES DIRETAMENTE DENTRO DO SITE DO CLIENTE
+    let floatingButtons = '';
+    const addFloatingBtn = (label: string, icon: string, href: string, classes: string) => {
+      floatingButtons += `<a href="${href}" target="_blank" class="${classes}" title="${label}" aria-label="${label}" style="width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;"><i class="${icon}"></i></a>`;
     };
 
-    if (data.whatsapp) addFloatBtn('fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, '#25D366', '#fff', 'WhatsApp');
-    if (data.instagram) addFloatBtn('fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, '#E1306C', '#fff', 'Instagram');
-    if (data.facebook) addFloatBtn('fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, '#1877F2', '#fff', 'Facebook');
-    if (data.tiktok) addFloatBtn('fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, '#000000', '#fff', 'TikTok');
-    if (data.ifood) addFloatBtn('fas fa-motorcycle', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, '#EA1D2C', '#fff', 'iFood');
-    if (data.noveNove) addFloatBtn('fas fa-car', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, '#FFC700', '#000', '99 Food');
-    if (data.keeta) addFloatBtn('fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, '#FF4B2B', '#fff', 'Keeta');
+    if (data.whatsapp) addFloatingBtn('WhatsApp', 'fab fa-whatsapp', `https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, 'bg-[#25D366] text-white');
+    if (data.instagram) addFloatingBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-[#E1306C] text-white');
+    if (data.facebook) addFloatingBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-[#1877F2] text-white');
+    if (data.tiktok) addFloatingBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-[#000000] text-white');
+    if (data.ifood) addFloatingBtn('iFood', 'fas fa-motorcycle', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-[#EA1D2C] text-white');
+    if (data.noveNove) addFloatingBtn('99 Food', 'fas fa-car', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-[#FFC700] text-black');
+    if (data.keeta) addFloatingBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-[#FF4B2B] text-white');
 
-    if (floatingHtml) {
-      const floatStyle = `
-      <style>
-        .floating-actions { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 99999; }
-        .float-btn { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s ease; text-decoration: none; outline: none; }
-        .float-btn:hover { transform: scale(1.1) translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-      </style>`;
-      headInjection += floatStyle;
-      html = html.replace('</body>', `<div class="floating-actions">${floatingHtml}</div></body>`);
+    if (floatingButtons) {
+      const floatingContainer = `
+        <style>
+          .client-floating-bar a:hover { transform: scale(1.1) !important; }
+        </style>
+        <div class="client-floating-bar" style="position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 999999;">
+          ${floatingButtons}
+        </div>
+      `;
+      // Injeta os botões flutuantes no final do body do site do cliente
+      html = html.replace('</body>', `${floatingContainer}</body>`);
     }
 
     const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
@@ -485,7 +489,6 @@ const App: React.FC = () => {
 
   return (
     <>
-      {/* CSS Global Injetado no React para ocultar as barras de rolagem nativas na aplicação inteira */}
       <style>{`
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
@@ -493,7 +496,7 @@ const App: React.FC = () => {
 
       <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
         
-        {/* LEFT SIDE: PREVIEW DO SITE 100% LIMPO */}
+        {/* LEFT SIDE: PREVIEW DO SITE 100% LIMPO (Os ícones vão aparecer AQUI DENTRO no canto inferior direito) */}
         <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
           <iframe 
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
@@ -501,7 +504,6 @@ const App: React.FC = () => {
             title="Visão Principal" 
           />
 
-          {/* BOTÃO PARA ABRIR O MENU SE ESTIVER FECHADO */}
           <AnimatePresence>
             {!isMenuOpen && (
               <motion.div 
@@ -517,7 +519,6 @@ const App: React.FC = () => {
 
         <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
 
-        {/* MODAL DE SUCESSO DE PUBLICAÇÃO */}
         <AnimatePresence>
           {publishModalUrl && (
             <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -545,7 +546,7 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* RIGHT SIDE: CONTAINER ANIMADO COM O CARD FLUTUANTE ARREDONDADO */}
+        {/* RIGHT SIDE: O FORMULÁRIO PARA PREENCHER OS DADOS */}
         <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.div 
@@ -555,7 +556,6 @@ const App: React.FC = () => {
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
               className="flex-shrink-0 h-screen flex flex-col justify-center overflow-hidden relative z-50 bg-[#050505]"
             >
-              {/* O CARD FLUTUANTE (Estilo Premium Arredondado) */}
               <motion.div 
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -563,8 +563,6 @@ const App: React.FC = () => {
                 transition={{ delay: 0.1 }}
                 className="w-full h-[95vh] bg-[#0c0c0e] border border-zinc-800 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative"
               >
-                
-                {/* CABEÇALHO DO CARD (Logo SiteCraft + Login) */}
                 <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-800/50 flex-shrink-0">
                   <div className="font-black text-xl tracking-tighter uppercase italic text-white select-none">
                     SiteCraft
@@ -586,7 +584,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* TABS (Aba Visual e Aba Domínio) */}
                 {generatedHtml && (
                   <div className="flex border-b border-zinc-800/50 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
                     <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Visual & Dados</button>
@@ -594,12 +591,9 @@ const App: React.FC = () => {
                   </div>
                 )}
 
-                {/* ÁREA DE SCROLL INTERNO DO FORMULÁRIO */}
                 <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6">
-                  
                   {activeTab === 'geral' && (
                     <>
-                      {/* STATUS DO PROJETO COM TOOLTIP DE INFO */}
                       {currentProjectSlug && (
                         <div className="group relative flex items-center justify-between bg-zinc-900 p-3.5 rounded-xl border border-zinc-800/80 -mt-2">
                           <div className="flex items-center gap-2 cursor-help">
@@ -607,8 +601,6 @@ const App: React.FC = () => {
                             <span className="text-xs text-zinc-300 font-bold uppercase tracking-wider">Status do Site</span>
                           </div>
                           {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
-                          
-                          {/* Tooltip Hover */}
                           <div className="absolute hidden group-hover:block top-full left-0 mt-2 w-full bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs p-3.5 rounded-xl shadow-xl z-50 text-center leading-relaxed">
                             Esta informação mostra se o seu site está no período de teste, ativo ou vencido. Projetos vencidos ficam invisíveis para o público.
                           </div>
@@ -662,7 +654,6 @@ const App: React.FC = () => {
                             )}
                           </div>
 
-                          {/* REDES SOCIAIS E CONTATO */}
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
                             <div className="grid grid-cols-2 gap-3">
@@ -673,7 +664,6 @@ const App: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* DELIVERY */}
                           <div className="space-y-3 pt-2">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Delivery (Opcional)</label>
                             <div className="grid grid-cols-2 gap-3">
@@ -683,7 +673,6 @@ const App: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* LOCALIZAÇÃO E EMAIL */}
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
                             <div className="grid grid-cols-2 gap-3">
@@ -775,7 +764,6 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* RODAPÉ DO CARD: BOTÕES DE SALVAR E PUBLICAR */}
                 {generatedHtml && (
                   <div className="p-4 border-t border-zinc-800/50 bg-[#0c0c0e] flex items-center gap-3 flex-shrink-0">
                     <button 
