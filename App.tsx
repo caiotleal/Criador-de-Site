@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, User
+  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -21,11 +21,13 @@ const LAYOUT_STYLES = [
 ];
 
 const COLORS = [
+  // DARK MODE
   { id: 'obsidian', name: 'Obsidiana', c1: '#000000', c2: '#0a0a0a', c3: '#171717', c4: '#ffffff', c5: '#d4d4d8', c6: '#a1a1aa', c7: '#71717a', light: '#ffffff', dark: '#000000' },
   { id: 'slate', name: 'Ardósia', c1: '#020617', c2: '#0f172a', c3: '#1e293b', c4: '#3b82f6', c5: '#60a5fa', c6: '#93c5fd', c7: '#bfdbfe', light: '#f8fafc', dark: '#020617' },
   { id: 'forest', name: 'Floresta', c1: '#022c22', c2: '#064e3b', c3: '#065f46', c4: '#10b981', c5: '#34d399', c6: '#6ee7b7', c7: '#a7f3d0', light: '#ecfdf5', dark: '#022c22' },
   { id: 'wine', name: 'Vinho', c1: '#2a0510', c2: '#4c0519', c3: '#881337', c4: '#e11d48', c5: '#f43f5e', c6: '#fb7185', c7: '#fda4af', light: '#fff1f2', dark: '#2a0510' },
   { id: 'amethyst', name: 'Ametista', c1: '#170326', c2: '#2e1045', c3: '#4a1d6e', c4: '#9333ea', c5: '#a855f7', c6: '#c084fc', c7: '#d8b4fe', light: '#faf5ff', dark: '#170326' },
+  // LIGHT MODE
   { id: 'snow', name: 'Neve', c1: '#ffffff', c2: '#f4f4f5', c3: '#e4e4e7', c4: '#09090b', c5: '#27272a', c6: '#3f3f46', c7: '#52525b', light: '#09090b', dark: '#ffffff' },
   { id: 'sky', name: 'Céu Pálido', c1: '#f8fafc', c2: '#f1f5f9', c3: '#e2e8f0', c4: '#1d4ed8', c5: '#2563eb', c6: '#3b82f6', c7: '#60a5fa', light: '#020617', dark: '#ffffff' },
   { id: 'mint', name: 'Menta Suave', c1: '#f0fdf4', c2: '#dcfce7', c3: '#bbf7d0', c4: '#047857', c5: '#059669', c6: '#10b981', c7: '#34d399', light: '#022c22', dark: '#ffffff' },
@@ -33,12 +35,14 @@ const COLORS = [
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
 ];
 
-// O SEU SITE DE VENDAS INICIAL VOLTOU AQUI (100% preservado)
+// LANDING PAGE DE VENDAS INICIAL (Renderizado quando não há site gerado)
 const PROMO_HTML = `
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SiteCraft - Criação Inteligente</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiteCraft - Criação Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
@@ -49,7 +53,7 @@ const PROMO_HTML = `
   </style>
 </head>
 <body class="antialiased selection:bg-blue-500 selection:text-white">
-  <main class="pt-20 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
+  <main class="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
 
@@ -59,7 +63,7 @@ const PROMO_HTML = `
         Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">segundos.</span>
       </h1>
       <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
-        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu e veja a mágica acontecer.
+        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
       </p>
     </div>
 
@@ -72,6 +76,7 @@ const PROMO_HTML = `
         <ul class="space-y-4 text-white/70">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Geração por IA</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Domínio gratuito (.web.app)</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Formulário de Contato</li>
         </ul>
       </div>
 
@@ -84,6 +89,7 @@ const PROMO_HTML = `
         <ul class="space-y-4 text-white/70">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> 365 dias online sem interrupções</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Apontamento de Domínio (.com.br)</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Alta velocidade e segurança Google</li>
         </ul>
       </div>
     </div>
@@ -94,18 +100,27 @@ const PROMO_HTML = `
 
 const cleanHtmlForPublishing = (rawHtml: string | null) => {
   if (!rawHtml) return '';
+  if (!rawHtml.includes('editor-toolbar')) return rawHtml;
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(rawHtml, 'text/html');
   const tb = doc.querySelector('#editor-toolbar'); if (tb) tb.remove();
   const sc = doc.querySelector('#editor-script'); if (sc) sc.remove();
   const st = doc.querySelector('#editor-style'); if (st) st.remove();
-  doc.querySelectorAll('.editable-element').forEach(el => { el.removeAttribute('contenteditable'); el.classList.remove('editable-element'); if (el.getAttribute('class') === '') el.removeAttribute('class'); });
+  
+  doc.querySelectorAll('.editable-element').forEach(el => {
+    el.removeAttribute('contenteditable');
+    el.classList.remove('editable-element');
+    if (el.getAttribute('class') === '') el.removeAttribute('class');
+  });
+  
   return doc.documentElement.outerHTML;
 };
 
 const getPreviewHtml = (baseHtml: string | null) => {
   if (!baseHtml) return '';
   const clean = cleanHtmlForPublishing(baseHtml);
+  
   const editorScript = `
     <style id="editor-style">
       .custom-editor-toolbar { position: absolute; display: none; background: #18181b; padding: 8px; border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 99999; gap: 8px; align-items: center; font-family: sans-serif; }
@@ -133,6 +148,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
         const foreColorPicker = document.getElementById('fore-color-picker');
         const bgColorPicker = document.getElementById('bg-color-picker');
         let currentTarget = null;
+
         function sendCleanHtml() {
           const clone = document.documentElement.cloneNode(true);
           const tb = clone.querySelector('#editor-toolbar'); if (tb) tb.remove();
@@ -141,6 +157,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
           clone.querySelectorAll('.editable-element').forEach(el => { el.removeAttribute('contenteditable'); el.classList.remove('editable-element'); if (el.getAttribute('class') === '') el.removeAttribute('class'); });
           window.parent.postMessage({ type: 'CONTENT_EDITED', html: clone.outerHTML }, '*');
         }
+
         function rgbToHex(rgb) {
           if (!rgb || rgb === 'transparent' || rgb === 'rgba(0, 0, 0, 0)') return '#000000';
           const match = rgb.match(/^rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*(\\d+(?:\\.\\d+)?))?\\)$/);
@@ -148,6 +165,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
           function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
           return "#" + hex(match[1]) + hex(match[2]) + hex(match[3]);
         }
+
         document.querySelectorAll('h1, h2, h3, h4, p, span, a, button, img, .icon-btn').forEach(el => {
           if(toolbar.contains(el)) return; 
           el.setAttribute('contenteditable', 'true');
@@ -162,11 +180,13 @@ const getPreviewHtml = (baseHtml: string | null) => {
             toolbar.style.left = Math.max(10, rect.left + window.scrollX) + 'px';
           });
         });
+
         document.addEventListener('click', (e) => {
           if (toolbar.style.display === 'flex' && !toolbar.contains(e.target) && e.target !== currentTarget) {
              toolbar.style.display = 'none'; sendCleanHtml();
           }
         });
+
         document.getElementById('text-delete').addEventListener('click', () => {
           if (currentTarget) { currentTarget.remove(); toolbar.style.display = 'none'; sendCleanHtml(); }
         });
@@ -261,9 +281,11 @@ const App: React.FC = () => {
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    let headInjection = '';
+    // Injeção essencial do FontAwesome para garantir que os ícones oficiais das redes sociais funcionem
+    let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
+    
     if (data.logoBase64) {
-      headInjection = `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
+      headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 md:h-12 w-auto object-contain transition-transform hover:scale-105" alt="Logo" />`);
     } else {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
@@ -275,8 +297,8 @@ const App: React.FC = () => {
     replaceAll('[[INSTAGRAM_BTN]]', data.instagram ? actionBtn('Instagram', 'fab fa-instagram', `https://instagram.com/${data.instagram.replace('@', '')}`, 'bg-[#E1306C] text-white') : '');
     replaceAll('[[FACEBOOK_BTN]]', data.facebook ? actionBtn('Facebook', 'fab fa-facebook-f', data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, 'bg-[#1877F2] text-white') : '');
     replaceAll('[[TIKTOK_BTN]]', data.tiktok ? actionBtn('TikTok', 'fab fa-tiktok', data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, 'bg-[#000000] text-white') : '');
-    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-bag-shopping', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-[#EA1D2C] text-white') : '');
-    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-motorcycle', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-[#FFC700] text-black') : '');
+    replaceAll('[[IFOOD_BTN]]', data.ifood ? actionBtn('iFood', 'fas fa-motorcycle', data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, 'bg-[#EA1D2C] text-white') : '');
+    replaceAll('[[NOVE_NOVE_BTN]]', data.noveNove ? actionBtn('99 Food', 'fas fa-car', data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, 'bg-[#FFC700] text-black') : '');
     replaceAll('[[KEETA_BTN]]', data.keeta ? actionBtn('Keeta', 'fas fa-store', data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, 'bg-[#FF4B2B] text-white') : '');
 
     const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
@@ -354,8 +376,10 @@ const App: React.FC = () => {
     try {
       const publishFn = httpsCallable(functions, 'publishUserProject');
       const res: any = await publishFn({ targetId: currentProjectSlug });
+      
       let publicUrl = res.data?.publishUrl || `https://${currentProjectSlug}.web.app`;
       if (!publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
+      
       fetchProjects();
       setPublishModalUrl(publicUrl);
     } catch (err: any) { alert('Erro ao publicar: ' + err.message); } 
@@ -368,12 +392,25 @@ const App: React.FC = () => {
       const deleteFn = httpsCallable(functions, 'deleteUserProject');
       await deleteFn({ targetId: projectId });
       alert("Site excluído com sucesso.");
+      
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
         setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) { alert("Erro ao excluir o site."); }
+  };
+
+  const handleSimulatePayment = async (projectId: string) => {
+    if (!window.confirm("Simular pagamento de R$ 499,00 e liberar o site por 1 ano?")) return;
+    try {
+      const payFn = httpsCallable(functions, 'renewSiteSubscription');
+      await payFn({ targetId: projectId });
+      alert("Pagamento confirmado! O site está liberado por mais 365 dias.\nPor favor, clique em PUBLICAR para reativá-lo no ar.");
+      fetchProjects();
+    } catch (error) {
+      alert("Erro ao processar pagamento.");
+    }
   };
 
   const handleLoadProject = (project: any) => {
@@ -406,9 +443,20 @@ const App: React.FC = () => {
     zip.generateAsync({ type: 'blob' }).then(c => saveAs(c, `${formData.businessName || 'site'}.zip`));
   };
 
+  const getStatusBadge = (project: any) => {
+    if (!project) return null;
+    if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">CONGELADO</span>;
+    if (project.expiresAt) {
+      const daysLeft = Math.ceil((new Date(project.expiresAt._seconds * 1000).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+      if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">VENCIDO</span>;
+      if (daysLeft <= 5) return <span className="text-[9px] bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold ml-2">TRIAL ({daysLeft}d)</span>;
+      return <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold ml-2">ATIVO</span>;
+    }
+    return <span className="text-[9px] bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full font-bold ml-2">RASCUNHO</span>;
+  };
+
   return (
     <div className="relative w-full h-screen bg-zinc-950 overflow-hidden font-sans text-white">
-      
       {/* FRAME DO SITE OU LANDING PAGE DE VENDAS */}
       <div className="absolute inset-0 z-0 bg-[#050505]">
         <iframe 
@@ -418,20 +466,47 @@ const App: React.FC = () => {
         />
       </div>
 
-      {/* MENU SUPERIOR ESQUERDO: LOGIN DISCRETO */}
-      <div className="absolute top-4 left-6 z-[85]">
-        {!loggedUserEmail ? (
-          <button onClick={() => setIsLoginOpen(true)} className="px-4 py-2 bg-transparent hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 border border-transparent hover:border-white/10">
-            <User size={14}/> Entrar na Conta
-          </button>
-        ) : (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/5 text-zinc-400 text-xs font-medium shadow-xl">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span className="max-w-[120px] truncate">{loggedUserEmail}</span>
-            <button onClick={handleLogout} className="ml-2 hover:text-red-400 transition-colors p-1" title="Sair"><X size={12}/></button>
+      {/* BARRA SUPERIOR DIREITA (Logo SiteCraft, Login, Salvar e Publicar) */}
+      <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed top-6 right-6 z-[85] flex items-center gap-4">
+        
+        {generatedHtml && (
+          <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-2 rounded-2xl shadow-2xl flex items-center gap-3">
+            <button 
+              onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+            >
+              {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
+              <span className="hidden md:inline">{currentProjectSlug ? 'Atualizar' : 'Salvar'}</span>
+            </button>
+
+            <div className="w-px h-6 bg-zinc-700 mx-1"></div>
+
+            <button 
+              onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+            >
+              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={16} />} 
+              <span className="hidden md:inline">Publicar</span>
+            </button>
           </div>
         )}
-      </div>
+
+        <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
+          <div className="font-black text-xl tracking-tighter uppercase italic text-white select-none">SiteCraft</div>
+          <div className="w-px h-6 bg-zinc-700"></div>
+          {loggedUserEmail ? (
+            <div className="flex items-center gap-2 text-sm font-medium text-zinc-300 cursor-help" title={`Logado como: ${loggedUserEmail}`}>
+              <User size={18} className="text-emerald-400" />
+              <span className="hidden md:block max-w-[120px] truncate">{loggedUserEmail.split('@')[0]}</span>
+            </div>
+          ) : (
+            <button onClick={() => setIsLoginOpen(true)} className="flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
+              <LogIn size={18} />
+              <span className="hidden md:block">Login</span>
+            </button>
+          )}
+        </div>
+      </motion.div>
 
       <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} />
 
@@ -439,10 +514,20 @@ const App: React.FC = () => {
       <AnimatePresence>
         {publishModalUrl && (
           <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="bg-zinc-900 border border-zinc-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6">
-              <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30"><CheckCircle size={40} /></div>
-              <div><h2 className="text-2xl font-bold text-white mb-2">Site Publicado!</h2><p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br, pode demorar algumas horas para propagar.</p></div>
-              <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden"><code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code></div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-zinc-900 border border-zinc-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6"
+            >
+              <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                <CheckCircle size={40} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">Site Publicado com Sucesso!</h2>
+                <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br, pode demorar algumas horas para propagar.</p>
+              </div>
+              <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
+                <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"><Copy size={18} /> Copiar Link</button>
                 <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"><ExternalLink size={18} /> Abrir Site</button>
@@ -453,15 +538,14 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* MENU FLUTUANTE NA DIREITA */}
-      <motion.div className="fixed top-4 bottom-4 right-4 z-[90] flex flex-col items-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      {/* SIDEBAR DO SISTEMA */}
+      <motion.div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <AnimatePresence>
           {isMenuOpen ? (
-            <motion.div initial={{ x: 400, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 400, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full">
-              
-              <div className="flex justify-between items-center px-5 py-4 border-b border-zinc-800 flex-shrink-0">
-                <h2 className="font-bold text-sm tracking-wide text-zinc-200">{generatedHtml ? 'Configurações' : 'Novo Projeto'}</h2>
-                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-800 text-zinc-400 hover:text-white p-1.5 rounded transition-colors"><Minimize2 size={16} /></button>
+            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -30, opacity: 0 }} className="w-[92vw] max-w-[360px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+              <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-700 flex-shrink-0">
+                <h2 className="font-bold text-sm tracking-wide">{generatedHtml ? 'Configurações do Site' : 'Novo Projeto'}</h2>
+                <button onClick={() => setIsMenuOpen(false)} className="hover:bg-zinc-700 p-1.5 rounded transition-colors"><Minimize2 size={18} /></button>
               </div>
 
               {generatedHtml && (
@@ -471,94 +555,103 @@ const App: React.FC = () => {
                 </div>
               )}
 
-              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-6">
+              <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-6 pb-20">
                 
                 {activeTab === 'geral' && (
                   <>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
-                        <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-sm focus:border-emerald-500 transition-colors" placeholder="Ex: Studio Code" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label>
-                        <textarea className="w-full h-20 bg-black/40 border border-zinc-700 rounded-xl p-3 text-sm resize-none focus:border-emerald-500 transition-colors" placeholder="Descreva seus serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
-                      </div>
-                    </div>
-
-                    <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-500/20">
-                      {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={16} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
-                    </button>
-
-                    {/* BOTÕES DE SALVAR E PUBLICAR EMBUTIDOS AQUI, COM OS AVISOS EM HOVER */}
-                    {generatedHtml && (
-                      <div className="grid grid-cols-2 gap-3 pt-2">
-                        <button 
-                          onClick={handleSaveOrUpdateSite} 
-                          disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
-                          title={(!hasUnsavedChanges && currentProjectSlug) ? "Mude alguma cor ou texto para poder salvar novamente." : "Salvar o projeto atual."}
-                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
-                        >
-                          {isSavingProject ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save size={14} />}
-                          {currentProjectSlug ? 'Atualizar' : 'Salvar Site'}
-                        </button>
-                        <button 
-                          onClick={handlePublishSite} 
-                          disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                          title={!currentProjectSlug ? "Salve o projeto primeiro para habilitar a publicação." : (hasUnsavedChanges ? "Salve as edições pendentes antes de publicar." : "Colocar o site no ar!")}
-                          className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-900/50 text-zinc-600 border border-transparent cursor-not-allowed'}`}
-                        >
-                          {isPublishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe size={14} />} Publicar
-                        </button>
+                    {/* STATUS DO PROJETO COM TOOLTIP DE INFO */}
+                    {currentProjectSlug && (
+                      <div className="group relative flex items-center justify-between bg-zinc-800/40 p-3 rounded-xl border border-zinc-700/50 -mt-2">
+                        <div className="flex items-center gap-2 cursor-help">
+                          <Info size={14} className="text-zinc-400" />
+                          <span className="text-xs text-zinc-300 font-bold uppercase tracking-wider">Status do Site</span>
+                        </div>
+                        {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
+                        
+                        {/* Tooltip Hover */}
+                        <div className="absolute hidden group-hover:block bottom-full left-0 mb-2 w-full bg-zinc-900 border border-zinc-700 text-zinc-300 text-[10px] p-3 rounded-xl shadow-xl z-10 text-center leading-relaxed">
+                          Esta informação mostra se o seu site está no período de teste, ativo ou vencido. Projetos vencidos ficam invisíveis para o público, sendo necessário realizar a assinatura.
+                        </div>
                       </div>
                     )}
 
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><Briefcase size={12} /> Nome do Negócio</label>
+                        <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm focus:border-emerald-500" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1"><FileText size={12} /> Ideia Principal</label>
+                        <textarea className="w-full h-16 bg-black/40 border border-zinc-700 rounded-lg p-3 text-sm resize-none focus:border-emerald-500" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
+                      </div>
+                    </div>
+
+                    <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-600 transition-colors shadow-sm">
+                      {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
+                    </button>
+
                     {generatedHtml && (
-                      <div className="pt-6 border-t border-zinc-800 space-y-6">
-                        <div className="space-y-3">
+                      <div className="pt-5 border-t border-zinc-800 space-y-5">
+                        <div className="space-y-2">
                           <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
-                          <select className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm focus:border-emerald-500 outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
+                          <select className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
                             {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                           </select>
                         </div>
-
-                        <div className="space-y-3">
-                          <label className="text-xs font-bold text-zinc-500 uppercase">Cores (Tom sobre Tom)</label>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Cores)</label>
                           <div className="grid grid-cols-5 gap-3">
                             {COLORS.map(c => (
-                              <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-full aspect-square rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-emerald-500 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-2 ring-offset-zinc-900`} title={c.name}>
+                              <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-zinc-400 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-zinc-900`} title={c.name}>
                                 <div className="absolute inset-0" style={{ backgroundColor: c.c1 }} />
+                                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
                               </button>
                             ))}
                           </div>
                         </div>
 
-                        <div className="space-y-3">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between items-center">
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
                             <span>Sua Logomarca (Favicon)</span>
-                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold px-2 py-1 bg-red-500/10 rounded">Remover</button>}
+                            {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
                           </label>
                           {!formData.logoBase64 ? (
-                            <label className="cursor-pointer border-2 border-dashed border-zinc-700 hover:border-emerald-500 bg-zinc-900/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={18} /> Clique para Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
+                            <label className="cursor-pointer border border-dashed border-zinc-600 hover:border-indigo-500 rounded-lg p-3 flex justify-center gap-2 text-xs text-zinc-400 transition-colors"><Upload size={14} /> Fazer Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
                           ) : (
-                            <div className="h-16 bg-zinc-900 border border-zinc-700 rounded-xl flex items-center justify-center overflow-hidden p-2"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
+                            <div className="h-12 bg-zinc-900 border border-zinc-700 rounded-lg flex items-center justify-center overflow-hidden p-1"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
                           )}
                         </div>
 
-                        <div className="space-y-4 pt-4 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 items-center"><MapPin size={14} className="text-emerald-500" /> Contato e Localização</label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                        {/* REDES SOCIAIS E CONTATO */}
+                        <div className="space-y-3 pt-4 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Globe size={14} /> Redes Sociais</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="WhatsApp (só os números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
                           </div>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
                         </div>
 
-                        <div className="space-y-4 pt-4 border-t border-zinc-800">
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 items-center"><Phone size={14} className="text-emerald-500" /> Redes Sociais</label>
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="WhatsApp (Apenas números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                          <input className="w-full bg-black/40 border border-zinc-700 rounded-xl p-3 text-xs focus:border-emerald-500" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                        {/* DELIVERY */}
+                        <div className="space-y-3 pt-3">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><Zap size={14} /> Delivery (Opcional)</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="col-span-2 w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                          </div>
+                        </div>
+
+                        {/* LOCALIZAÇÃO E EMAIL */}
+                        <div className="space-y-3 pt-4 border-t border-zinc-800">
+                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1"><MapPin size={14} /> Contato e Localização</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                          </div>
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <input className="w-full bg-black/40 border border-zinc-700 rounded-lg p-2.5 text-xs focus:border-emerald-500" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
                         </div>
                       </div>
                     )}
@@ -566,60 +659,74 @@ const App: React.FC = () => {
                 )}
 
                 {activeTab === 'dominio' && generatedHtml && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                     {!currentProjectSlug ? (
-                      <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/30">
-                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-3"><Globe size={18}/> Domínio Oficial</h4>
-                        <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
+                      <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                        <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
+                        <p className="text-xs text-indigo-200/80 mb-4 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
                         <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
                       </div>
                     ) : (
-                      <div className="space-y-5">
-                        <div className="bg-[#121214] p-6 rounded-3xl border border-zinc-800 shadow-xl">
-                          <div className="flex items-center gap-4 mb-6">
-                            <div className="bg-indigo-500/20 p-3 rounded-2xl text-indigo-400"><Globe size={24} /></div>
-                            <div><h3 className="font-bold text-white text-base">Apontamento DNS</h3><p className="text-xs text-zinc-400 mt-1">Configure no Registro.br</p></div>
-                          </div>
-                          <div className="bg-black/60 p-4 rounded-2xl border border-zinc-800/50 space-y-4">
+                      <div className="space-y-4">
+                        <div className="bg-[#121214] p-5 rounded-2xl border border-zinc-800 shadow-xl">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-6 h-6" /></div>
                             <div>
-                              <div className="flex justify-between items-center mb-2"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
-                              <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-emerald-400 text-sm font-bold select-all">199.36.158.100</code></div>
+                              <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
+                              <p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p>
+                            </div>
+                          </div>
+                          <div className="bg-black/60 p-4 rounded-xl border border-zinc-800/50 space-y-4">
+                            <div>
+                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
+                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center group"><code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code></div>
                             </div>
                             <div>
-                              <div className="flex justify-between items-center mb-2"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
-                              <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-indigo-300 text-xs break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
+                              <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
+                              <div className="bg-zinc-900 p-2.5 rounded-lg border border-zinc-800"><code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
                             </div>
                           </div>
                         </div>
-                        <button onClick={handleDownloadZip} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors"><Download size={18} /> Baixar Código do Site</button>
+                        <button onClick={handleDownloadZip} className="w-full border border-zinc-700 hover:bg-zinc-800 text-zinc-300 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
                       </div>
                     )}
                   </div>
                 )}
                 
                 {loggedUserEmail && (
-                  <div className="pt-6 border-t border-zinc-800 space-y-4 pb-12">
+                  <div className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14}/>Meus Projetos</p>
+                      <p className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
+                      <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2 py-1 rounded">Sair</button>
                     </div>
                     
-                    <div className="space-y-2">
+                    <div className="max-h-52 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                       {savedProjects.length === 0 ? (
-                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-4 rounded-xl text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
+                        <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-3 rounded-lg text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
                       ) : (
                         savedProjects.map((p: any) => (
-                          <div key={p.id} className="flex flex-col gap-1 bg-zinc-900/50 border border-zinc-800 rounded-xl p-2 group hover:bg-zinc-900 transition-colors">
-                            <div className="flex items-stretch gap-1.5">
-                              <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs rounded-lg p-2.5 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-500/50 bg-emerald-500/5' : ''}`}>
+                          <div key={p.id} className="flex flex-col gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-2">
+                            <div className="flex items-stretch gap-1.5 group">
+                              <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-800/50 hover:bg-zinc-800 rounded-lg p-2.5 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-500/50' : ''}`}>
                                 <div className="flex flex-col truncate pr-2">
                                   <span className="font-bold text-zinc-100 truncate flex items-center gap-2">
                                     {p.businessName || 'Sem Nome'} 
+                                    {getStatusBadge(p)}
                                   </span>
-                                  <span className="text-[9px] text-zinc-500 font-mono mt-1">{p.id}.web.app</span>
+                                  <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{p.id}.web.app</span>
                                 </div>
                               </button>
-                              <button onClick={() => handleDeleteSite(p.id)} className="w-10 hover:bg-red-500/20 hover:text-red-400 text-zinc-600 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={16} /></button>
+                              <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-800/50 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
                             </div>
+
+                            {(!p.paymentStatus || p.paymentStatus !== 'paid' || p.status === 'frozen') && (
+                              <button 
+                                onClick={() => handleSimulatePayment(p.id)}
+                                className="w-full mt-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                              >
+                                <CreditCard size={12} /> Assinar 1 Ano (R$ 499)
+                              </button>
+                            )}
                           </div>
                         ))
                       )}
@@ -629,13 +736,10 @@ const App: React.FC = () => {
               </div>
             </motion.div>
           ) : (
-            <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]">
-              <Settings className="text-white" size={26} />
-            </motion.button>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setIsMenuOpen(true)} className="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105"><Settings className="text-white" size={26} /></motion.div>
           )}
         </AnimatePresence>
       </motion.div>
-
     </div>
   );
 };
