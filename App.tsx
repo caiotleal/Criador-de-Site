@@ -430,13 +430,31 @@ const App: React.FC = () => {
     } catch (error) { alert("Erro ao excluir o site."); }
   };
 
-  // Redireciona para o Checkout da Stripe com seu Link de Teste
+  // ------------------------------------------------------------------
+  // CHECKOUT STRIPE VIA POP-UP
+  // Abre a tela de pagamento em uma janela flutuante elegante
+  // ------------------------------------------------------------------
   const handleStripeCheckout = (projectId: string) => {
     setCheckoutLoading(projectId);
+    
     const stripePaymentLink = "https://buy.stripe.com/test_00w7sMfzDdJ8diU04I4wM00";
-    window.location.href = `${stripePaymentLink}?client_reference_id=${projectId}`;
+    const checkoutUrl = `${stripePaymentLink}?client_reference_id=${projectId}`;
+    
+    // Configurações do pop-up para ficar centralizado na tela
+    const width = 500;
+    const height = 700;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    window.open(
+      checkoutUrl, 
+      'StripeCheckout', 
+      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes,status=no,location=no,toolbar=no,menubar=no`
+    );
+    
     setCheckoutLoading(null);
   };
+  // ------------------------------------------------------------------
 
   const handleLoadProject = (project: any) => {
     if (!project) return;
@@ -539,7 +557,6 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* RIGHT SIDE: CONTAINER ANIMADO COM O CARD FLUTUANTE ARREDONDADO */}
         <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.div 
@@ -556,8 +573,6 @@ const App: React.FC = () => {
                 transition={{ delay: 0.1 }}
                 className="w-full h-[95vh] bg-[#0c0c0e] border border-zinc-800 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative"
               >
-                
-                {/* CABEÇALHO DO CARD */}
                 <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-800/50 flex-shrink-0">
                   <div className="font-black text-xl tracking-tighter uppercase italic text-white select-none">
                     SiteCraft
@@ -579,7 +594,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* TABS */}
                 {generatedHtml && (
                   <div className="flex border-b border-zinc-800/50 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
                     <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Visual & Dados</button>
@@ -587,12 +601,9 @@ const App: React.FC = () => {
                   </div>
                 )}
 
-                {/* ÁREA DE SCROLL INTERNO DO FORMULÁRIO */}
                 <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6">
-                  
                   {activeTab === 'geral' && (
                     <>
-                      {/* STATUS DO PROJETO COM TOOLTIP DE INFO */}
                       {currentProjectSlug && (
                         <div className="group relative flex items-center justify-between bg-zinc-900 p-3.5 rounded-xl border border-zinc-800/80 -mt-2">
                           <div className="flex items-center gap-2 cursor-help">
@@ -653,7 +664,6 @@ const App: React.FC = () => {
                             )}
                           </div>
 
-                          {/* REDES SOCIAIS E CONTATO */}
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
                             <div className="grid grid-cols-2 gap-3">
@@ -664,7 +674,6 @@ const App: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* DELIVERY */}
                           <div className="space-y-3 pt-2">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Delivery (Opcional)</label>
                             <div className="grid grid-cols-2 gap-3">
@@ -674,7 +683,6 @@ const App: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* LOCALIZAÇÃO E EMAIL */}
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
                             <div className="grid grid-cols-2 gap-3">
@@ -757,7 +765,7 @@ const App: React.FC = () => {
                                   className="w-full mt-1 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {checkoutLoading === p.id ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />} 
-                                  {checkoutLoading === p.id ? 'Redirecionando...' : 'Assinar 1 Ano (R$ 499)'}
+                                  {checkoutLoading === p.id ? 'Abrindo Checkout...' : 'Assinar 1 Ano (R$ 499)'}
                                 </button>
                               )}
                             </div>
@@ -768,7 +776,6 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* RODAPÉ DO CARD: BOTÕES DE SALVAR E PUBLICAR */}
                 {generatedHtml && (
                   <div className="p-4 border-t border-zinc-800/50 bg-[#0c0c0e] flex items-center gap-3 flex-shrink-0">
                     <button 
