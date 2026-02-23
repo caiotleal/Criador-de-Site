@@ -148,20 +148,33 @@ exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
 
 exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (request) => {
   const uid = ensureAuthed(request);
-  const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
+  const { businessName, internalDomain, generatedHtml, formData, aiContent } = request.data;
   const projectSlug = internalDomain; 
-
-  const hosting = await createHostingSiteIfPossible(projectSlug);
-  await configureSiteRetention(projectSlug);
-
   const now = admin.firestore.FieldValue.serverTimestamp();
-  await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
-    uid, businessName, projectSlug, hostingSiteId: projectSlug, internalDomain,
-    officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
-    hosting, autoDeploy: true, needsDeploy: true, updatedAt: now, createdAt: now, status: "draft"
+  
+  const projectRef = admin.firestore()
+    .collection("users")
+    .doc(uid)
+    .collection("projects")
+    .doc(projectSlug);
+
+  // Aqui o Firebase cria o documento e já injeta o campo novo automaticamente
+  await projectRef.set({
+    uid: uid,
+    businessName,
+    projectSlug,
+    hostingSiteId: projectSlug,
+    internalDomain,
+    generatedHtml,
+    formData: formData || {},
+    aiContent: aiContent || {},
+    status: "draft", 
+    paymentStatus: "pending", // <-- O SITE JÁ NASCE COM O CAMPO AQUI
+    updatedAt: now,
+    createdAt: now
   }, { merge: true });
 
-  return { success: true, projectSlug, hostingSiteId: projectSlug };
+  return { success: true, projectSlug };
 });
 
 exports.updateSiteProject = onCall({ cors: true }, async (request) => {
