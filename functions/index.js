@@ -9,7 +9,7 @@ const zlib = require("zlib");
 const { onRequest } = require("firebase-functions/v2/https");
 
 // ============================================================================
-// CONFIGURAÇÃO DA STRIPE (CHAVE SK_TEST)
+// CONFIGURAÇÃO DA STRIPE
 // ============================================================================
 const stripe = require("stripe")("sk_test_51T3iV5LK0sp6cEMAbpSV1cM4MGESQ9s3EOffFfpUuiU0cbinuy64HCekpoyfAuWZy1gemNFcSpgF1cKPgHDM3pf500vcGP7tGW");
 
@@ -79,7 +79,6 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ config: { rewrites: [{ glob: "**", path: "/index.html" }] } }),
   });
-  if (!createVersion.ok) throw new Error(`Falha criar versão: ${await createVersion.text()}`);
   const version = await createVersion.json();
   const versionName = version.name;
 
@@ -87,15 +86,13 @@ async function deployHtmlToFirebaseHosting(siteId, htmlContent) {
     method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ files: { "/index.html": fileHash } }),
   });
-  if (!populate.ok) throw new Error(`Falha populate: ${await populate.text()}`);
   const populateData = await populate.json();
 
   if ((populateData.uploadRequiredHashes || []).includes(fileHash)) {
-    const up = await fetch(`${populateData.uploadUrl}/${fileHash}`, {
+    await fetch(`${populateData.uploadUrl}/${fileHash}`, {
       method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/octet-stream", "Content-Length": gzippedContent.length.toString() },
       body: gzippedContent,
     });
-    if (!up.ok) throw new Error(`Falha upload: ${await up.text()}`);
   }
 
   await fetch(`https://firebasehosting.googleapis.com/v1beta1/${versionName}?updateMask=status`, {
@@ -117,127 +114,64 @@ async function ensureHostingReady(siteId) {
     await configureSiteRetention(siteId);
     return existingOrNew;
   }
-  throw new HttpsError("failed-precondition", existingOrNew?.message || "Falha ao preparar o Firebase Hosting.");
+  throw new HttpsError("failed-precondition", existingOrNew?.message || "Falha Hosting.");
 }
 
+// ============================================================================
+// FUNÇÕES DE IA E PROJETOS
+// ============================================================================
 exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB", secrets: [geminiKey] }, async (request) => {
   const genAI = getGeminiClient();
   const { businessName, description } = request.data;
-  if (!businessName) throw new HttpsError("invalid-argument", "Nome obrigatório");
-
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
-
-  const prompt = `Atue como um redator publicitário sênior e revisor ortográfico. Empresa: "${businessName}". Descrição: "${description}". Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall. REGRAS: 1. Corrija ortografia. 2. Primeira letra maiúscula e restante minúsculo. NÃO use caixa alta em tudo. 3. Textos persuasivos.`;
-
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", generationConfig: { responseMimeType: "application/json" } });
+  const prompt = `Atue como redator. Empresa: "${businessName}". Descrição: "${description}". Gere JSON com: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall.`;
   try {
     const result = await model.generateContent(prompt);
-    return JSON.parse(result.response.text().replace(/```json/g, "").replace(/```/g, "").replace(/\\n/g, "").trim());
+    return JSON.parse(result.response.text().replace(/```json/g, "").replace(/```/g, "").trim());
   } catch (error) { throw new HttpsError("internal", error.message); }
-});
-
-exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
-  const { desiredDomain } = request.data || {};
-  const cleanDomain = slugify(desiredDomain).slice(0, 30);
-  const snap = await admin.firestore().collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
-  if (!snap.empty) return { available: false, cleanDomain, message: "Já em uso." };
-  return { available: true, cleanDomain };
 });
 
 exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (request) => {
   const uid = ensureAuthed(request);
-  const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
+  const { businessName, internalDomain, generatedHtml, formData, aiContent } = request.data;
   const projectSlug = internalDomain; 
 
-  const hosting = await createHostingSiteIfPossible(projectSlug);
-  await configureSiteRetention(projectSlug);
-
+  await createHostingSiteIfPossible(projectSlug);
   const now = admin.firestore.FieldValue.serverTimestamp();
+  
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
     uid, businessName, projectSlug, hostingSiteId: projectSlug, internalDomain,
-    officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
-    hosting, autoDeploy: true, needsDeploy: true, updatedAt: now, createdAt: now, status: "draft"
+    generatedHtml, formData: formData || {}, aiContent: aiContent || {},
+    status: "trial", updatedAt: now, createdAt: now
   }, { merge: true });
 
-  return { success: true, projectSlug, hostingSiteId: projectSlug };
-});
-
-exports.updateSiteProject = onCall({ cors: true }, async (request) => {
-  const uid = ensureAuthed(request);
-  const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
-  const { html, formData, aiContent } = request.data;
-  
-  await admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId).update({
-    generatedHtml: html, ...(formData && { formData }), ...(aiContent && { aiContent }),
-    needsDeploy: true, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  return { success: true };
-});
-
-exports.listUserProjects = onCall({ cors: true }, async (request) => {
-  const uid = ensureAuthed(request);
-  const snap = await admin.firestore().collection("users").doc(uid).collection("projects").orderBy("updatedAt", "desc").get();
-  return { projects: snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) };
+  return { success: true, projectSlug };
 });
 
 exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "512MiB" }, async (request) => {
-  try {
-    const uid = ensureAuthed(request);
-    const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
-    if (!targetId) throw new HttpsError("invalid-argument", "ID obrigatório.");
-
-    const db = admin.firestore();
-    const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
-    const snap = await ref.get();
-    
-    if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
-    const project = snap.data();
-
-    const hostingProvision = await ensureHostingReady(project.hostingSiteId);
-    const deployResult = await deployHtmlToFirebaseHosting(project.hostingSiteId, project.generatedHtml);
-    const publicUrl = hostingProvision.defaultUrl || `https://${project.hostingSiteId}.web.app`;
-
-    let expiresAt = project.expiresAt ? project.expiresAt.toDate() : null;
-    if (!expiresAt) {
-      expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 5); 
-    }
-
-    await ref.set({
-      published: true, publishUrl: publicUrl, publishedAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-      status: "published", needsDeploy: false, lastDeploy: deployResult,
-      hosting: { ...(project.hosting || {}), ...hostingProvision },
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-
-    return { success: true, publishUrl: publicUrl, expiresAt: expiresAt.toISOString() };
-  } catch (error) { throw new HttpsError("internal", error.message); }
-});
-
-exports.deleteUserProject = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
-  const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
+  const targetId = request.data.targetId;
   const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
   const snap = await ref.get();
+  const project = snap.data();
 
-  if (snap.exists) {
-    const siteId = snap.data().hostingSiteId;
-    if (siteId) {
-      try {
-        const projectIdEnv = getProjectId();
-        const token = await getFirebaseAccessToken();
-        await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${siteId}`, {
-          method: "DELETE", headers: { Authorization: `Bearer ${token}` }
-        });
-      } catch (e) {}
-    }
-    await ref.delete();
-  }
-  return { success: true };
+  const hostingProvision = await ensureHostingReady(project.hostingSiteId);
+  await deployHtmlToFirebaseHosting(project.hostingSiteId, project.generatedHtml);
+  
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 5); 
+
+  await ref.update({
+    published: true, status: "published",
+    expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return { success: true, url: hostingProvision.defaultUrl };
 });
 
 // ==============================================================================
-// WEBHOOK DA STRIPE (VERSÃO SEM ERRO DE ÍNDICE)
+// WEBHOOK DA STRIPE (O QUE ATIVA O SITE NO SEU BANCO)
 // ==============================================================================
 exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   const sig = req.headers["stripe-signature"];
@@ -247,7 +181,6 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(req.rawBody || req.body, sig, endpointSecret);
   } catch (err) {
-    console.error("Erro na assinatura:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -258,57 +191,30 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
     if (projectId) {
       try {
         const db = admin.firestore();
+        // Busca em todos os usuários para achar o projeto na subcoleção 'projects'
         const usersSnap = await db.collection("users").get();
-        let foundRef = null;
+        let found = false;
 
-        // BUSCA SEGURA SEM DEPENDER DE ÍNDICE COMPOSTO
         for (const userDoc of usersSnap.docs) {
-          const pDoc = await db.collection("users").doc(userDoc.id).collection("projects").doc(projectId).get();
+          const projectRef = db.collection("users").doc(userDoc.id).collection("projects").doc(projectId);
+          const pDoc = await projectRef.get();
+          
           if (pDoc.exists) {
-            foundRef = pDoc.ref;
+            const newExpiration = new Date();
+            newExpiration.setDate(newExpiration.getDate() + 365);
+            await projectRef.update({
+              status: "published",
+              paymentStatus: "paid",
+              expiresAt: admin.firestore.Timestamp.fromDate(newExpiration)
+            });
+            console.log(`PROJETO ${projectId} ATIVADO COM SUCESSO.`);
+            found = true;
             break;
           }
         }
-        
-        if (foundRef) {
-          const newExpiration = new Date();
-          newExpiration.setDate(newExpiration.getDate() + 365);
-          await foundRef.update({
-            status: "published",
-            paymentStatus: "paid",
-            expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
-            needsDeploy: true
-          });
-          console.log(`PAGAMENTO OK: Projeto ${projectId} liberado.`);
-        }
-      } catch (error) { console.error(`Erro ao atualizar banco:`, error); }
+        if (!found) console.error(`Projeto ${projectId} não localizado.`);
+      } catch (error) { console.error("Erro no Firestore:", error); }
     }
   }
   res.status(200).send({ received: true });
-});
-
-// ==============================================================================
-// CRON JOB DIÁRIO
-// ==============================================================================
-exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
-  const db = admin.firestore();
-  const now = admin.firestore.Timestamp.now();
-  const token = await getFirebaseAccessToken();
-  const projectIdEnv = getProjectId();
-  
-  const usersSnap = await db.collection("users").get();
-  for (const userDoc of usersSnap.docs) {
-    const projectsSnap = await db.collection("users").doc(userDoc.id).collection("projects").where("expiresAt", "<=", now).get();
-    for (const doc of projectsSnap.docs) {
-      const data = doc.data();
-      if (data.status !== "frozen") {
-        try {
-          await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${data.hostingSiteId}`, {
-            method: "DELETE", headers: { Authorization: `Bearer ${token}` }
-          });
-        } catch (e) {}
-        await doc.ref.update({ status: "frozen", published: false });
-      }
-    }
-  }
 });
