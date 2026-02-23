@@ -153,10 +153,18 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
   const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
   const projectSlug = internalDomain; 
 
+  // 1. A CORREÇÃO: Garante que o documento do usuário seja real (não-fantasma)
+  await admin.firestore().collection("users").doc(uid).set({
+    activeUser: true,
+    uid: uid
+  }, { merge: true });
+
   const hosting = await createHostingSiteIfPossible(projectSlug);
   await configureSiteRetention(projectSlug);
 
   const now = admin.firestore.FieldValue.serverTimestamp();
+  
+  // 2. Salva o projeto normalmente na subcoleção
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
     uid, businessName, projectSlug, hostingSiteId: projectSlug, internalDomain,
     officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
@@ -166,7 +174,6 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
 
   return { success: true, projectSlug, hostingSiteId: projectSlug };
 });
-
 exports.updateSiteProject = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
   const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
