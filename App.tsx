@@ -198,7 +198,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
         document.getElementById('text-size').addEventListener('change', (e) => { document.execCommand('fontSize', false, e.target.value); sendCleanHtml(); });
         document.getElementById('text-font').addEventListener('change', (e) => { document.execCommand('fontName', false, e.target.value); sendCleanHtml(); });
       });
-    <\/script>
+    </script>
   `;
   return clean.replace(/<\/body>/i, `${editorScript}</body>`);
 };
@@ -213,7 +213,7 @@ const App: React.FC = () => {
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
   
-  const [activeTab, setActiveTab] = useState<'geral' | 'dominio'>('geral');
+  const [activeTab, setActiveTab] = useState<'geral' | 'dominio' | 'assinatura'>('geral');
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -286,7 +286,6 @@ const App: React.FC = () => {
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    // Injeção essencial do FontAwesome para garantir que os ícones funcionem
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
     if (data.logoBase64) {
@@ -296,7 +295,6 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
-    // Remove os placeholders antigos de botões soltos na template
     replaceAll('[[WHATSAPP_BTN]]', '');
     replaceAll('[[INSTAGRAM_BTN]]', '');
     replaceAll('[[FACEBOOK_BTN]]', '');
@@ -305,7 +303,6 @@ const App: React.FC = () => {
     replaceAll('[[NOVE_NOVE_BTN]]', '');
     replaceAll('[[KEETA_BTN]]', '');
 
-    // Criação dos botões flutuantes empilhados no canto inferior direito DO SITE GERADO
     let floatingHtml = '';
     const addFloatBtn = (icon: string, href: string, bg: string, color: string, label: string) => {
       floatingHtml += `<a href="${href}" target="_blank" class="float-btn" style="background-color: ${bg}; color: ${color};" title="${label}"><i class="${icon}"></i></a>`;
@@ -383,7 +380,8 @@ const App: React.FC = () => {
         const updateFn = httpsCallable(functions, 'updateSiteProject');
         await updateFn({ targetId: currentProjectSlug, html: htmlToSave, formData, aiContent });
       } else {
-        const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, '-');
+        // Blindagem do Regex: Sem risco de hifens duplos
+        const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
         const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
         const saveFn = httpsCallable(functions, 'saveSiteProject');
         const res: any = await saveFn({
@@ -431,8 +429,7 @@ const App: React.FC = () => {
   };
 
   // ------------------------------------------------------------------
-  // CHECKOUT STRIPE VIA POP-UP
-  // Abre a tela de pagamento em uma janela flutuante elegante
+  // CHECKOUT STRIPE VIA POP-UP (COM RASTREADOR DE ENVIO)
   // ------------------------------------------------------------------
   const handleStripeCheckout = (projectId: string) => {
     setCheckoutLoading(projectId);
@@ -440,7 +437,10 @@ const App: React.FC = () => {
     const stripePaymentLink = "https://buy.stripe.com/test_00w7sMfzDdJ8diU04I4wM00";
     const checkoutUrl = `${stripePaymentLink}?client_reference_id=${projectId}`;
     
-    // Configurações do pop-up para ficar centralizado na tela
+    console.log("🚀 [FRONT-END] Iniciando Checkout da Stripe...");
+    console.log("➡️ ID do Projeto Original:", projectId);
+    console.log("🔗 URL Exata do Checkout:", checkoutUrl);
+    
     const width = 500;
     const height = 700;
     const left = window.screenX + (window.outerWidth - width) / 2;
@@ -488,12 +488,19 @@ const App: React.FC = () => {
 
   const getStatusBadge = (project: any) => {
     if (!project) return null;
-    if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">CONGELADO</span>;
+    if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">CONGELADO</span>;
+    
     if (project.expiresAt) {
-      const daysLeft = Math.ceil((new Date(project.expiresAt._seconds * 1000).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-      if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2">VENCIDO</span>;
-      if (daysLeft <= 5) return <span className="text-[9px] bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold ml-2">TRIAL ({daysLeft}d)</span>;
-      return <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold ml-2">ATIVO</span>;
+      const expirationDate = project.expiresAt._seconds ? project.expiresAt._seconds * 1000 : project.expiresAt.seconds * 1000;
+      const daysLeft = Math.ceil((new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+      
+      if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">VENCIDO</span>;
+      
+      if (project.paymentStatus === 'paid') {
+        return <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-emerald-500/30" title="Plano Anual Ativo">ATIVO ({daysLeft} dias restantes)</span>;
+      } else {
+        return <span className="text-[9px] bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold ml-2 border border-yellow-500/30 animate-pulse" title="Período de Teste">TRIAL ({daysLeft} dias restantes)</span>;
+      }
     }
     return <span className="text-[9px] bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full font-bold ml-2">RASCUNHO</span>;
   };
@@ -597,7 +604,20 @@ const App: React.FC = () => {
                 {generatedHtml && (
                   <div className="flex border-b border-zinc-800/50 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
                     <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Visual & Dados</button>
-                    <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Domínio Oficial</button>
+                    
+                    <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                      Domínio
+                      {(!officialDomain || officialDomain === 'Pendente' || registerLater) && (
+                        <span className="absolute top-3 right-4 flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                      )}
+                    </button>
+
+                    {currentProjectSlug && (
+                      <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'assinatura' ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Pagamento</button>
+                    )}
                   </div>
                 )}
 
@@ -731,6 +751,61 @@ const App: React.FC = () => {
                       )}
                     </div>
                   )}
+
+                  {activeTab === 'assinatura' && currentProjectSlug && (
+                    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+                      
+                      <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+                        
+                        <h3 className="text-lg font-black text-white mb-1 flex items-center gap-2"><CreditCard size={18} className="text-amber-400" /> Painel de Assinatura</h3>
+                        <p className="text-xs text-zinc-400 mb-6">Gerencie o plano do seu projeto <span className="text-amber-400 font-mono">{currentProjectSlug}</span></p>
+
+                        <div className="bg-[#050505] p-5 rounded-xl border border-zinc-800/50 mb-6">
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-xs font-bold text-zinc-500 uppercase">Status Atual</span>
+                            {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
+                          </div>
+                          <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-amber-400 h-full rounded-full" style={{ width: '100%' }}></div>
+                          </div>
+                        </div>
+
+                        {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
+                          <div className="space-y-4">
+                            <div className="flex items-end gap-2">
+                              <span className="text-4xl font-black text-white">R$ 499</span>
+                              <span className="text-sm text-zinc-500 font-medium pb-1">/ 1º ano</span>
+                            </div>
+                            <ul className="space-y-2 text-xs text-zinc-300 mb-4">
+                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Domínio próprio liberado</li>
+                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Site blindado no Google</li>
+                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Suporte e renovação garantida</li>
+                            </ul>
+                            
+                            <button 
+                              onClick={() => handleStripeCheckout(currentProjectSlug)}
+                              disabled={checkoutLoading === currentProjectSlug}
+                              className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3.5 rounded-xl font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-lg shadow-amber-500/20"
+                            >
+                              {checkoutLoading === currentProjectSlug ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />} 
+                              {checkoutLoading === currentProjectSlug ? 'Iniciando Seguro...' : 'Ativar Plano Anual Seguro'}
+                            </button>
+                            <p className="text-[9px] text-center text-zinc-500 mt-3 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamento criptografado via Stripe</p>
+                          </div>
+                        ) : (
+                          <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-xl text-center space-y-3">
+                            <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                              <Star size={24} />
+                            </div>
+                            <h4 className="font-bold text-emerald-400">Plano Anual Ativado!</h4>
+                            <p className="text-xs text-emerald-200/70">O seu site está online, seguro e com todas as funções desbloqueadas. Nenhuma ação necessária.</p>
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+                  )}
                   
                   {loggedUserEmail && (
                     <div className="mt-8 border-t border-zinc-800/50 pt-6 space-y-4">
@@ -757,17 +832,6 @@ const App: React.FC = () => {
                                 </button>
                                 <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-800/50 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
                               </div>
-
-                              {(!p.paymentStatus || p.paymentStatus !== 'paid' || p.status === 'frozen') && (
-                                <button 
-                                  onClick={() => handleStripeCheckout(p.id)}
-                                  disabled={checkoutLoading === p.id}
-                                  className="w-full mt-1 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {checkoutLoading === p.id ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />} 
-                                  {checkoutLoading === p.id ? 'Abrindo Checkout...' : 'Assinar 1 Ano (R$ 499)'}
-                                </button>
-                              )}
                             </div>
                           ))
                         )}
