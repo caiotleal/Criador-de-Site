@@ -11,7 +11,7 @@ const { onRequest } = require("firebase-functions/v2/https");
 // ============================================================================
 // CONFIGURAÇÃO DA STRIPE (COLOQUE SUA CHAVE SECRETA AQUI)
 // ============================================================================
-const stripe = require("stripe")("sk_test_SUA_CHAVE_SECRETA_AQUI");
+const stripe = require("stripe")("whsec_s0sKkzYh75uyzOgD7j2N9AKJ6BogsUum");
 
 if (!admin.apps.length) admin.initializeApp();
 
