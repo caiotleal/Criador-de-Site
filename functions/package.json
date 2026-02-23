@@ -12,6 +12,7 @@
     "firebase-tools": "^15.5.1",
     "google-auth-library": "^9.0.0",
     "picomatch": "4.0.3",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "stripe": "^14.0.0"
   }
 }
