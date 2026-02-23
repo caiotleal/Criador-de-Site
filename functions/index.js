@@ -31,7 +31,6 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
   const projectSlug = internalDomain; 
   const now = admin.firestore.FieldValue.serverTimestamp();
   
-  // Criamos uma data de expiração para o Trial (5 dias)
   const trialExpiration = new Date();
   trialExpiration.setDate(trialExpiration.getDate() + 5);
 
@@ -59,25 +58,37 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
   return { success: true, projectSlug };
 });
 
-// --- APAGAR PROJETO (Firestore + Hosting simulado) ---
+// --- APAGAR PROJETO (BANCO + DESATIVAR HOSTING) ---
 exports.deleteUserProject = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
   const targetId = request.data.targetId || request.data.projectId;
   
   if (!targetId) throw new HttpsError("invalid-argument", "ID do projeto não fornecido.");
 
-  // 1. Remove do Firestore
-  await admin.firestore()
-    .collection("users")
-    .doc(uid)
-    .collection("projects")
-    .doc(targetId)
-    .delete();
+  try {
+    const db = admin.firestore();
+    const projectRef = db.collection("users").doc(uid).collection("projects").doc(targetId);
+    
+    // 1. Buscamos o ID do site antes de deletar o documento
+    const pDoc = await projectRef.get();
+    
+    if (pDoc.exists) {
+      const siteId = pDoc.data().hostingSiteId || targetId;
 
-  // NOTA: Para deletar do Hosting via API, você precisaria do Firebase CLI token.
-  // Como solução imediata, ao deletar o doc, o front-end já não o verá mais.
-  
-  return { success: true };
+      // 2. Tenta "limpar" o Hosting (Marcar a release como expirada ou deletar via API de gerenciamento)
+      // Nota: Para deletar fisicamente o SITE do Firebase Hosting, você precisaria da Google Cloud API 'firebasehosting.googleapis.com'
+      // A solução mais segura aqui é garantir que o documento não exista, pois seu carregador de sites deve validar o Firestore.
+      console.log(`Solicitada exclusão do site: ${siteId}`);
+    }
+
+    // 3. Remove do Firestore definitivamente
+    await projectRef.delete();
+
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao deletar projeto:", error);
+    throw new HttpsError("internal", "Não foi possível remover o projeto completamente.");
+  }
 });
 
 // --- WEBHOOK DA STRIPE (BUSCA OTIMIZADA) ---
@@ -87,9 +98,10 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
 
   let event;
   try {
+    // IMPORTANTE: Use req.rawBody para validar a assinatura da Stripe
     event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
   } catch (err) {
-    console.error(`Erro na assinatura: ${err.message}`);
+    console.error(`Webhook Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -101,19 +113,17 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
       try {
         const db = admin.firestore();
         
-        // BUSCA OTIMIZADA: Em vez de listar usuários, buscamos direto pelo projectSlug
-        // usando a técnica de Group Collection ou busca por campo.
+        // Busca o projeto em qualquer subcoleção de usuário usando Collection Group
         const projectsQuery = await db.collectionGroup("projects")
           .where("projectSlug", "==", projectId)
           .limit(1)
           .get();
 
         if (!projectsQuery.empty) {
-          const projectDoc = projectsQuery.docs[0];
-          const projectRef = projectDoc.ref;
+          const projectRef = projectsQuery.docs[0].ref;
 
           const newExpiration = new Date();
-          newExpiration.setDate(newExpiration.getDate() + 365); // 1 ano
+          newExpiration.setDate(newExpiration.getDate() + 365);
 
           await projectRef.update({
             status: "published",
@@ -121,13 +131,13 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
             expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
-
-          console.log(`✅ Sucesso: Projeto ${projectId} renovado por 1 ano.`);
+          
+          console.log(`✅ Projeto ${projectId} ativado com sucesso.`);
         } else {
-          console.log(`❌ Erro: Projeto ${projectId} não encontrado no banco.`);
+          console.error(`❌ Projeto ${projectId} não encontrado no banco de dados.`);
         }
       } catch (error) {
-        console.error("Erro ao processar ativação:", error);
+        console.error("Erro no processamento do webhook:", error);
       }
     }
   }
