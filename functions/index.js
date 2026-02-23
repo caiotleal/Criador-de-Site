@@ -9,9 +9,9 @@ const zlib = require("zlib");
 const { onRequest } = require("firebase-functions/v2/https");
 
 // ============================================================================
-// CONFIGURAÇÃO DA STRIPE (COLOQUE SUA CHAVE SECRETA AQUI)
+// CONFIGURAÇÃO DA STRIPE (SUAS CHAVES REAIS APLICADAS)
 // ============================================================================
-const stripe = require("stripe")("whsec_s0sKkzYh75uyzOgD7j2N9AKJ6BogsUum");
+const stripe = require("stripe")("sk_test_51T3iV5LK0sp6cEMAbpSV1cM4MGESQ9s3EOffFfpUuiU0cbinuy64HCekpoyfAuWZy1gemNFcSpgF1cKPgHDM3pf500vcGP7tGW");
 
 if (!admin.apps.length) admin.initializeApp();
 
@@ -248,7 +248,7 @@ exports.deleteUserProject = onCall({ cors: true }, async (request) => {
   return { success: true };
 });
 
-// SIMULAÇÃO DE RENOVAÇÃO MANUAL (Você pode apagar isso depois, pois a Stripe vai fazer automático)
+// SIMULAÇÃO DE RENOVAÇÃO MANUAL
 exports.renewSiteSubscription = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
   const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
@@ -258,7 +258,7 @@ exports.renewSiteSubscription = onCall({ cors: true }, async (request) => {
   if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
 
   const newExpiration = new Date();
-  newExpiration.setDate(newExpiration.getDate() + 365); // MAIS 1 ANO
+  newExpiration.setDate(newExpiration.getDate() + 365); 
 
   await ref.update({
     expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
@@ -272,18 +272,15 @@ exports.renewSiteSubscription = onCall({ cors: true }, async (request) => {
 
 
 // ==============================================================================
-// WEBHOOK DA STRIPE (A MÁGICA QUE LIBERA O SITE)
+// WEBHOOK DA STRIPE (AUTOMAÇÃO REAL)
 // ==============================================================================
 exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   const sig = req.headers["stripe-signature"];
-  
-  // COLOQUE AQUI A CHAVE WHSEC QUE A STRIPE VAI TE DAR NO PAINEL DE WEBHOOKS
-  const endpointSecret = "whsec_SEU_SEGREDO_WEBHOOK_AQUI"; 
+  const endpointSecret = "whsec_s0sKkzYh75uyzOgD7j2N9AKJ6BogsUum"; 
 
   let event;
 
   try {
-    // A Stripe exige ler o buffer raw. Se falhar, é porque o Firebase parseou o body.
     event = stripe.webhooks.constructEvent(req.rawBody || req.body, sig, endpointSecret);
   } catch (err) {
     console.error("Erro na assinatura do Webhook:", err.message);
@@ -291,46 +288,37 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
     return;
   }
 
-  // Verifica se o pagamento foi completado com sucesso
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    
-    // Pegamos o ID do projeto que nós enviamos pelo link no App.tsx
     const projectId = session.client_reference_id; 
 
     if (projectId) {
       try {
         const db = admin.firestore();
-        
-        // Busca o projeto usando o collectionGroup para não precisar do UID do usuário
         const projectQuery = await db.collectionGroup("projects").where("projectSlug", "==", projectId).get();
         
         if (!projectQuery.empty) {
           const projectRef = projectQuery.docs[0].ref;
-          
           const newExpiration = new Date();
-          newExpiration.setDate(newExpiration.getDate() + 365); // Adiciona 1 ano de acesso
+          newExpiration.setDate(newExpiration.getDate() + 365);
 
           await projectRef.update({
-            status: "published", // Retira o site do status de "frozen"
+            status: "published",
             paymentStatus: "paid",
             expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
-            needsDeploy: true // Avisa o sistema que o site precisa ser publicado de novo para ficar visível
+            needsDeploy: true
           });
           
-          console.log(`PAGAMENTO APROVADO! Projeto ${projectId} renovado por 1 ano.`);
-        } else {
-          console.error(`Projeto ${projectId} não encontrado no banco de dados após o pagamento.`);
+          console.log(`PAGAMENTO APROVADO! Projeto ${projectId} renovado.`);
         }
       } catch (error) {
-        console.error(`Erro fatal ao atualizar o projeto ${projectId} no Firebase:`, error);
+        console.error(`Erro ao atualizar o projeto ${projectId}:`, error);
       }
     }
   }
 
   res.status(200).send({ received: true });
 });
-
 
 // ==============================================================================
 // CRON JOB DIÁRIO: CONGELAMENTO E EXCLUSÃO
@@ -341,7 +329,6 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
   const token = await getFirebaseAccessToken();
   const projectIdEnv = getProjectId();
   
-  // 1. CONGELA SITES QUE VENCERAM (Passou 5 dias do trial ou 1 ano do pago)
   const expiredSnap = await db.collectionGroup("projects").where("published", "==", true).where("expiresAt", "<=", now).get();
   let frozenCount = 0;
 
@@ -349,7 +336,6 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
     const data = doc.data();
     if (data.hostingSiteId) {
       try {
-        // Deleta do Firebase Hosting (Site sai do ar)
         await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${data.hostingSiteId}`, {
           method: "DELETE", headers: { Authorization: `Bearer ${token}` }
         });
@@ -357,7 +343,6 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
       } catch (e) {}
     }
     
-    // Configura a data de deleção fatal (+30 dias após congelar)
     const hardDeleteDate = new Date();
     hardDeleteDate.setDate(hardDeleteDate.getDate() + 30);
 
@@ -370,7 +355,6 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
     });
   }
 
-  // 2. EXCLUI SITES CONGELADOS HÁ MAIS DE 30 DIAS
   const frozenSnap = await db.collectionGroup("projects").where("status", "==", "frozen").where("hardDeleteAt", "<=", now).get();
   let deletedCount = 0;
 
@@ -379,5 +363,5 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
     deletedCount++;
   }
 
-  console.log(`Cron: ${frozenCount} sites congelados. ${deletedCount} excluídos permanentemente.`);
+  console.log(`Cron: ${frozenCount} sites congelados. ${deletedCount} excluídos.`);
 });
