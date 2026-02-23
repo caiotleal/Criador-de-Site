@@ -9,7 +9,7 @@ const zlib = require("zlib");
 const { onRequest } = require("firebase-functions/v2/https");
 
 // ============================================================================
-// CONFIGURAÇÃO DA STRIPE (SUAS CHAVES REAIS)
+// CONFIGURAÇÃO DA STRIPE
 // ============================================================================
 const stripe = require("stripe")("sk_test_51T3iV5LK0sp6cEMAbpSV1cM4MGESQ9s3EOffFfpUuiU0cbinuy64HCekpoyfAuWZy1gemNFcSpgF1cKPgHDM3pf500vcGP7tGW");
 
@@ -32,6 +32,9 @@ const ensureAuthed = (request) => {
   return request.auth.uid;
 };
 
+// ============================================================================
+// FUNÇÕES DE INFRAESTRUTURA (HOSTING)
+// ============================================================================
 async function getFirebaseAccessToken() {
   const auth = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/firebase"] });
   const client = await auth.getClient();
@@ -120,17 +123,16 @@ async function ensureHostingReady(siteId) {
   throw new HttpsError("failed-precondition", existingOrNew?.message || "Falha ao preparar o Firebase Hosting.");
 }
 
+// ============================================================================
+// INTELIGÊNCIA ARTIFICIAL E GESTÃO DE PROJETOS
+// ============================================================================
 exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB", secrets: [geminiKey] }, async (request) => {
   const genAI = getGeminiClient();
   const { businessName, description } = request.data;
   if (!businessName) throw new HttpsError("invalid-argument", "Nome obrigatório");
 
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
-
-  const prompt = `Atue como um redator publicitário sênior e revisor ortográfico.
-    Empresa: "${businessName}". Descrição: "${description}".
-    Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall.
-    REGRAS: 1. Corrija ortografia. 2. Primeira letra maiúscula e restante minúsculo conforme a norma culta. NÃO use caixa alta em tudo. 3. Textos curtos, altamente persuasivos.`;
+  const prompt = `Atue como um redator publicitário sênior. Empresa: "${businessName}". Descrição: "${description}". Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall. Textos curtos e persuasivos.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -148,33 +150,21 @@ exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
 
 exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (request) => {
   const uid = ensureAuthed(request);
-  const { businessName, internalDomain, generatedHtml, formData, aiContent } = request.data;
+  const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
   const projectSlug = internalDomain; 
-  const now = admin.firestore.FieldValue.serverTimestamp();
-  
-  const projectRef = admin.firestore()
-    .collection("users")
-    .doc(uid)
-    .collection("projects")
-    .doc(projectSlug);
 
-  // Aqui o Firebase cria o documento e já injeta o campo novo automaticamente
-  await projectRef.set({
-    uid: uid,
-    businessName,
-    projectSlug,
-    hostingSiteId: projectSlug,
-    internalDomain,
-    generatedHtml,
-    formData: formData || {},
-    aiContent: aiContent || {},
-    status: "draft", 
-    paymentStatus: "pending", // <-- O SITE JÁ NASCE COM O CAMPO AQUI
-    updatedAt: now,
-    createdAt: now
+  const hosting = await createHostingSiteIfPossible(projectSlug);
+  await configureSiteRetention(projectSlug);
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
+    uid, businessName, projectSlug, hostingSiteId: projectSlug, internalDomain,
+    officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
+    hosting, autoDeploy: true, needsDeploy: true, updatedAt: now, createdAt: now, 
+    status: "draft", paymentStatus: "pending" 
   }, { merge: true });
 
-  return { success: true, projectSlug };
+  return { success: true, projectSlug, hostingSiteId: projectSlug };
 });
 
 exports.updateSiteProject = onCall({ cors: true }, async (request) => {
@@ -189,17 +179,26 @@ exports.updateSiteProject = onCall({ cors: true }, async (request) => {
   return { success: true };
 });
 
+// Listagem blindada contra ocultação do banco de dados
 exports.listUserProjects = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
-  const snap = await admin.firestore().collection("users").doc(uid).collection("projects").orderBy("updatedAt", "desc").get();
-  return { projects: snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) };
+  const snap = await admin.firestore().collection("users").doc(uid).collection("projects").get();
+  
+  const projects = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  projects.sort((a, b) => {
+    const timeA = a.updatedAt ? (a.updatedAt._seconds || a.updatedAt.seconds || 0) : 0;
+    const timeB = b.updatedAt ? (b.updatedAt._seconds || b.updatedAt.seconds || 0) : 0;
+    return timeB - timeA;
+  });
+  
+  return { projects };
 });
 
 exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "512MiB" }, async (request) => {
   try {
     const uid = ensureAuthed(request);
     const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
-    if (!targetId) throw new HttpsError("invalid-argument", "ID do projeto é obrigatório para publicar.");
+    if (!targetId) throw new HttpsError("invalid-argument", "ID obrigatório.");
 
     const db = admin.firestore();
     const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
@@ -207,35 +206,24 @@ exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "
     
     if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
     const project = snap.data();
-    if (!project.generatedHtml || !project.hostingSiteId) throw new HttpsError("failed-precondition", "Projeto incompleto sem HTML ou Site ID.");
 
     const hostingProvision = await ensureHostingReady(project.hostingSiteId);
     const deployResult = await deployHtmlToFirebaseHosting(project.hostingSiteId, project.generatedHtml);
     const publicUrl = hostingProvision.defaultUrl || `https://${project.hostingSiteId}.web.app`;
 
-    let expiresAt = project.expiresAt ? project.expiresAt.toDate() : null;
-    if (!expiresAt) {
-      expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 5); 
-    }
+    let expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 5); // 5 Dias de Trial
 
     await ref.set({
       published: true, publishUrl: publicUrl, publishedAt: admin.firestore.FieldValue.serverTimestamp(),
       expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-      status: "published", needsDeploy: false, lastDeploy: deployResult,
+      status: "published", paymentStatus: "trial", needsDeploy: false, lastDeploy: deployResult,
       hosting: { ...(project.hosting || {}), ...hostingProvision },
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
     return { success: true, publishUrl: publicUrl, expiresAt: expiresAt.toISOString() };
-  } catch (error) {
-    if (error instanceof HttpsError) throw error;
-    const errMsg = error?.message ? String(error.message).toLowerCase() : "";
-    if (errMsg.includes("404") || errMsg.includes("not found") || errMsg.includes("deleted")) {
-      throw new HttpsError("not-found", "A infraestrutura deste site não existe mais. O projeto foi retirado da lista.");
-    }
-    throw new HttpsError("internal", "Falha interna no servidor ao publicar.", { detail: errMsg });
-  }
+  } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
 exports.deleteUserProject = onCall({ cors: true }, async (request) => {
@@ -260,78 +248,70 @@ exports.deleteUserProject = onCall({ cors: true }, async (request) => {
   return { success: true };
 });
 
-exports.renewSiteSubscription = onCall({ cors: true }, async (request) => {
-  const uid = ensureAuthed(request);
-  const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
-
-  const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
-  const snap = await ref.get();
-  if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
-
-  const newExpiration = new Date();
-  newExpiration.setDate(newExpiration.getDate() + 365); 
-
-  await ref.update({
-    expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
-    status: "published", 
-    paymentStatus: "paid",
-    needsDeploy: true
-  });
-
-  return { success: true, newExpiration: newExpiration.toISOString() };
-});
-
 // ==============================================================================
-// WEBHOOK DA STRIPE (ÚNICA ADIÇÃO FEITA SOBRE O SEU CÓDIGO ORIGINAL)
+// WEBHOOK DA STRIPE (COM RASTREIO E LOG DE PAYLOAD)
 // ==============================================================================
 exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   const sig = req.headers["stripe-signature"];
   const endpointSecret = "whsec_s0sKkzYh75uyzOgD7j2N9AKJ6BogsUum"; 
 
   let event;
-
   try {
-    // Usamos rawBody para garantir a compatibilidade com a assinatura da Stripe
     event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
   } catch (err) {
-    console.error("Erro na assinatura do Webhook:", err.message);
-    res.status(400).send(`Webhook Error: ${err.message}`);
-    return;
+    console.error("❌ Erro na assinatura:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+
+  console.log(`[WEBHOOK] Evento disparado: ${event.type}`);
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const projectId = session.client_reference_id; 
 
+    // O RASTREADOR DE PAYLOAD: Mostra exatamente o que a Stripe enviou
+    console.log(`[STRIPE PAYLOAD] Dados recebidos:`, JSON.stringify({
+      sessionId: session.id,
+      cliente_email: session.customer_details?.email,
+      status_pagamento: session.payment_status,
+      ID_DO_PROJETO_RECEBIDO: projectId
+    }, null, 2));
+
     if (projectId) {
       try {
         const db = admin.firestore();
-        
-        // Em vez de usar index global (que gerou erro), buscamos diretamente as pastas de usuários
         const usersSnap = await db.collection("users").get();
+        let encontrouProjeto = false;
         
         for (const userDoc of usersSnap.docs) {
           const projectRef = db.collection("users").doc(userDoc.id).collection("projects").doc(projectId);
           const pDoc = await projectRef.get();
           
           if (pDoc.exists) {
+            encontrouProjeto = true;
             const newExpiration = new Date();
             newExpiration.setDate(newExpiration.getDate() + 365); 
 
             await projectRef.update({
               status: "published", 
-              paymentStatus: "paid",
+              paymentStatus: "paid", // Aqui a mágica de sumir o botão acontece
               expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
               needsDeploy: true 
             });
             
-            console.log(`PAGAMENTO APROVADO! Projeto ${projectId} renovado por 1 ano.`);
-            break; // Sai do loop assim que achar o projeto
+            console.log(`✅ SUCESSO! Projeto ${projectId} atualizado para 1 ANO PAGO.`);
+            break; 
           }
         }
+
+        if (!encontrouProjeto) {
+          console.error(`⚠️ ALERTA: A Stripe mandou o ID "${projectId}", mas ele não foi achado no banco.`);
+        }
       } catch (error) {
-        console.error(`Erro ao atualizar o projeto ${projectId} no Firebase:`, error);
+        console.error(`❌ Erro ao escrever no banco de dados:`, error);
       }
+    } else {
+      console.error("⚠️ ALERTA: Pagamento concluído, mas a Stripe NÃO DEVOLVEU o client_reference_id.");
     }
   }
 
@@ -339,7 +319,7 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
 });
 
 // ==============================================================================
-// CRON JOB DIÁRIO: CONGELAMENTO E EXCLUSÃO
+// CRON JOB DIÁRIO
 // ==============================================================================
 exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
   const db = admin.firestore();
@@ -347,39 +327,19 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
   const token = await getFirebaseAccessToken();
   const projectIdEnv = getProjectId();
   
-  const expiredSnap = await db.collectionGroup("projects").where("published", "==", true).where("expiresAt", "<=", now).get();
-  let frozenCount = 0;
-
-  for (const doc of expiredSnap.docs) {
-    const data = doc.data();
-    if (data.hostingSiteId) {
-      try {
-        await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${data.hostingSiteId}`, {
-          method: "DELETE", headers: { Authorization: `Bearer ${token}` }
-        });
-        frozenCount++;
-      } catch (e) {}
+  const usersSnap = await db.collection("users").get();
+  for (const userDoc of usersSnap.docs) {
+    const projectsSnap = await db.collection("users").doc(userDoc.id).collection("projects").where("expiresAt", "<=", now).get();
+    for (const doc of projectsSnap.docs) {
+      const data = doc.data();
+      if (data.status !== "frozen") {
+        try {
+          await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${data.hostingSiteId}`, {
+            method: "DELETE", headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (e) {}
+        await doc.ref.update({ status: "frozen", paymentStatus: "expired", published: false });
+      }
     }
-    
-    const hardDeleteDate = new Date();
-    hardDeleteDate.setDate(hardDeleteDate.getDate() + 30);
-
-    await doc.ref.update({
-      published: false,
-      status: "frozen",
-      frozenAt: now,
-      hardDeleteAt: admin.firestore.Timestamp.fromDate(hardDeleteDate),
-      needsDeploy: true
-    });
   }
-
-  const frozenSnap = await db.collectionGroup("projects").where("status", "==", "frozen").where("hardDeleteAt", "<=", now).get();
-  let deletedCount = 0;
-
-  for (const doc of frozenSnap.docs) {
-    await doc.ref.delete();
-    deletedCount++;
-  }
-
-  console.log(`Cron: ${frozenCount} sites congelados. ${deletedCount} excluídos permanentemente.`);
 });
