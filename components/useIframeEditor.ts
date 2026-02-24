@@ -36,12 +36,13 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
 
       // 3. Gerador de Imagem IA Premium (OpenAI)
       if (event.data?.type === 'REQUEST_AI') {
-        const promptText = window.prompt("O que você quer nessa imagem? (Ex: 'Uma padaria moderna cheia de pães, iluminação quente')");
+        // AQUI ESTÁ A MÁGICA: Adeus window.prompt! Agora recebemos o texto da nova interface elegante do App.tsx.
+        const promptText = event.data.prompt;
         
         if (promptText) {
           const iframe = document.querySelector('iframe');
           
-          // Feedback Visual de Carregamento
+          // Feedback Visual de Carregamento (Placeholder verde enquanto a IA pensa)
           iframe?.contentWindow?.postMessage({ 
             type: 'INSERT_IMAGE', 
             targetId: event.data.targetId, 
@@ -49,7 +50,7 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
           }, '*');
 
           try {
-            // Chama a sua nova função segura no Firebase
+            // Chama a sua função de IA no Firebase
             const generateImageFn = httpsCallable(functions, 'generateImage');
             const result: any = await generateImageFn({ prompt: promptText });
             
@@ -63,7 +64,7 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
             }
           } catch (error: any) {
             alert("Erro ao gerar a imagem: " + error.message);
-            // Em caso de erro, devolve o aviso visual
+            // Em caso de erro, devolve um aviso visual em vermelho
             iframe?.contentWindow?.postMessage({ 
               type: 'INSERT_IMAGE', 
               targetId: event.data.targetId, 
