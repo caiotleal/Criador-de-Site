@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase'; // Verifique se o caminho para o seu firebase.ts está correto
 
-// Definimos o que esse arquivo precisa receber do App principal
 interface UseIframeEditorProps {
   setGeneratedHtml: (html: string | null) => void;
   setHasUnsavedChanges: (status: boolean) => void;
@@ -10,13 +11,13 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
   useEffect(() => {
     const handleIframeMessage = async (event: MessageEvent) => {
       
-      // 1. Salva edições de texto gerais do site
+      // 1. Textos e Cores
       if (event.data?.type === 'CONTENT_EDITED') {
         setGeneratedHtml(event.data.html);
         setHasUnsavedChanges(true);
       }
       
-      // 2. Upload Manual de Imagem
+      // 2. Upload de Foto do Computador
       if (event.data?.type === 'REQUEST_UPLOAD') {
         const input = document.createElement('input');
         input.type = 'file'; 
@@ -33,23 +34,47 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
         input.click();
       }
 
-      // 3. Motor de Geração de Imagem por IA
+      // 3. Gerador de Imagem IA Premium (OpenAI)
       if (event.data?.type === 'REQUEST_AI') {
-        const promptText = window.prompt("Descreva a imagem que deseja gerar (Ex: 'Uma padaria moderna, realista'):");
+        const promptText = window.prompt("O que você quer nessa imagem? (Ex: 'Uma padaria moderna cheia de pães, iluminação quente')");
+        
         if (promptText) {
-          // O motor de IA isolado
-          const safePrompt = encodeURIComponent(promptText + ", ultra realistic, professional photography, high resolution");
-          const imageUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=1200&height=800&nologo=true`;
-          
           const iframe = document.querySelector('iframe');
-          iframe?.contentWindow?.postMessage({ type: 'INSERT_IMAGE', targetId: event.data.targetId, url: imageUrl }, '*');
+          
+          // Feedback Visual de Carregamento
+          iframe?.contentWindow?.postMessage({ 
+            type: 'INSERT_IMAGE', 
+            targetId: event.data.targetId, 
+            url: 'https://placehold.co/800x600/059669/ffffff?text=✨+Gerando+Imagem+Premium...+Aguarde' 
+          }, '*');
+
+          try {
+            // Chama a sua nova função segura no Firebase
+            const generateImageFn = httpsCallable(functions, 'generateImage');
+            const result: any = await generateImageFn({ prompt: promptText });
+            
+            if (result.data?.imageUrl) {
+              iframe?.contentWindow?.postMessage({ 
+                type: 'INSERT_IMAGE', 
+                targetId: event.data.targetId, 
+                url: result.data.imageUrl 
+              }, '*');
+              setHasUnsavedChanges(true);
+            }
+          } catch (error: any) {
+            alert("Erro ao gerar a imagem: " + error.message);
+            // Em caso de erro, devolve o aviso visual
+            iframe?.contentWindow?.postMessage({ 
+              type: 'INSERT_IMAGE', 
+              targetId: event.data.targetId, 
+              url: 'https://placehold.co/800x600/ef4444/ffffff?text=Falha+na+Geracao.+Tente+Novamente' 
+            }, '*');
+          }
         }
       }
     };
     
-    // Liga o "ouvido" do sistema
     window.addEventListener('message', handleIframeMessage);
-    // Desliga quando o componente for fechado (limpeza de memória)
     return () => window.removeEventListener('message', handleIframeMessage);
     
   }, [setGeneratedHtml, setHasUnsavedChanges]); 
