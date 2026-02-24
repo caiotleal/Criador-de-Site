@@ -6,12 +6,12 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info
+  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info, Sparkles
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
 import DomainChecker from './components/DomainChecker';
-import { useIframeEditor } from './components/useIframeEditor'; // Nosso novo gancho modular!
+import { useIframeEditor } from './components/useIframeEditor'; 
 
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
@@ -38,7 +38,7 @@ const COLORS = [
 
 const PROMO_HTML = `
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,10 +61,10 @@ const PROMO_HTML = `
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
       <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-blue-400 mb-6 uppercase">O futuro da web</div>
       <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
-        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">segundos.</span>
+        A sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">segundos.</span>
       </h1>
       <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
-        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
+        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a magia acontecer.
       </p>
     </div>
 
@@ -72,12 +72,12 @@ const PROMO_HTML = `
       <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden group">
         <h3 class="text-3xl font-black mb-2 italic uppercase">Teste Grátis</h3>
         <p class="text-white/50 mb-8">Veja o seu site pronto hoje mesmo.</p>
-        <div class="text-5xl font-black mb-2">R$ 0 <span class="text-lg text-white/40 font-normal">/ 5 dias</span></div>
+        <div class="text-5xl font-black mb-2">€ 0 <span class="text-lg text-white/40 font-normal">/ 5 dias</span></div>
         <p class="text-sm text-blue-400 font-bold mb-8">Após 5 dias, o site é congelado.</p>
         <ul class="space-y-4 text-white/70">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Geração por IA</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Domínio gratuito (.web.app)</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Formulário de Contato</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Formulário de Contacto</li>
         </ul>
       </div>
 
@@ -85,11 +85,11 @@ const PROMO_HTML = `
         <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-black tracking-widest px-6 py-2 rounded-bl-3xl uppercase">Mais Assinado</div>
         <h3 class="text-3xl font-black mb-2 italic uppercase text-indigo-400">Plano Anual</h3>
         <p class="text-white/50 mb-8">A solução definitiva para o seu negócio.</p>
-        <div class="text-5xl font-black mb-2">R$ 499 <span class="text-lg text-white/40 font-normal">/ 1º ano</span></div>
-        <p class="text-sm text-white/50 font-medium mb-8">Renovação garantida por apenas R$ 100/ano.</p>
+        <div class="text-5xl font-black mb-2">€ 99 <span class="text-lg text-white/40 font-normal">/ 1º ano</span></div>
+        <p class="text-sm text-white/50 font-medium mb-8">Renovação garantida por apenas € 20/ano.</p>
         <ul class="space-y-4 text-white/70">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> 365 dias online sem interrupções</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Apontamento de Domínio (.com.br)</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Apontamento de Domínio (.pt / .com)</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Alta velocidade e segurança Google</li>
         </ul>
       </div>
@@ -116,7 +116,6 @@ const cleanHtmlForPublishing = (rawHtml: string | null) => {
     if (el.getAttribute('class') === '') el.removeAttribute('class');
   });
 
-  // Limpeza inteligente de imagens vazias para não estragar o layout publicado
   doc.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
     const hasImg = wrapper.querySelector('img');
     if (!hasImg) {
@@ -247,35 +246,48 @@ const getPreviewHtml = (baseHtml: string | null) => {
           imgToolbar.style.display = 'none';
         });
 
-document.getElementById('btn-ai').addEventListener('click', () => {
+        document.getElementById('btn-ai').addEventListener('click', () => {
           imgToolbar.style.display = 'none';
           if (!currentImgTarget) return;
 
-          // Interface compactada numa única linha com aspas simples para não quebrar o React
           currentImgTarget.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 350px; background: #18181b; padding: 16px; border-radius: 12px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 50;"><span style="color: #a1a1aa; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">✨ Comando para a IA</span><input type="text" id="ai-img-prompt" placeholder="Ex: Uma padaria moderna, luz natural..." style="width: 100%; background: #27272a; color: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #52525b; outline: none; font-size: 13px;" autocomplete="off"><div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;"><button id="ai-img-cancel" style="background: transparent; color: #a1a1aa; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Cancelar</button><button id="ai-img-confirm" style="background: #10b981; color: #064e3b; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Gerar Imagem</button></div></div>';
 
-          // Foca automaticamente no campo para o usuário sair digitando
-          setTimeout(() => document.getElementById('ai-img-prompt').focus(), 50);
+          setTimeout(() => { const inp = document.getElementById('ai-img-prompt'); if(inp) inp.focus(); }, 50);
 
-          // Lógica do botão Cancelar
           document.getElementById('ai-img-cancel').addEventListener('click', (e) => {
             e.stopPropagation();
             currentImgTarget.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem</span>';
           });
 
-          // Lógica do botão Confirmar
           document.getElementById('ai-img-confirm').addEventListener('click', (e) => {
             e.stopPropagation();
-            const promptText = document.getElementById('ai-img-prompt').value.trim();
+            const inp = document.getElementById('ai-img-prompt');
+            const promptText = inp ? inp.value.trim() : '';
             if(!promptText) return;
 
-            // Mostra o loading animado enquanto a IA trabalha
-            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#10b981;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Criando Obra de Arte...</span></div>';
-
-            // Envia a ordem para o seu Hook do React com o texto digitado
+            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#10b981;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">A Criar Obra de Arte...</span></div>';
             window.parent.postMessage({ type: 'REQUEST_AI', targetId: currentImgTarget.dataset.id, prompt: promptText }, '*');
           });
         });
+
+        document.getElementById('btn-img-delete').addEventListener('click', () => {
+          if (currentImgTarget) { 
+            currentImgTarget.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem (Opcional)</span>';
+            sendCleanHtml(); 
+            imgToolbar.style.display = 'none';
+          }
+        });
+
+        window.addEventListener('message', (e) => {
+          if (e.data.type === 'INSERT_IMAGE') {
+            const targetEl = document.querySelector(\`.editable-image[data-id="\${e.data.targetId}"]\`);
+            if (targetEl) {
+              targetEl.innerHTML = \`<img src="\${e.data.url}" class="w-full h-auto rounded-2xl shadow-2xl object-cover" />\`;
+              sendCleanHtml();
+            }
+          }
+        });
+      });
     </script>
   `;
   return clean.replace(/<\/body>/i, `${editorScript}</body>`);
@@ -284,6 +296,7 @@ document.getElementById('btn-ai').addEventListener('click', () => {
 const App: React.FC = () => {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [aiContent, setAiContent] = useState<any>(null);
   
@@ -309,7 +322,6 @@ const App: React.FC = () => {
     showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
   });
 
-  // ACIONANDO O NOSSO NOVO GANCHO MODULAR DE IA E IFRAME
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
 
   useEffect(() => {
@@ -346,7 +358,7 @@ const App: React.FC = () => {
     replaceAll('{{HERO_SUBTITLE}}', content.heroSubtitle || 'Presença digital profissional.');
     replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
     replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
-    replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
+    replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale connosco');
     
     replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
     replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
@@ -365,13 +377,8 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
-    replaceAll('[[WHATSAPP_BTN]]', '');
-    replaceAll('[[INSTAGRAM_BTN]]', '');
-    replaceAll('[[FACEBOOK_BTN]]', '');
-    replaceAll('[[TIKTOK_BTN]]', '');
-    replaceAll('[[IFOOD_BTN]]', '');
-    replaceAll('[[NOVE_NOVE_BTN]]', '');
-    replaceAll('[[KEETA_BTN]]', '');
+    replaceAll('[[WHATSAPP_BTN]]', ''); replaceAll('[[INSTAGRAM_BTN]]', ''); replaceAll('[[FACEBOOK_BTN]]', '');
+    replaceAll('[[TIKTOK_BTN]]', ''); replaceAll('[[IFOOD_BTN]]', ''); replaceAll('[[NOVE_NOVE_BTN]]', ''); replaceAll('[[KEETA_BTN]]', '');
 
     let floatingHtml = '';
     const addFloatBtn = (icon: string, href: string, bg: string, color: string, label: string) => {
@@ -400,10 +407,9 @@ const App: React.FC = () => {
     const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-    const formCode = data.showForm ? `<form class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]"><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu nome" /><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu email" /><textarea class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button></form>` : '';
+    const formCode = data.showForm ? `<form class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]"><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="O seu nome" /><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="O seu email" /><textarea class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" rows="4" placeholder="A sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
-    // INJEÇÃO DAS CAIXAS DE IMAGEM
     const imgPlaceholder = (id: string, label: string) => `
       <div class="editable-image-wrapper w-full flex justify-center py-6">
         <div class="editable-image border-2 border-dashed border-zinc-600 rounded-2xl p-10 flex flex-col items-center justify-center text-zinc-500 hover:border-emerald-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[300px] bg-black/20" data-id="${id}">
@@ -418,7 +424,7 @@ const App: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    if (!formData.businessName || !formData.description) return alert('Preencha Nome e Ideia!');
+    if (!formData.businessName || !formData.description) return alert('Preencha o Nome e a Ideia!');
     setIsGenerating(true);
     try {
       if (aiContent && generatedHtml) {
@@ -436,6 +442,25 @@ const App: React.FC = () => {
     finally { setIsGenerating(false); }
   };
 
+  const handleGenerateLogo = async () => {
+    if (!formData.businessName || !formData.description) return alert('Por favor, preencha o Nome do Negócio e a Ideia Principal primeiro!');
+    setIsGeneratingLogo(true);
+    try {
+      const generateLogoFn = httpsCallable(functions, 'generateLogo');
+      // Enviamos as informações básicas para a IA desenhar
+      const result: any = await generateLogoFn({ prompt: `Empresa: ${formData.businessName}. Nicho: ${formData.description}.` });
+      
+      if (result.data?.imageUrl) {
+        setFormData(p => ({ ...p, logoBase64: result.data.imageUrl }));
+        setHasUnsavedChanges(true);
+      }
+    } catch (error: any) {
+      alert('Erro ao gerar logo: ' + error.message);
+    } finally {
+      setIsGeneratingLogo(false);
+    }
+  };
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -451,7 +476,7 @@ const App: React.FC = () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
     if (!currentProjectSlug && !registerLater && !officialDomain) {
       setActiveTab('dominio');
-      return alert("Por favor, configure seu domínio ou marque a opção 'Configurar depois' na aba de Domínio Oficial.");
+      return alert("Por favor, configure o seu domínio ou marque a opção 'Configurar depois' no separador de Domínio Oficial.");
     }
     
     setIsSavingProject(true);
@@ -472,13 +497,13 @@ const App: React.FC = () => {
       }
       setHasUnsavedChanges(false);
       fetchProjects();
-      alert("Site salvo com sucesso!");
-    } catch (err: any) { alert('Erro ao salvar o site.'); } 
+      alert("Site guardado com sucesso!");
+    } catch (err: any) { alert('Erro ao guardar o site.'); } 
     finally { setIsSavingProject(false); }
   };
 
   const handlePublishSite = async () => {
-    if (hasUnsavedChanges) return alert("Salve suas alterações antes de publicar.");
+    if (hasUnsavedChanges) return alert("Guarde as suas alterações antes de publicar.");
     setIsPublishing(true);
     try {
       const publishFn = httpsCallable(functions, 'publishUserProject');
@@ -494,18 +519,18 @@ const App: React.FC = () => {
   };
 
   const handleDeleteSite = async (projectId: string) => {
-    if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site do ar. Tem certeza absoluta?")) return;
+    if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site. Tem a certeza absoluta?")) return;
     try {
       const deleteFn = httpsCallable(functions, 'deleteUserProject');
       await deleteFn({ targetId: projectId });
-      alert("Site excluído com sucesso.");
+      alert("Site apagado com sucesso.");
       
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
         setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
       }
       fetchProjects();
-    } catch (error) { alert("Erro ao excluir o site."); }
+    } catch (error) { alert("Erro ao apagar o site."); }
   };
 
   const handleStripeCheckout = (projectId: string) => {
@@ -513,10 +538,6 @@ const App: React.FC = () => {
     
     const stripePaymentLink = "https://buy.stripe.com/test_00w7sMfzDdJ8diU04I4wM00";
     const checkoutUrl = `${stripePaymentLink}?client_reference_id=${projectId}`;
-    
-    console.log("🚀 [FRONT-END] Iniciando Checkout da Stripe...");
-    console.log("➡️ ID do Projeto Original:", projectId);
-    console.log("🔗 URL Exata do Checkout:", checkoutUrl);
     
     const width = 500;
     const height = 700;
@@ -590,7 +611,6 @@ const App: React.FC = () => {
 
       <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
         
-        {/* LEFT SIDE: PREVIEW DO SITE 100% LIMPO */}
         <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
           <iframe 
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
@@ -625,7 +645,7 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Site Publicado com Sucesso!</h2>
-                  <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br, pode demorar algumas horas para propagar.</p>
+                  <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registo.br / DNS, pode demorar algumas horas para propagar.</p>
                 </div>
                 <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
                   <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
@@ -662,7 +682,7 @@ const App: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     {loggedUserEmail ? (
-                      <button className="text-zinc-400 hover:text-emerald-400 transition-colors" title={`Logado como: ${loggedUserEmail}`}>
+                      <button className="text-zinc-400 hover:text-emerald-400 transition-colors" title={`Sessão iniciada como: ${loggedUserEmail}`}>
                         <User size={18} />
                       </button>
                     ) : (
@@ -677,7 +697,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* ABAS INTELIGENTES COM PONTOS PISCANTES */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   let daysLeft = 0; let isPaid = false;
@@ -747,7 +766,7 @@ const App: React.FC = () => {
                       </div>
 
                       <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-700 transition-colors shadow-sm">
-                        {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
+                        {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar O Meu Site'}
                       </button>
 
                       {generatedHtml && (
@@ -771,14 +790,25 @@ const App: React.FC = () => {
                           </div>
 
                           <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between">
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between items-center">
                               <span>Sua Logomarca (Favicon)</span>
                               {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
                             </label>
+                            
                             {!formData.logoBase64 ? (
-                              <label className="cursor-pointer border border-dashed border-zinc-700 hover:border-emerald-500 rounded-xl p-4 flex justify-center gap-2 text-xs text-zinc-400 transition-colors bg-zinc-900/50"><Upload size={14} /> Fazer Upload<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label>
+                              <div className="flex gap-2 w-full mt-2">
+                                <label className="flex-1 cursor-pointer border border-dashed border-zinc-700 hover:border-emerald-500 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-zinc-400 hover:text-emerald-400 transition-colors bg-zinc-900/50">
+                                  <Upload size={14} /> Upload
+                                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                                </label>
+                                <button onClick={handleGenerateLogo} disabled={isGeneratingLogo} className="flex-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-white font-bold transition-colors shadow-sm">
+                                  {isGeneratingLogo ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} className="text-amber-400" />} IA Logo
+                                </button>
+                              </div>
                             ) : (
-                              <div className="h-14 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-2"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
+                              <div className="h-14 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-2">
+                                <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
+                              </div>
                             )}
                           </div>
 
@@ -786,23 +816,23 @@ const App: React.FC = () => {
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
                             <div className="grid grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@utilizador)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                           </div>
 
                           <div className="space-y-3 pt-2">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Delivery (Opcional)</label>
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Entregas (Opcional)</label>
                             <div className="grid grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="col-span-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="UberEats (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="col-span-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Glovo (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                           </div>
 
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contacto e Localização</label>
                             <div className="grid grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
@@ -820,7 +850,7 @@ const App: React.FC = () => {
                       {!currentProjectSlug ? (
                         <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/30">
                           <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
-                          <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Registro.br).</p>
+                          <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de guardar, precisamos saber se vai usar um domínio oficial (Ex: Registo.br).</p>
                           <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
                         </div>
                       ) : (
@@ -830,7 +860,7 @@ const App: React.FC = () => {
                               <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-5 h-5" /></div>
                               <div>
                                 <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
-                                <p className="text-[10px] text-zinc-400">Configure no seu Registro.br ou Hostinger</p>
+                                <p className="text-[10px] text-zinc-400">Configure no seu fornecedor de domínio</p>
                               </div>
                             </div>
                             <div className="bg-[#050505] p-4 rounded-xl border border-zinc-800/50 space-y-4">
@@ -857,7 +887,7 @@ const App: React.FC = () => {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] rounded-full pointer-events-none"></div>
                         
                         <h3 className="text-lg font-black text-white mb-1 flex items-center gap-2"><CreditCard size={18} className="text-amber-400" /> Painel de Assinatura</h3>
-                        <p className="text-xs text-zinc-400 mb-6">Gerencie o plano do seu projeto <span className="text-amber-400 font-mono">{currentProjectSlug}</span></p>
+                        <p className="text-xs text-zinc-400 mb-6">Faça a gestão do plano do seu projeto <span className="text-amber-400 font-mono">{currentProjectSlug}</span></p>
 
                         <div className="bg-[#050505] p-5 rounded-xl border border-zinc-800/50 mb-6">
                           <div className="flex justify-between items-center mb-3">
@@ -872,11 +902,11 @@ const App: React.FC = () => {
                         {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
                           <div className="space-y-4">
                             <div className="flex items-end gap-2">
-                              <span className="text-4xl font-black text-white">R$ 499</span>
+                              <span className="text-4xl font-black text-white">€ 99</span>
                               <span className="text-sm text-zinc-500 font-medium pb-1">/ 1º ano</span>
                             </div>
                             <ul className="space-y-2 text-xs text-zinc-300 mb-4">
-                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Domínio próprio liberado</li>
+                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Domínio próprio libertado</li>
                               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Site blindado no Google</li>
                               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Suporte e renovação garantida</li>
                             </ul>
@@ -887,9 +917,9 @@ const App: React.FC = () => {
                               className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3.5 rounded-xl font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-lg shadow-amber-500/20"
                             >
                               {checkoutLoading === currentProjectSlug ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />} 
-                              {checkoutLoading === currentProjectSlug ? 'Iniciando Seguro...' : 'Ativar Plano Anual Seguro'}
+                              {checkoutLoading === currentProjectSlug ? 'A iniciar o Seguro...' : 'Ativar Plano Anual Seguro'}
                             </button>
-                            <p className="text-[9px] text-center text-zinc-500 mt-3 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamento criptografado via Stripe</p>
+                            <p className="text-[9px] text-center text-zinc-500 mt-3 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamento encriptado via Stripe</p>
                           </div>
                         ) : (
                           <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-xl text-center space-y-3">
@@ -908,7 +938,7 @@ const App: React.FC = () => {
                   {loggedUserEmail && (
                     <div className="mt-8 border-t border-zinc-800/50 pt-6 space-y-4">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
+                        <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Os meus Projetos</p>
                         <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2.5 py-1 rounded-lg">Sair</button>
                       </div>
                       
@@ -945,7 +975,7 @@ const App: React.FC = () => {
                       className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
                     >
                       {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />}
-                      {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
+                      {currentProjectSlug ? 'Atualizar' : 'Guardar Projeto'}
                     </button>
 
                     <button 
