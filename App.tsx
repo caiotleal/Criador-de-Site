@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, functions } from './firebase';
@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info, Sparkles
+  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info, Sparkles, Image as ImageIcon
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -300,6 +300,11 @@ const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [aiContent, setAiContent] = useState<any>(null);
   
+  // NOVOS ESTADOS PARA A INTERFACE DO LOGO
+  const [isEditingLogoPrompt, setIsEditingLogoPrompt] = useState(false);
+  const [logoPromptText, setLogoPromptText] = useState("");
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
@@ -334,6 +339,13 @@ const App: React.FC = () => {
     const unsub = onAuthStateChanged(auth, (user) => setLoggedUserEmail(user?.email || null));
     return () => unsub();
   }, []);
+
+  // Foca no input do logo quando a barrinha abre
+  useEffect(() => {
+    if (isEditingLogoPrompt && logoInputRef.current) {
+      setTimeout(() => logoInputRef.current?.focus(), 50);
+    }
+  }, [isEditingLogoPrompt]);
 
   const fetchProjects = async () => {
     if (!auth.currentUser) return setSavedProjects([]);
@@ -442,17 +454,21 @@ const App: React.FC = () => {
     finally { setIsGenerating(false); }
   };
 
-  const handleGenerateLogo = async () => {
-    if (!formData.businessName || !formData.description) return alert('Por favor, preencha o Nome do Negócio e a Ideia Principal primeiro!');
-    setIsGeneratingLogo(true);
+  // NOVA FUNÇÃO PARA GERAR O LOGO COM O TEXTO DO USUÁRIO
+  const handleManualGenerateLogo = async () => {
+    if (!logoPromptText.trim()) return alert('Por favor, descreva como quer o seu logo.');
+    
+    setIsEditingLogoPrompt(false); // Fecha a barrinha
+    setIsGeneratingLogo(true); // Mostra o loading
+    
     try {
       const generateLogoFn = httpsCallable(functions, 'generateLogo');
-      // Enviamos as informações básicas para a IA desenhar
-      const result: any = await generateLogoFn({ prompt: `Empresa: ${formData.businessName}. Nicho: ${formData.description}.` });
+      const result: any = await generateLogoFn({ prompt: logoPromptText });
       
       if (result.data?.imageUrl) {
         setFormData(p => ({ ...p, logoBase64: result.data.imageUrl }));
         setHasUnsavedChanges(true);
+        setLogoPromptText(""); // Limpa o campo
       }
     } catch (error: any) {
       alert('Erro ao gerar logo: ' + error.message);
@@ -796,18 +812,53 @@ const App: React.FC = () => {
                             </label>
                             
                             {!formData.logoBase64 ? (
-                              <div className="flex gap-2 w-full mt-2">
-                                <label className="flex-1 cursor-pointer border border-dashed border-zinc-700 hover:border-emerald-500 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-zinc-400 hover:text-emerald-400 transition-colors bg-zinc-900/50">
-                                  <Upload size={14} /> Upload
-                                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                                </label>
-                                <button onClick={handleGenerateLogo} disabled={isGeneratingLogo} className="flex-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-white font-bold transition-colors shadow-sm">
-                                  {isGeneratingLogo ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} className="text-amber-400" />} IA Logo
-                                </button>
-                              </div>
+                              isGeneratingLogo ? (
+                                <div className="h-14 bg-zinc-900/50 border border-zinc-800 rounded-xl flex items-center justify-center gap-3 text-xs text-zinc-400 font-bold">
+                                  <Loader2 size={16} className="animate-spin text-emerald-500" />
+                                  A criar o seu logótipo...
+                                </div>
+                              ) : isEditingLogoPrompt ? (
+                                <div className="bg-[#18181b] p-3 rounded-xl border border-[#3f3f46] shadow-2xl space-y-2 animate-in fade-in slide-in-from-bottom-2">
+                                  <div className="flex justify-between items-center">
+                                     <span className="text-[#a1a1aa] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"><Sparkles size={12} className="text-amber-400" /> Comando para a IA</span>
+                                     <button onClick={() => setIsEditingLogoPrompt(false)} className="text-zinc-500 hover:text-white"><X size={14} /></button>
+                                  </div>
+                                  <input 
+                                    ref={logoInputRef}
+                                    type="text" 
+                                    value={logoPromptText}
+                                    onChange={(e) => setLogoPromptText(e.target.value)}
+                                    placeholder="Ex: Ícone minimalista de um café com um livro..." 
+                                    className="w-full bg-[#27272a] text-white p-2.5 rounded-lg border border-[#52525b] outline-none text-xs focus:border-emerald-500 transition-colors"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleManualGenerateLogo()}
+                                  />
+                                  <button onClick={handleManualGenerateLogo} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
+                                    Gerar Logótipo <Sparkles size={14} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex gap-2 w-full mt-2">
+                                  <label className="flex-1 cursor-pointer border border-dashed border-zinc-700 hover:border-zinc-500 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-zinc-400 hover:text-white transition-colors bg-zinc-900/30">
+                                    <Upload size={14} /> Upload
+                                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                                  </label>
+                                  <button 
+                                    onClick={() => {
+                                      setIsEditingLogoPrompt(true);
+                                      setLogoPromptText(`Empresa: ${formData.businessName}. Nicho: ${formData.description}. Estilo minimalista e moderno.`);
+                                    }}
+                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-white font-bold transition-colors shadow-sm group"
+                                  >
+                                    <Sparkles size={14} className="text-amber-400 group-hover:rotate-12 transition-transform" /> ✨ Criar com IA
+                                  </button>
+                                </div>
+                              )
                             ) : (
-                              <div className="h-14 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-2">
-                                <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
+                              <div className="h-20 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-4 relative group">
+                                <img src={formData.logoBase64} className="h-full object-contain drop-shadow-lg" alt="Logo" />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                  <button onClick={() => window.open(formData.logoBase64, '_blank')} className="text-white hover:text-emerald-400" title="Ver em tamanho grande"><ExternalLink size={18}/></button>
+                                </div>
                               </div>
                             )}
                           </div>
