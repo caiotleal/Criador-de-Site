@@ -11,6 +11,7 @@ import {
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
 import DomainChecker from './components/DomainChecker';
+import { useIframeEditor } from './components/useIframeEditor'; // Nosso novo gancho modular!
 
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
@@ -105,6 +106,7 @@ const cleanHtmlForPublishing = (rawHtml: string | null) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(rawHtml, 'text/html');
   const tb = doc.querySelector('#editor-toolbar'); if (tb) tb.remove();
+  const imgTb = doc.querySelector('#image-toolbar'); if (imgTb) imgTb.remove();
   const sc = doc.querySelector('#editor-script'); if (sc) sc.remove();
   const st = doc.querySelector('#editor-style'); if (st) st.remove();
   
@@ -112,6 +114,21 @@ const cleanHtmlForPublishing = (rawHtml: string | null) => {
     el.removeAttribute('contenteditable');
     el.classList.remove('editable-element');
     if (el.getAttribute('class') === '') el.removeAttribute('class');
+  });
+
+  // Limpeza inteligente de imagens vazias para não estragar o layout publicado
+  doc.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
+    const hasImg = wrapper.querySelector('img');
+    if (!hasImg) {
+      wrapper.remove();
+    } else {
+      wrapper.classList.remove('editable-image-wrapper');
+      const core = wrapper.querySelector('.editable-image');
+      if (core) {
+        core.classList.remove('editable-image', 'border-2', 'border-dashed', 'border-zinc-600', 'cursor-pointer', 'hover:border-emerald-500');
+        core.querySelectorAll('i, span').forEach(el => el.remove());
+      }
+    }
   });
   
   return doc.documentElement.outerHTML;
@@ -136,6 +153,9 @@ const getPreviewHtml = (baseHtml: string | null) => {
       .editable-element { transition: all 0.2s; outline: 2px dashed transparent; outline-offset: 2px; }
       .editable-element:hover { outline-color: rgba(160, 160, 160, 0.5); cursor: pointer; }
       .editable-element:focus { outline-color: #ffffff; }
+
+      .editable-image { position: relative; transition: all 0.2s; overflow: hidden; }
+      .editable-image:hover { background: rgba(255,255,255,0.05); }
     </style>
     <div id="editor-toolbar" class="custom-editor-toolbar">
       <div class="color-picker-group" title="Cor do Texto (Fonte)"><span class="color-picker-label">T</span><input type="color" id="fore-color-picker" /></div>
@@ -145,18 +165,26 @@ const getPreviewHtml = (baseHtml: string | null) => {
       <div style="width: 1px; height: 20px; background: #3f3f46; margin: 0 4px;"></div>
       <button id="text-delete" title="Apagar Elemento">✖ Excluir</button>
     </div>
+
+    <div id="image-toolbar" class="custom-editor-toolbar flex gap-2">
+      <button id="btn-upload" style="background: #27272a; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">📤 Upload</button>
+      <button id="btn-ai" style="background: #059669; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">✨ Gerar IA</button>
+      <button id="btn-img-delete" style="color: #ef4444; background: none; border: none; font-size: 12px; cursor: pointer; margin-left: 4px;">✖ Remover</button>
+    </div>
+
     <script id="editor-script">
       document.addEventListener('DOMContentLoaded', () => {
-        const toolbar = document.getElementById('editor-toolbar');
+        const textToolbar = document.getElementById('editor-toolbar');
+        const imgToolbar = document.getElementById('image-toolbar');
         const foreColorPicker = document.getElementById('fore-color-picker');
         const bgColorPicker = document.getElementById('bg-color-picker');
         let currentTarget = null;
+        let currentImgTarget = null;
 
         function sendCleanHtml() {
           const clone = document.documentElement.cloneNode(true);
-          const tb = clone.querySelector('#editor-toolbar'); if (tb) tb.remove();
-          const sc = clone.querySelector('#editor-script'); if (sc) sc.remove();
-          const st = clone.querySelector('#editor-style'); if (st) st.remove();
+          const tbs = clone.querySelectorAll('.custom-editor-toolbar, #editor-script, #editor-style');
+          tbs.forEach(el => el.remove());
           clone.querySelectorAll('.editable-element').forEach(el => { el.removeAttribute('contenteditable'); el.classList.remove('editable-element'); if (el.getAttribute('class') === '') el.removeAttribute('class'); });
           window.parent.postMessage({ type: 'CONTENT_EDITED', html: clone.outerHTML }, '*');
         }
@@ -170,33 +198,77 @@ const getPreviewHtml = (baseHtml: string | null) => {
         }
 
         document.querySelectorAll('h1, h2, h3, h4, p, span, a, button, img, .icon-btn').forEach(el => {
-          if(toolbar.contains(el)) return; 
+          if(textToolbar.contains(el) || imgToolbar.contains(el)) return; 
           el.setAttribute('contenteditable', 'true');
           el.classList.add('editable-element');
           el.addEventListener('focus', (e) => {
+            imgToolbar.style.display = 'none';
             currentTarget = el;
             foreColorPicker.value = rgbToHex(window.getComputedStyle(el).color);
             bgColorPicker.value = rgbToHex(window.getComputedStyle(el).backgroundColor);
             const rect = el.getBoundingClientRect();
-            toolbar.style.display = 'flex';
-            toolbar.style.top = (rect.top + window.scrollY - 60) + 'px';
-            toolbar.style.left = Math.max(10, rect.left + window.scrollX) + 'px';
+            textToolbar.style.display = 'flex';
+            textToolbar.style.top = (rect.top + window.scrollY - 60) + 'px';
+            textToolbar.style.left = Math.max(10, rect.left + window.scrollX) + 'px';
+          });
+        });
+
+        document.querySelectorAll('.editable-image').forEach(el => {
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            textToolbar.style.display = 'none';
+            currentImgTarget = el;
+            const rect = el.getBoundingClientRect();
+            imgToolbar.style.display = 'flex';
+            imgToolbar.style.top = (rect.top + window.scrollY + 10) + 'px';
+            imgToolbar.style.left = (rect.left + window.scrollX + 10) + 'px';
           });
         });
 
         document.addEventListener('click', (e) => {
-          if (toolbar.style.display === 'flex' && !toolbar.contains(e.target) && e.target !== currentTarget) {
-             toolbar.style.display = 'none'; sendCleanHtml();
+          if (textToolbar.style.display === 'flex' && !textToolbar.contains(e.target) && e.target !== currentTarget) {
+             textToolbar.style.display = 'none'; sendCleanHtml();
+          }
+          if (imgToolbar.style.display === 'flex' && !imgToolbar.contains(e.target) && !e.target.closest('.editable-image')) {
+             imgToolbar.style.display = 'none';
           }
         });
 
         document.getElementById('text-delete').addEventListener('click', () => {
-          if (currentTarget) { currentTarget.remove(); toolbar.style.display = 'none'; sendCleanHtml(); }
+          if (currentTarget) { currentTarget.remove(); textToolbar.style.display = 'none'; sendCleanHtml(); }
         });
         foreColorPicker.addEventListener('input', (e) => { document.execCommand('foreColor', false, e.target.value); sendCleanHtml(); });
         bgColorPicker.addEventListener('input', (e) => { if(currentTarget) { currentTarget.style.backgroundColor = e.target.value; currentTarget.style.backgroundImage = 'none'; sendCleanHtml(); } });
         document.getElementById('text-size').addEventListener('change', (e) => { document.execCommand('fontSize', false, e.target.value); sendCleanHtml(); });
         document.getElementById('text-font').addEventListener('change', (e) => { document.execCommand('fontName', false, e.target.value); sendCleanHtml(); });
+
+        document.getElementById('btn-upload').addEventListener('click', () => {
+          window.parent.postMessage({ type: 'REQUEST_UPLOAD', targetId: currentImgTarget.dataset.id }, '*');
+          imgToolbar.style.display = 'none';
+        });
+
+        document.getElementById('btn-ai').addEventListener('click', () => {
+          window.parent.postMessage({ type: 'REQUEST_AI', targetId: currentImgTarget.dataset.id }, '*');
+          imgToolbar.style.display = 'none';
+        });
+
+        document.getElementById('btn-img-delete').addEventListener('click', () => {
+          if (currentImgTarget) { 
+            currentImgTarget.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem (Opcional)</span>';
+            sendCleanHtml(); 
+            imgToolbar.style.display = 'none';
+          }
+        });
+
+        window.addEventListener('message', (e) => {
+          if (e.data.type === 'INSERT_IMAGE') {
+            const targetEl = document.querySelector(\`.editable-image[data-id="\${e.data.targetId}"]\`);
+            if (targetEl) {
+              targetEl.innerHTML = \`<img src="\${e.data.url}" class="w-full h-auto rounded-2xl shadow-2xl object-cover" />\`;
+              sendCleanHtml();
+            }
+          }
+        });
       });
     </script>
   `;
@@ -231,22 +303,14 @@ const App: React.FC = () => {
     showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
   });
 
+  // ACIONANDO O NOSSO NOVO GANCHO MODULAR DE IA E IFRAME
+  useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
+
   useEffect(() => {
     if (aiContent) {
       setGeneratedHtml(renderTemplate(aiContent, formData));
     }
   }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.address, formData.mapEmbed, formData.phone, formData.email]);
-
-  useEffect(() => {
-    const handleIframeMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'CONTENT_EDITED') {
-        setGeneratedHtml(event.data.html);
-        setHasUnsavedChanges(true);
-      }
-    };
-    window.addEventListener('message', handleIframeMessage);
-    return () => window.removeEventListener('message', handleIframeMessage);
-  }, []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => setLoggedUserEmail(user?.email || null));
@@ -333,6 +397,17 @@ const App: React.FC = () => {
     const formCode = data.showForm ? `<form class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]"><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu nome" /><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu email" /><textarea class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
+    // INJEÇÃO DAS CAIXAS DE IMAGEM
+    const imgPlaceholder = (id: string, label: string) => `
+      <div class="editable-image-wrapper w-full flex justify-center py-6">
+        <div class="editable-image border-2 border-dashed border-zinc-600 rounded-2xl p-10 flex flex-col items-center justify-center text-zinc-500 hover:border-emerald-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[300px] bg-black/20" data-id="${id}">
+          <i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem - ${label}</span>
+        </div>
+      </div>`;
+
+    replaceAll('[[HERO_IMAGE]]', imgPlaceholder('hero-img', 'Destaque (Topo)'));
+    replaceAll('[[ABOUT_IMAGE]]', imgPlaceholder('about-img', 'Quem Somos'));
+
     return html.replace('</head>', `${headInjection}</head>`);
   };
 
@@ -380,7 +455,6 @@ const App: React.FC = () => {
         const updateFn = httpsCallable(functions, 'updateSiteProject');
         await updateFn({ targetId: currentProjectSlug, html: htmlToSave, formData, aiContent });
       } else {
-        // Blindagem do Regex: Sem risco de hifens duplos
         const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
         const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
         const saveFn = httpsCallable(functions, 'saveSiteProject');
@@ -428,9 +502,6 @@ const App: React.FC = () => {
     } catch (error) { alert("Erro ao excluir o site."); }
   };
 
-  // ------------------------------------------------------------------
-  // CHECKOUT STRIPE VIA POP-UP (COM RASTREADOR DE ENVIO)
-  // ------------------------------------------------------------------
   const handleStripeCheckout = (projectId: string) => {
     setCheckoutLoading(projectId);
     
@@ -454,7 +525,6 @@ const App: React.FC = () => {
     
     setCheckoutLoading(null);
   };
-  // ------------------------------------------------------------------
 
   const handleLoadProject = (project: any) => {
     if (!project) return;
@@ -601,25 +671,47 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {generatedHtml && (
-                  <div className="flex border-b border-zinc-800/50 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
-                    <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Visual & Dados</button>
-                    
-                    <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
-                      Domínio
-                      {(!officialDomain || officialDomain === 'Pendente' || registerLater) && (
-                        <span className="absolute top-3 right-4 flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                        </span>
-                      )}
-                    </button>
+                {/* ABAS INTELIGENTES COM PONTOS PISCANTES */}
+                {generatedHtml && (() => {
+                  const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
+                  let daysLeft = 0; let isPaid = false;
+                  
+                  if (currentProject?.expiresAt) {
+                    const expirationDate = currentProject.expiresAt._seconds ? currentProject.expiresAt._seconds * 1000 : currentProject.expiresAt.seconds * 1000;
+                    daysLeft = Math.ceil((new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+                    isPaid = currentProject.paymentStatus === 'paid';
+                  }
 
-                    {currentProjectSlug && (
-                      <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'assinatura' ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>Pagamento</button>
-                    )}
-                  </div>
-                )}
+                  return (
+                    <div className="flex border-b border-zinc-800/50 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
+                      <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                        Visual & Dados
+                      </button>
+                      
+                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                        Domínio
+                        {(!officialDomain || officialDomain === 'Pendente' || registerLater) && (
+                          <span className="absolute top-3 right-4 flex h-2 w-2" title="Domínio não configurado">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                          </span>
+                        )}
+                      </button>
+
+                      {currentProjectSlug && (
+                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                          Pagamento
+                          {!isPaid && (
+                            <span className="absolute top-3 right-2 flex h-2 w-2" title={daysLeft > 0 ? "Período de Teste" : "Vencido"}>
+                              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${daysLeft > 0 ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
+                              <span className={`relative inline-flex rounded-full h-2 w-2 ${daysLeft > 0 ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
+                            </span>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6">
                   {activeTab === 'geral' && (
