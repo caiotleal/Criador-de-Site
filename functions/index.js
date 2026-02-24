@@ -142,13 +142,14 @@ exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB"
 });
 
 // ============================================================================
-// MOTOR DE IMAGEM POR IA (OPENAI DALL-E 3) <-- NOVA FUNÇÃO AQUI
+// ============================================================================
+// MOTOR DE IMAGEM POR IA (OPENAI DALL-E 3)
 // ============================================================================
 exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [openAiKey] }, async (request) => {
   const uid = ensureAuthed(request); 
   const { prompt } = request.data;
   
- prompt: "A highly realistic, unedited raw photograph of: " + prompt + ". Captured with a DSLR camera, 85mm lens, shallow depth of field, natural cinematic lighting, highly detailed, 8k resolution. Strictly photographic, absolutely NO illustrations, NO 3D renders, NO digital art.",
+  if (!prompt) throw new HttpsError("invalid-argument", "O descritivo da imagem é obrigatório.");
 
   try {
     const response = await fetch("https://api.openai.com/v1/images/generations", {
@@ -159,7 +160,7 @@ exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [open
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: prompt + ", professional web design photography, high resolution, hyperrealistic, modern business style",
+        prompt: "A highly realistic, unedited raw photograph of: " + prompt + ". Captured with a DSLR camera, 85mm lens, shallow depth of field, natural cinematic lighting, highly detailed, 8k resolution. Strictly photographic, absolutely NO illustrations, NO 3D renders, NO digital art.",
         n: 1,
         size: "1024x1024"
       })
