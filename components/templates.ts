@@ -1,263 +1,338 @@
-const baseStyles = `
-  <style>
-    html { scroll-behavior: smooth; }
-    body { background-color: {{COLOR_1}}; color: {{COLOR_LIGHT}}; overflow-x: hidden; }
-    
-    /* Efeito Vidro (Glassmorphism) Invisível */
-    .ux-glass {
-      background: {{COLOR_2}}40; /* Transparência suave */
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid {{COLOR_3}}50;
-    }
-    
-    /* Tipografia Elegante e Proporcional (Menos Agressiva) */
-    .hero-title { font-size: clamp(2.25rem, 5vw, 4rem); line-height: 1.1; letter-spacing: -0.02em; }
-    .section-title { font-size: clamp(1.75rem, 4vw, 2.75rem); line-height: 1.2; letter-spacing: -0.01em; }
-
-    /* Animações de Entrada (Scroll Reveal) */
-    .nav-enter { animation: slideDown 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    .reveal-up { opacity: 0; transform: translateY(50px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
-    .reveal-up.active { opacity: 1; transform: translateY(0); }
-
-    .reveal-down { opacity: 0; transform: translateY(-50px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
-    .reveal-down.active { opacity: 1; transform: translateY(0); }
-
-    .reveal-left { opacity: 0; transform: translateX(-50px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
-    .reveal-left.active { opacity: 1; transform: translateX(0); }
-
-    .reveal-right { opacity: 0; transform: translateX(50px); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
-    .reveal-right.active { opacity: 1; transform: translateX(0); }
-
-    /* Botões Modernos */
-    .btn-hover { transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-    .btn-hover:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.15); box-shadow: 0 10px 25px -5px {{COLOR_4}}60; }
-    .btn-hover:active { transform: translateY(0) scale(0.98); }
-  </style>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
-      }, { threshold: 0.15 });
-      document.querySelectorAll('.reveal-up, .reveal-down, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
-    });
-  </script>
-`;
-
-const navBar = `
-  <nav class="fixed w-full z-50 ux-glass nav-enter border-b-0">
-    <div class="max-w-7xl mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
-      <div class="flex items-center gap-2">[[LOGO_AREA]]</div>
-      <div class="hidden md:flex items-center gap-8 text-sm font-bold tracking-widest uppercase">
-        <a href="#sobre" class="opacity-60 hover:opacity-100 transition-opacity">Sobre</a>
-        <a href="#contato" class="px-8 py-3 rounded-full font-black tracking-widest btn-hover" style="background-color: {{COLOR_4}}; color: {{COLOR_DARK}};">Solicitar</a>
-      </div>
-    </div>
-  </nav>
-`;
-
 export const TEMPLATES: Record<string, string> = {
+  // ---------------------------------------------------------
+  // 1. CENTRO IMPONENTE
+  // ---------------------------------------------------------
   layout_modern_center: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
-  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
-</head>
-<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
-  ${navBar}
-  <main>
-    <section class="min-h-screen flex flex-col items-center justify-center pt-24 px-4 relative overflow-hidden">
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] bg-[{{COLOR_4}}]/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div class="max-w-4xl mx-auto text-center relative z-10 reveal-up">
-        <h1 class="hero-title font-black mb-6 italic uppercase text-transparent bg-clip-text bg-gradient-to-br from-[{{COLOR_LIGHT}}] to-[{{COLOR_5}}]">{{HERO_TITLE}}</h1>
-        <p class="text-lg md:text-xl opacity-70 mb-10 max-w-2xl mx-auto font-light leading-relaxed">{{HERO_SUBTITLE}}</p>
-        <a href="#contato" class="inline-block px-10 py-4 rounded-full font-black text-sm md:text-base tracking-widest uppercase btn-hover shadow-xl" style="background-color: {{COLOR_LIGHT}}; color: {{COLOR_1}};">Falar com Especialista</a>
-      </div>
-    </section>
-
-    <section id="sobre" class="py-24 px-4 max-w-6xl mx-auto">
-      <div class="grid md:grid-cols-2 gap-6">
-        <div class="ux-glass p-10 md:p-14 rounded-[2rem] reveal-left">
-          <h2 class="section-title font-black mb-4 italic">{{ABOUT_TITLE}}</h2>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{BUSINESS_NAME}}</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Inter', sans-serif; background-color: {{COLOR_1}}; color: {{COLOR_4}}; }
+        .glass { background: {{COLOR_2}}; backdrop-filter: blur(10px); border: 1px solid {{COLOR_3}}; }
+      </style>
+    </head>
+    <body class="antialiased flex flex-col min-h-screen">
+      <header class="fixed w-full top-0 z-50 glass border-b border-[{{COLOR_3}}]">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div class="text-2xl font-black tracking-tighter">[[LOGO_AREA]]</div>
+          <a href="#contato" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all hover:scale-105" style="background-color: {{COLOR_5}}; color: {{COLOR_1}};">
+            {{CONTACT_CALL}}
+          </a>
         </div>
-        <div class="ux-glass p-10 md:p-14 rounded-[2rem] reveal-right flex items-center">
-          <p class="text-lg md:text-xl opacity-70 leading-relaxed">{{ABOUT_TEXT}}</p>
-        </div>
-      </div>
-    </section>
+      </header>
 
-    <section id="contato" class="py-24 px-4 max-w-3xl mx-auto reveal-up">
-      <div class="text-center mb-12">
-        <h2 class="section-title font-black mb-4 italic">{{CONTACT_CALL}}</h2>
-        <p class="opacity-60 text-base md:text-lg">{{ADDRESS}} <br/> {{PHONE}} • {{EMAIL}}</p>
-      </div>
-      [[CONTACT_FORM]]
-      [[MAP_AREA]]
-      <div class="flex justify-center gap-4 mt-10">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[FACEBOOK_BTN]][[TIKTOK_BTN]]</div>
-    </section>
-  </main>
-</body></html>`,
-
-  layout_modern_split: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
-  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
-</head>
-<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
-  ${navBar}
-  <main>
-    <section class="min-h-screen flex items-center pt-20 px-6 md:px-12 relative overflow-hidden">
-      <div class="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-12 items-center">
-        <div class="relative z-10 reveal-left">
-          <h1 class="hero-title font-black mb-6 italic uppercase">{{HERO_TITLE}}</h1>
-          <p class="text-lg md:text-xl opacity-70 mb-8 font-light leading-relaxed">{{HERO_SUBTITLE}}</p>
-          <a href="#contato" class="inline-block px-10 py-4 rounded-full font-black text-sm tracking-widest uppercase btn-hover" style="background-color: {{COLOR_4}}; color: {{COLOR_DARK}};">Iniciar Projeto</a>
-        </div>
-        <div class="h-[50vh] md:h-[60vh] rounded-[2.5rem] ux-glass reveal-right relative overflow-hidden flex items-center justify-center">
-           <div class="absolute inset-0 bg-gradient-to-tr from-[{{COLOR_4}}]/20 to-transparent"></div>
-           <div class="w-40 h-40 rounded-full bg-[{{COLOR_4}}]/30 blur-3xl absolute"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="sobre" class="py-24 px-6 max-w-5xl mx-auto reveal-up">
-      <div class="ux-glass p-10 md:p-16 rounded-[2.5rem] text-center">
-        <h2 class="section-title font-black mb-6 italic">{{ABOUT_TITLE}}</h2>
-        <p class="text-lg md:text-xl opacity-70 leading-relaxed mx-auto">{{ABOUT_TEXT}}</p>
-      </div>
-    </section>
-
-    <section id="contato" class="py-24 px-6 max-w-3xl mx-auto reveal-up">
-      <h2 class="section-title font-black mb-10 text-center italic">{{CONTACT_CALL}}</h2>
-      [[CONTACT_FORM]]
-      <div class="mt-8 text-center opacity-60 text-sm md:text-base">{{ADDRESS}} <br/> {{PHONE}}</div>
-      <div class="flex justify-center gap-4 mt-8">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[TIKTOK_BTN]]</div>
-    </section>
-  </main>
-</body></html>`,
-
-  layout_glass_grid: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
-  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
-</head>
-<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
-  ${navBar}
-  <main class="max-w-7xl mx-auto px-4 pt-32 pb-24 space-y-6">
-    
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="md:col-span-2 ux-glass p-10 md:p-16 rounded-[2.5rem] reveal-down flex flex-col justify-center min-h-[50vh]">
-        <h1 class="hero-title font-black mb-6 italic uppercase">{{HERO_TITLE}}</h1>
-        <p class="text-lg md:text-xl opacity-70 max-w-2xl leading-relaxed">{{HERO_SUBTITLE}}</p>
-      </div>
-      <div class="ux-glass p-10 rounded-[2.5rem] reveal-right flex flex-col justify-between min-h-[50vh]">
-        <div class="w-14 h-14 rounded-full flex items-center justify-center mb-8 text-xl" style="background: {{COLOR_4}}; color: {{COLOR_DARK}};">✦</div>
-        <div>
-          <h2 class="text-2xl md:text-3xl font-black mb-4 italic">{{ABOUT_TITLE}}</h2>
-          <p class="opacity-70 leading-relaxed text-sm md:text-base">{{ABOUT_TEXT}}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-6 reveal-up">
-      <div class="ux-glass p-10 md:p-14 rounded-[2.5rem]">
-        <h2 class="section-title font-black mb-6 italic">{{CONTACT_CALL}}</h2>
-        <p class="opacity-60 mb-8 text-sm md:text-base">{{ADDRESS}} <br/> {{PHONE}} • {{EMAIL}}</p>
-        <div class="flex gap-4 mb-6">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]]</div>
-        [[MAP_AREA]]
-      </div>
-      <div class="ux-glass p-10 md:p-14 rounded-[2.5rem]">
-        [[CONTACT_FORM]]
-      </div>
-    </div>
-
-  </main>
-</body></html>`,
-
-  layout_minimal_elegance: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
-  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
-</head>
-<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
-  ${navBar}
-  <main class="max-w-5xl mx-auto px-6">
-    <section class="min-h-screen flex flex-col justify-center pt-24 reveal-up">
-      <h1 class="hero-title font-black uppercase italic tracking-tight mb-8">{{HERO_TITLE}}</h1>
-      <p class="text-xl md:text-2xl opacity-60 font-light max-w-2xl leading-relaxed">{{HERO_SUBTITLE}}</p>
-      <div class="mt-12">
-        <a href="#contato" class="inline-block px-10 py-4 rounded-full font-black text-sm tracking-widest uppercase btn-hover" style="background-color: {{COLOR_LIGHT}}; color: {{COLOR_1}};">Descubra Mais</a>
-      </div>
-    </section>
-
-    <section id="sobre" class="py-24 reveal-up border-t border-[{{COLOR_3}}]/30">
-      <h2 class="text-xl md:text-2xl font-black mb-6 text-[{{COLOR_4}}] uppercase tracking-widest">{{ABOUT_TITLE}}</h2>
-      <p class="text-xl md:text-3xl font-light leading-relaxed max-w-4xl">{{ABOUT_TEXT}}</p>
-    </section>
-
-    <section id="contato" class="py-24 reveal-up border-t border-[{{COLOR_3}}]/30">
-      <div class="grid md:grid-cols-2 gap-12">
-        <div>
-          <h2 class="section-title font-black italic uppercase mb-6">{{CONTACT_CALL}}</h2>
-          <div class="opacity-60 space-y-2 text-base">
-            <p>{{ADDRESS}}</p><p>{{PHONE}}</p><p>{{EMAIL}}</p>
+      <section class="pt-40 pb-20 px-6 flex-1 flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-[{{COLOR_2}}] to-transparent opacity-50"></div>
+        <div class="relative z-10 max-w-4xl w-full">
+          <h1 class="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-tight">{{HERO_TITLE}}</h1>
+          <p class="text-xl md:text-2xl opacity-80 mb-10 font-light max-w-2xl mx-auto">{{HERO_SUBTITLE}}</p>
+          <a href="#sobre" class="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all hover:scale-105" style="background-color: {{COLOR_4}}; color: {{COLOR_1}};">
+            Conheça mais <i class="fas fa-arrow-down"></i>
+          </a>
+          <div class="mt-16 w-full animate-fade-in-up">
+            [[HERO_IMAGE]]
           </div>
-          <div class="flex gap-4 mt-8">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[FACEBOOK_BTN]]</div>
         </div>
-        <div class="ux-glass p-8 md:p-10 rounded-3xl">[[CONTACT_FORM]]</div>
-      </div>
-    </section>
-  </main>
-</body></html>`,
+      </section>
 
+      <section id="sobre" class="py-24 px-6 bg-[{{COLOR_2}}]">
+        <div class="max-w-7xl mx-auto text-center">
+          <h2 class="text-4xl font-black mb-8">{{ABOUT_TITLE}}</h2>
+          <p class="text-lg opacity-80 leading-relaxed max-w-3xl mx-auto mb-12">{{ABOUT_TEXT}}</p>
+          <div class="w-full max-w-5xl mx-auto">
+            [[ABOUT_IMAGE]]
+          </div>
+        </div>
+      </section>
+
+      <section id="contato" class="py-24 px-6">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 class="text-5xl font-black mb-6">Vamos conversar?</h2>
+            <p class="text-xl opacity-80 mb-12">Estamos prontos para atender você. Entre em contato pelos canais abaixo ou nos faça uma visita.</p>
+            <div class="space-y-6 text-lg">
+              <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full flex items-center justify-center glass"><i class="fas fa-phone"></i></div> {{PHONE}}</div>
+              <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full flex items-center justify-center glass"><i class="fas fa-envelope"></i></div> {{EMAIL}}</div>
+              <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full flex items-center justify-center glass"><i class="fas fa-map-marker-alt"></i></div> {{ADDRESS}}</div>
+            </div>
+            [[MAP_AREA]]
+          </div>
+          <div class="glass p-8 md:p-12 rounded-[2rem]">
+            [[CONTACT_FORM]]
+          </div>
+        </div>
+      </section>
+    </body>
+    </html>
+  `,
+
+  // ---------------------------------------------------------
+  // 2. SPLIT DINÂMICO
+  // ---------------------------------------------------------
+  layout_modern_split: `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{BUSINESS_NAME}}</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: {{COLOR_1}}; color: {{COLOR_4}}; }
+      </style>
+    </head>
+    <body class="antialiased flex flex-col min-h-screen">
+      <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto w-full absolute top-0 left-0 right-0 z-50">
+        <div class="text-2xl font-bold tracking-tighter">[[LOGO_AREA]]</div>
+        <a href="#contato" class="font-bold border-b-2 border-[{{COLOR_5}}] pb-1 hover:opacity-70 transition-opacity">{{CONTACT_CALL}}</a>
+      </nav>
+
+      <section class="pt-32 pb-20 px-6 max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row items-center gap-12">
+        <div class="flex-1 w-full text-center md:text-left">
+          <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">{{HERO_TITLE}}</h1>
+          <p class="text-xl opacity-70 mb-8 max-w-lg mx-auto md:mx-0">{{HERO_SUBTITLE}}</p>
+          <a href="#sobre" class="inline-block px-8 py-4 bg-[{{COLOR_4}}] text-[{{COLOR_1}}] font-bold rounded-lg hover:scale-105 transition-transform">Saber mais</a>
+        </div>
+        <div class="flex-1 w-full">
+          [[HERO_IMAGE]]
+        </div>
+      </section>
+
+      <section id="sobre" class="py-24 px-6 bg-[{{COLOR_2}}]">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
+          <div class="flex-1 w-full order-2 md:order-1">
+            [[ABOUT_IMAGE]]
+          </div>
+          <div class="flex-1 w-full order-1 md:order-2 text-center md:text-left">
+            <h2 class="text-4xl font-bold mb-6">{{ABOUT_TITLE}}</h2>
+            <p class="text-lg opacity-80 leading-relaxed">{{ABOUT_TEXT}}</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="contato" class="py-24 px-6 max-w-7xl mx-auto w-full text-center">
+        <h2 class="text-4xl font-bold mb-16">Fale Conosco</h2>
+        <div class="grid md:grid-cols-3 gap-8 mb-16">
+          <div class="p-8 bg-[{{COLOR_2}}] rounded-2xl border border-[{{COLOR_3}}]"><i class="fas fa-phone text-3xl mb-4 text-[{{COLOR_5}}]"></i><div class="font-bold">{{PHONE}}</div></div>
+          <div class="p-8 bg-[{{COLOR_2}}] rounded-2xl border border-[{{COLOR_3}}]"><i class="fas fa-envelope text-3xl mb-4 text-[{{COLOR_5}}]"></i><div class="font-bold break-words">{{EMAIL}}</div></div>
+          <div class="p-8 bg-[{{COLOR_2}}] rounded-2xl border border-[{{COLOR_3}}]"><i class="fas fa-map-marker-alt text-3xl mb-4 text-[{{COLOR_5}}]"></i><div class="font-bold">{{ADDRESS}}</div></div>
+        </div>
+        <div class="max-w-3xl mx-auto text-left">
+          [[CONTACT_FORM]]
+        </div>
+        [[MAP_AREA]]
+      </section>
+    </body>
+    </html>
+  `,
+
+  // ---------------------------------------------------------
+  // 3. GRID EM VIDRO
+  // ---------------------------------------------------------
+  layout_glass_grid: `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{BUSINESS_NAME}}</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Outfit', sans-serif; background-color: {{COLOR_1}}; color: {{COLOR_4}}; }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 2rem; backdrop-filter: blur(20px); }
+      </style>
+    </head>
+    <body class="antialiased p-4 md:p-8 min-h-screen flex flex-col relative">
+      <div class="fixed top-0 left-0 w-96 h-96 bg-[{{COLOR_5}}] rounded-full mix-blend-multiply filter blur-[128px] opacity-20 z-0"></div>
+      <div class="fixed bottom-0 right-0 w-96 h-96 bg-[{{COLOR_7}}] rounded-full mix-blend-multiply filter blur-[128px] opacity-20 z-0"></div>
+
+      <div class="max-w-7xl mx-auto w-full z-10 flex-1 flex flex-col gap-6">
+        
+        <div class="grid md:grid-cols-3 gap-6">
+          <header class="glass-panel p-8 md:col-span-3 flex justify-between items-center">
+            <div class="text-3xl font-extrabold uppercase tracking-widest">[[LOGO_AREA]]</div>
+            <a href="#contato" class="bg-[{{COLOR_4}}] text-[{{COLOR_1}}] px-6 py-2 rounded-xl font-bold">{{CONTACT_CALL}}</a>
+          </header>
+          
+          <div class="glass-panel p-10 md:col-span-2 flex flex-col justify-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4">{{HERO_TITLE}}</h1>
+            <p class="text-xl opacity-70">{{HERO_SUBTITLE}}</p>
+          </div>
+          
+          <div class="glass-panel p-6 flex items-center justify-center min-h-[300px]">
+             <div class="w-full">[[HERO_IMAGE]]</div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+           <div class="glass-panel p-6 flex items-center justify-center min-h-[300px]">
+             <div class="w-full">[[ABOUT_IMAGE]]</div>
+          </div>
+          <div class="glass-panel p-10 flex flex-col justify-center">
+            <h2 class="text-3xl font-bold mb-4">{{ABOUT_TITLE}}</h2>
+            <p class="text-lg opacity-80 leading-relaxed">{{ABOUT_TEXT}}</p>
+          </div>
+        </div>
+
+        <div id="contato" class="glass-panel p-10">
+          <h2 class="text-3xl font-bold mb-8 text-center border-b border-white/10 pb-6">Contato & Localização</h2>
+          <div class="grid md:grid-cols-2 gap-12">
+            <div>
+              <div class="space-y-6 mb-8 text-lg">
+                <p><strong class="block text-sm text-[{{COLOR_5}}] uppercase tracking-wider mb-1">Telefone</strong> {{PHONE}}</p>
+                <p><strong class="block text-sm text-[{{COLOR_5}}] uppercase tracking-wider mb-1">E-mail</strong> {{EMAIL}}</p>
+                <p><strong class="block text-sm text-[{{COLOR_5}}] uppercase tracking-wider mb-1">Endereço</strong> {{ADDRESS}}</p>
+              </div>
+              [[MAP_AREA]]
+            </div>
+            <div>
+              [[CONTACT_FORM]]
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `,
+
+  // ---------------------------------------------------------
+  // 4. ELEGÂNCIA MINIMALISTA
+  // ---------------------------------------------------------
+  layout_minimal_elegance: `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{BUSINESS_NAME}}</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Lato', sans-serif; background-color: {{COLOR_1}}; color: {{COLOR_4}}; }
+        h1, h2, h3, .logo-text { font-family: 'Playfair Display', serif; }
+      </style>
+    </head>
+    <body class="antialiased flex flex-col min-h-screen">
+      <nav class="w-full border-b border-[{{COLOR_3}}]">
+        <div class="max-w-5xl mx-auto px-6 py-8 text-center">
+          <div class="text-3xl font-bold tracking-widest logo-text">[[LOGO_AREA]]</div>
+        </div>
+      </nav>
+
+      <main class="flex-1 max-w-4xl mx-auto w-full px-6">
+        
+        <section class="py-24 text-center">
+          <h1 class="text-5xl md:text-7xl mb-6">{{HERO_TITLE}}</h1>
+          <p class="text-xl uppercase tracking-widest opacity-60 mb-12">{{HERO_SUBTITLE}}</p>
+          <div class="w-full mb-12">[[HERO_IMAGE]]</div>
+          <a href="#contato" class="border border-[{{COLOR_4}}] px-10 py-4 hover:bg-[{{COLOR_4}}] hover:text-[{{COLOR_1}}] transition-colors uppercase tracking-widest text-sm">{{CONTACT_CALL}}</a>
+        </section>
+
+        <div class="w-24 h-px bg-[{{COLOR_3}}] mx-auto my-12"></div>
+
+        <section class="py-24 text-center">
+          <h2 class="text-4xl mb-8 italic">{{ABOUT_TITLE}}</h2>
+          <p class="text-lg leading-loose opacity-80 mb-12">{{ABOUT_TEXT}}</p>
+          <div class="w-full">[[ABOUT_IMAGE]]</div>
+        </section>
+
+        <div class="w-24 h-px bg-[{{COLOR_3}}] mx-auto my-12"></div>
+
+        <section id="contato" class="py-24 text-center">
+          <h2 class="text-4xl mb-16">Contato</h2>
+          <div class="flex flex-col md:flex-row justify-center gap-12 text-lg mb-16">
+            <div><span class="block text-sm uppercase opacity-50 mb-2">Telefone</span> {{PHONE}}</div>
+            <div><span class="block text-sm uppercase opacity-50 mb-2">E-mail</span> {{EMAIL}}</div>
+            <div><span class="block text-sm uppercase opacity-50 mb-2">Endereço</span> {{ADDRESS}}</div>
+          </div>
+          <div class="max-w-2xl mx-auto text-left mb-16">
+            [[CONTACT_FORM]]
+          </div>
+          <div class="max-w-3xl mx-auto">
+            [[MAP_AREA]]
+          </div>
+        </section>
+
+      </main>
+      <footer class="text-center py-8 border-t border-[{{COLOR_3}}] opacity-50 text-sm uppercase tracking-widest">
+        © {{BUSINESS_NAME}}
+      </footer>
+    </body>
+    </html>
+  `,
+
+  // ---------------------------------------------------------
+  // 5. FLUXO CONTÍNUO
+  // ---------------------------------------------------------
   layout_dynamic_flow: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{BUSINESS_NAME}}</title>
-  <script src="https://cdn.tailwindcss.com"></script>${baseStyles}
-</head>
-<body class="antialiased font-sans selection:bg-[{{COLOR_4}}] selection:text-[{{COLOR_DARK}}]">
-  ${navBar}
-  <main>
-    <section class="min-h-screen flex items-center justify-center pt-24 px-4 text-center reveal-down">
-      <div class="max-w-4xl mx-auto">
-        <div class="inline-block px-5 py-2 rounded-full ux-glass mb-6 text-xs md:text-sm font-bold tracking-widest text-[{{COLOR_4}}] uppercase">Bem-vindo</div>
-        <h1 class="hero-title font-black mb-6 italic uppercase">{{HERO_TITLE}}</h1>
-        <p class="text-lg md:text-xl opacity-70 font-light mb-10 leading-relaxed">{{HERO_SUBTITLE}}</p>
-      </div>
-    </section>
-
-    <section id="sobre" class="py-24 px-6 bg-[{{COLOR_2}}]/30 border-y border-[{{COLOR_3}}]/30">
-      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <div class="reveal-left">
-          <h2 class="section-title font-black mb-6 italic">{{ABOUT_TITLE}}</h2>
-          <p class="text-lg opacity-70 leading-relaxed">{{ABOUT_TEXT}}</p>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{BUSINESS_NAME}}</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: {{COLOR_1}}; color: {{COLOR_4}}; overflow-x: hidden; }
+        .section-curve { border-bottom-left-radius: 5rem; border-bottom-right-radius: 5rem; }
+      </style>
+    </head>
+    <body class="antialiased">
+      
+      <section class="bg-[{{COLOR_2}}] section-curve pt-10 pb-32 px-6 relative z-20 shadow-2xl">
+        <header class="max-w-7xl mx-auto flex justify-between items-center mb-20">
+          <div class="text-2xl font-black uppercase tracking-tight">[[LOGO_AREA]]</div>
+          <a href="#contato" class="bg-[{{COLOR_4}}] text-[{{COLOR_1}}] px-6 py-2 rounded-full font-bold shadow-lg hover:shadow-xl transition-shadow">{{CONTACT_CALL}}</a>
+        </header>
+        
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h1 class="text-5xl md:text-7xl font-black mb-6 leading-none">{{HERO_TITLE}}</h1>
+            <p class="text-xl md:text-2xl opacity-80 font-medium">{{HERO_SUBTITLE}}</p>
+          </div>
+          <div class="w-full">[[HERO_IMAGE]]</div>
         </div>
-        <div class="h-64 md:h-80 ux-glass rounded-[2rem] reveal-right"></div>
-      </div>
-    </section>
+      </section>
 
-    <section id="contato" class="py-24 px-6">
-      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <div class="order-2 md:order-1 ux-glass p-8 md:p-12 rounded-[2.5rem] reveal-left">[[CONTACT_FORM]]</div>
-        <div class="order-1 md:order-2 reveal-right">
-          <h2 class="section-title font-black mb-6 italic">{{CONTACT_CALL}}</h2>
-          <p class="text-base md:text-lg opacity-60 mb-8">{{ADDRESS}} <br/> {{PHONE}} • {{EMAIL}}</p>
-          <div class="flex gap-4">[[WHATSAPP_BTN]][[INSTAGRAM_BTN]][[TIKTOK_BTN]]</div>
+      <section class="pt-32 pb-32 px-6 relative z-10 -mt-16">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+           <div class="order-2 md:order-1 w-full">[[ABOUT_IMAGE]]</div>
+          <div class="order-1 md:order-2 text-right">
+            <h2 class="text-4xl md:text-5xl font-black mb-6 text-[{{COLOR_5}}]">{{ABOUT_TITLE}}</h2>
+            <p class="text-lg opacity-80 leading-relaxed font-medium">{{ABOUT_TEXT}}</p>
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
-</body></html>`
+      </section>
+
+      <section id="contato" class="bg-[{{COLOR_2}}] rounded-t-[5rem] pt-32 pb-24 px-6 relative z-20">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl font-black mb-4">Informações de Contato</h2>
+            <div class="w-20 h-2 bg-[{{COLOR_5}}] mx-auto rounded-full"></div>
+          </div>
+          
+          <div class="grid md:grid-cols-3 gap-8 mb-16 text-center">
+            <div><div class="w-16 h-16 mx-auto bg-[{{COLOR_1}}] rounded-full flex items-center justify-center text-2xl text-[{{COLOR_5}}] mb-4 shadow-lg"><i class="fas fa-phone"></i></div><p class="font-bold">{{PHONE}}</p></div>
+            <div><div class="w-16 h-16 mx-auto bg-[{{COLOR_1}}] rounded-full flex items-center justify-center text-2xl text-[{{COLOR_5}}] mb-4 shadow-lg"><i class="fas fa-envelope"></i></div><p class="font-bold break-words">{{EMAIL}}</p></div>
+            <div><div class="w-16 h-16 mx-auto bg-[{{COLOR_1}}] rounded-full flex items-center justify-center text-2xl text-[{{COLOR_5}}] mb-4 shadow-lg"><i class="fas fa-map-marker-alt"></i></div><p class="font-bold">{{ADDRESS}}</p></div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-12 bg-[{{COLOR_1}}] p-8 md:p-12 rounded-3xl shadow-xl">
+            <div>[[CONTACT_FORM]]</div>
+            <div>[[MAP_AREA]]</div>
+          </div>
+        </div>
+      </section>
+    </body>
+    </html>
+  `
 };
