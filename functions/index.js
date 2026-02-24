@@ -161,7 +161,7 @@ exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [open
       body: JSON.stringify({
         model: "dall-e-3",
         style: "natural", // <- O BOTÃO MÁGICO DO REALISMO
-        prompt: "A candid, raw film photograph shot on Kodak Portra 400. Natural available light, slight film grain, authentic textures, documentary style. Subject: " + prompt + ". STRICTLY REAL LIFE PHOTOGRAPHY. ABSOLUTELY NO 3D rendering, NO illustration, NO CGI, NO digital art, NO shiny surfaces.",
+        prompt: "A highly realistic, professional full-frame photograph of: " + prompt + ". Shot with a high-end DSLR camera, 85mm lens, natural cinematic lighting, lifelike textures. STRICTLY REAL LIFE PHOTOGRAPHY. ABSOLUTELY NO film borders, NO film strips, NO camera UI, NO text, NO watermarks, NO polaroid frames, NO split screens, NO 3D render, NO illustration.",
         n: 1,
         size: "1024x1024"
       })
