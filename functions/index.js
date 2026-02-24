@@ -16,6 +16,7 @@ const stripe = require("stripe")("sk_test_51T3iV5LK0sp6cEMAbpSV1cM4MGESQ9s3EOffF
 if (!admin.apps.length) admin.initializeApp();
 
 const geminiKey = defineSecret("GEMINI_KEY");
+const openAiKey = defineSecret("OPENAI_KEY"); // <-- NOVA CHAVE DA OPENAI ADICIONADA AQUI
 
 const getProjectId = () => process.env.GCLOUD_PROJECT || JSON.parse(process.env.FIREBASE_CONFIG || '{}').projectId;
 
@@ -138,6 +139,45 @@ exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB"
     const result = await model.generateContent(prompt);
     return JSON.parse(result.response.text().replace(/```json/g, "").replace(/```/g, "").replace(/\\n/g, "").trim());
   } catch (error) { throw new HttpsError("internal", error.message); }
+});
+
+// ============================================================================
+// MOTOR DE IMAGEM POR IA (OPENAI DALL-E 3) <-- NOVA FUNÇÃO AQUI
+// ============================================================================
+exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [openAiKey] }, async (request) => {
+  const uid = ensureAuthed(request); 
+  const { prompt } = request.data;
+  
+  if (!prompt) throw new HttpsError("invalid-argument", "O descritivo da imagem é obrigatório.");
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${openAiKey.value()}`
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: prompt + ", professional web design photography, high resolution, hyperrealistic, modern business style",
+        n: 1,
+        size: "1024x1024"
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Erro OpenAI:", errorData);
+      throw new HttpsError("internal", "A IA não conseguiu gerar a imagem. Tente outra descrição.");
+    }
+
+    const data = await response.json();
+    return { imageUrl: data.data[0].url };
+    
+  } catch (error) {
+    console.error("Falha no gerador de imagens:", error);
+    throw new HttpsError("internal", error.message);
+  }
 });
 
 exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
