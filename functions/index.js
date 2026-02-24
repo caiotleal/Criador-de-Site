@@ -181,7 +181,44 @@ exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [open
     throw new HttpsError("internal", error.message);
   }
 });
+// ============================================================================
+// MOTOR DE LOGOMARCAS POR IA (OPENAI DALL-E 3) - DESIGN GRÁFICO
+// ============================================================================
+exports.generateLogo = onCall({ cors: true, timeoutSeconds: 120, secrets: [openAiKey] }, async (request) => {
+  const uid = ensureAuthed(request); 
+  const { prompt } = request.data;
+  
+  if (!prompt) throw new HttpsError("invalid-argument", "O descritivo do logo é obrigatório.");
 
+  try {
+    const response = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${openAiKey.value()}`
+      },
+      body: JSON.stringify({
+        model: "dall-e-3", // Motor oficial e estável
+        prompt: "A modern, minimalist flat vector logo design for: " + prompt + ". Clean lines, simple geometric shapes, solid white background, highly professional corporate identity. NO photorealism, NO 3D render, NO drop shadows, NO textures, NO words, NO letters, NO text.",
+        n: 1,
+        size: "1024x1024"
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Erro OpenAI (Logo):", errorData);
+      throw new HttpsError("internal", "A IA não conseguiu gerar o logo.");
+    }
+
+    const data = await response.json();
+    return { imageUrl: data.data[0].url };
+    
+  } catch (error) {
+    console.error("Falha no gerador de logos:", error);
+    throw new HttpsError("internal", error.message);
+  }
+});
 exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
   const { desiredDomain } = request.data || {};
   const cleanDomain = slugify(desiredDomain).slice(0, 30);
