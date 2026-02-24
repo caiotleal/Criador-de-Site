@@ -160,7 +160,7 @@ exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [open
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: "A highly realistic, unedited raw photograph of: " + prompt + ". Captured with a DSLR camera, 85mm lens, shallow depth of field, natural cinematic lighting, highly detailed, 8k resolution. Strictly photographic, absolutely NO illustrations, NO 3D renders, NO digital art.",
+        prompt: "Photorealistic RAW photography, shot on 35mm lens, award-winning photojournalism. Subject: " + prompt + ". Natural cinematic lighting, highly detailed, 8k resolution, real skin texture. STRICTLY REAL LIFE. ABSOLUTELY NO illustrations, NO 3D renders, NO CGI, NO digital art, NO drawings.",
         n: 1,
         size: "1024x1024"
       })
