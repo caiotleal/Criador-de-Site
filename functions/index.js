@@ -148,7 +148,7 @@ exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [open
   const uid = ensureAuthed(request); 
   const { prompt } = request.data;
   
-  if (!prompt) throw new HttpsError("invalid-argument", "O descritivo da imagem é obrigatório.");
+ prompt: "A highly realistic, unedited raw photograph of: " + prompt + ". Captured with a DSLR camera, 85mm lens, shallow depth of field, natural cinematic lighting, highly detailed, 8k resolution. Strictly photographic, absolutely NO illustrations, NO 3D renders, NO digital art.",
 
   try {
     const response = await fetch("https://api.openai.com/v1/images/generations", {
