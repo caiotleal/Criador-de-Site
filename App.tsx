@@ -247,29 +247,35 @@ const getPreviewHtml = (baseHtml: string | null) => {
           imgToolbar.style.display = 'none';
         });
 
-        document.getElementById('btn-ai').addEventListener('click', () => {
-          window.parent.postMessage({ type: 'REQUEST_AI', targetId: currentImgTarget.dataset.id }, '*');
+document.getElementById('btn-ai').addEventListener('click', () => {
           imgToolbar.style.display = 'none';
-        });
+          if (!currentImgTarget) return;
 
-        document.getElementById('btn-img-delete').addEventListener('click', () => {
-          if (currentImgTarget) { 
-            currentImgTarget.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem (Opcional)</span>';
-            sendCleanHtml(); 
-            imgToolbar.style.display = 'none';
-          }
-        });
+          // Interface compactada numa única linha com aspas simples para não quebrar o React
+          currentImgTarget.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 350px; background: #18181b; padding: 16px; border-radius: 12px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 50;"><span style="color: #a1a1aa; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">✨ Comando para a IA</span><input type="text" id="ai-img-prompt" placeholder="Ex: Uma padaria moderna, luz natural..." style="width: 100%; background: #27272a; color: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #52525b; outline: none; font-size: 13px;" autocomplete="off"><div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;"><button id="ai-img-cancel" style="background: transparent; color: #a1a1aa; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Cancelar</button><button id="ai-img-confirm" style="background: #10b981; color: #064e3b; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Gerar Imagem</button></div></div>';
 
-        window.addEventListener('message', (e) => {
-          if (e.data.type === 'INSERT_IMAGE') {
-            const targetEl = document.querySelector(\`.editable-image[data-id="\${e.data.targetId}"]\`);
-            if (targetEl) {
-              targetEl.innerHTML = \`<img src="\${e.data.url}" class="w-full h-auto rounded-2xl shadow-2xl object-cover" />\`;
-              sendCleanHtml();
-            }
-          }
+          // Foca automaticamente no campo para o usuário sair digitando
+          setTimeout(() => document.getElementById('ai-img-prompt').focus(), 50);
+
+          // Lógica do botão Cancelar
+          document.getElementById('ai-img-cancel').addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentImgTarget.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem</span>';
+          });
+
+          // Lógica do botão Confirmar
+          document.getElementById('ai-img-confirm').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const promptText = document.getElementById('ai-img-prompt').value.trim();
+            if(!promptText) return;
+
+            // Mostra o loading animado enquanto a IA trabalha
+            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#10b981;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Criando Obra de Arte...</span></div>';
+
+            // Envia a ordem para o seu Hook do React com o texto digitado
+            window.parent.postMessage({ type: 'REQUEST_AI', targetId: currentImgTarget.dataset.id, prompt: promptText }, '*');
+          });
         });
-      });
     </script>
   `;
   return clean.replace(/<\/body>/i, `${editorScript}</body>`);
