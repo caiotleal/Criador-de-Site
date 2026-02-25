@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, functions } from './firebase';
@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info, Sparkles, Image as ImageIcon
+  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 import LoginPage from './components/LoginPage';
@@ -38,7 +38,7 @@ const COLORS = [
 
 const PROMO_HTML = `
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,10 +61,10 @@ const PROMO_HTML = `
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
       <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-blue-400 mb-6 uppercase">O futuro da web</div>
       <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
-        A sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">segundos.</span>
+        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">segundos.</span>
       </h1>
       <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
-        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a magia acontecer.
+        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
       </p>
     </div>
 
@@ -72,12 +72,12 @@ const PROMO_HTML = `
       <div class="glass-card p-10 md:p-12 rounded-[2.5rem] relative overflow-hidden group">
         <h3 class="text-3xl font-black mb-2 italic uppercase">Teste Grátis</h3>
         <p class="text-white/50 mb-8">Veja o seu site pronto hoje mesmo.</p>
-        <div class="text-5xl font-black mb-2">€ 0 <span class="text-lg text-white/40 font-normal">/ 5 dias</span></div>
+        <div class="text-5xl font-black mb-2">R$ 0 <span class="text-lg text-white/40 font-normal">/ 5 dias</span></div>
         <p class="text-sm text-blue-400 font-bold mb-8">Após 5 dias, o site é congelado.</p>
         <ul class="space-y-4 text-white/70">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Geração por IA</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Domínio gratuito (.web.app)</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Formulário de Contacto</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs">✔</span> Formulário de Contato</li>
         </ul>
       </div>
 
@@ -85,11 +85,11 @@ const PROMO_HTML = `
         <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-black tracking-widest px-6 py-2 rounded-bl-3xl uppercase">Mais Assinado</div>
         <h3 class="text-3xl font-black mb-2 italic uppercase text-indigo-400">Plano Anual</h3>
         <p class="text-white/50 mb-8">A solução definitiva para o seu negócio.</p>
-        <div class="text-5xl font-black mb-2">€ 99 <span class="text-lg text-white/40 font-normal">/ 1º ano</span></div>
-        <p class="text-sm text-white/50 font-medium mb-8">Renovação garantida por apenas € 20/ano.</p>
+        <div class="text-5xl font-black mb-2">R$ 499 <span class="text-lg text-white/40 font-normal">/ 1º ano</span></div>
+        <p class="text-sm text-white/50 font-medium mb-8">Renovação garantida por apenas R$ 100/ano.</p>
         <ul class="space-y-4 text-white/70">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> 365 dias online sem interrupções</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Apontamento de Domínio (.pt / .com)</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Apontamento de Domínio (.com.br)</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs">★</span> Alta velocidade e segurança Google</li>
         </ul>
       </div>
@@ -265,7 +265,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
             const promptText = inp ? inp.value.trim() : '';
             if(!promptText) return;
 
-            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#10b981;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">A Criar Obra de Arte...</span></div>';
+            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#10b981;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Criando Obra de Arte...</span></div>';
             window.parent.postMessage({ type: 'REQUEST_AI', targetId: currentImgTarget.dataset.id, prompt: promptText }, '*');
           });
         });
@@ -296,14 +296,8 @@ const getPreviewHtml = (baseHtml: string | null) => {
 const App: React.FC = () => {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [aiContent, setAiContent] = useState<any>(null);
-  
-  // NOVOS ESTADOS PARA A INTERFACE DO LOGO
-  const [isEditingLogoPrompt, setIsEditingLogoPrompt] = useState(false);
-  const [logoPromptText, setLogoPromptText] = useState("");
-  const logoInputRef = useRef<HTMLInputElement>(null);
   
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
@@ -340,13 +334,6 @@ const App: React.FC = () => {
     return () => unsub();
   }, []);
 
-  // Foca no input do logo quando a barrinha abre
-  useEffect(() => {
-    if (isEditingLogoPrompt && logoInputRef.current) {
-      setTimeout(() => logoInputRef.current?.focus(), 50);
-    }
-  }, [isEditingLogoPrompt]);
-
   const fetchProjects = async () => {
     if (!auth.currentUser) return setSavedProjects([]);
     try {
@@ -370,7 +357,7 @@ const App: React.FC = () => {
     replaceAll('{{HERO_SUBTITLE}}', content.heroSubtitle || 'Presença digital profissional.');
     replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
     replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
-    replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale connosco');
+    replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
     
     replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
     replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
@@ -419,7 +406,7 @@ const App: React.FC = () => {
     const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-    const formCode = data.showForm ? `<form class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]"><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="O seu nome" /><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="O seu email" /><textarea class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" rows="4" placeholder="A sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button></form>` : '';
+    const formCode = data.showForm ? `<form class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]"><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu nome" /><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu email" /><textarea class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
     const imgPlaceholder = (id: string, label: string) => `
@@ -436,7 +423,7 @@ const App: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    if (!formData.businessName || !formData.description) return alert('Preencha o Nome e a Ideia!');
+    if (!formData.businessName || !formData.description) return alert('Preencha Nome e Ideia!');
     setIsGenerating(true);
     try {
       if (aiContent && generatedHtml) {
@@ -454,29 +441,6 @@ const App: React.FC = () => {
     finally { setIsGenerating(false); }
   };
 
-  // NOVA FUNÇÃO PARA GERAR O LOGO COM O TEXTO DO USUÁRIO
-  const handleManualGenerateLogo = async () => {
-    if (!logoPromptText.trim()) return alert('Por favor, descreva como quer o seu logo.');
-    
-    setIsEditingLogoPrompt(false); // Fecha a barrinha
-    setIsGeneratingLogo(true); // Mostra o loading
-    
-    try {
-      const generateLogoFn = httpsCallable(functions, 'generateLogo');
-      const result: any = await generateLogoFn({ prompt: logoPromptText });
-      
-      if (result.data?.imageUrl) {
-        setFormData(p => ({ ...p, logoBase64: result.data.imageUrl }));
-        setHasUnsavedChanges(true);
-        setLogoPromptText(""); // Limpa o campo
-      }
-    } catch (error: any) {
-      alert('Erro ao gerar logo: ' + error.message);
-    } finally {
-      setIsGeneratingLogo(false);
-    }
-  };
-
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -492,7 +456,7 @@ const App: React.FC = () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
     if (!currentProjectSlug && !registerLater && !officialDomain) {
       setActiveTab('dominio');
-      return alert("Por favor, configure o seu domínio ou marque a opção 'Configurar depois' no separador de Domínio Oficial.");
+      return alert("Por favor, configure seu domínio ou marque a opção 'Configurar depois' na aba de Domínio Oficial.");
     }
     
     setIsSavingProject(true);
@@ -513,13 +477,13 @@ const App: React.FC = () => {
       }
       setHasUnsavedChanges(false);
       fetchProjects();
-      alert("Site guardado com sucesso!");
-    } catch (err: any) { alert('Erro ao guardar o site.'); } 
+      alert("Site salvo com sucesso!");
+    } catch (err: any) { alert('Erro ao salvar o site.'); } 
     finally { setIsSavingProject(false); }
   };
 
   const handlePublishSite = async () => {
-    if (hasUnsavedChanges) return alert("Guarde as suas alterações antes de publicar.");
+    if (hasUnsavedChanges) return alert("Salve suas alterações antes de publicar.");
     setIsPublishing(true);
     try {
       const publishFn = httpsCallable(functions, 'publishUserProject');
@@ -535,18 +499,18 @@ const App: React.FC = () => {
   };
 
   const handleDeleteSite = async (projectId: string) => {
-    if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site. Tem a certeza absoluta?")) return;
+    if (!window.confirm("Atenção! Esta ação apagará definitivamente o seu site do ar. Tem certeza absoluta?")) return;
     try {
       const deleteFn = httpsCallable(functions, 'deleteUserProject');
       await deleteFn({ targetId: projectId });
-      alert("Site apagado com sucesso.");
+      alert("Site excluído com sucesso.");
       
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
         setFormData({ businessName: '', description: '', whatsapp: '', instagram: '', facebook: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
       }
       fetchProjects();
-    } catch (error) { alert("Erro ao apagar o site."); }
+    } catch (error) { alert("Erro ao excluir o site."); }
   };
 
   const handleStripeCheckout = (projectId: string) => {
@@ -661,7 +625,7 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Site Publicado com Sucesso!</h2>
-                  <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registo.br / DNS, pode demorar algumas horas para propagar.</p>
+                  <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br / DNS, pode demorar algumas horas para propagar.</p>
                 </div>
                 <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
                   <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
@@ -698,7 +662,7 @@ const App: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     {loggedUserEmail ? (
-                      <button className="text-zinc-400 hover:text-emerald-400 transition-colors" title={`Sessão iniciada como: ${loggedUserEmail}`}>
+                      <button className="text-zinc-400 hover:text-emerald-400 transition-colors" title={`Logado como: ${loggedUserEmail}`}>
                         <User size={18} />
                       </button>
                     ) : (
@@ -782,7 +746,7 @@ const App: React.FC = () => {
                       </div>
 
                       <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-700 transition-colors shadow-sm">
-                        {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar O Meu Site'}
+                        {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                       </button>
 
                       {generatedHtml && (
@@ -812,53 +776,18 @@ const App: React.FC = () => {
                             </label>
                             
                             {!formData.logoBase64 ? (
-                              isGeneratingLogo ? (
-                                <div className="h-14 bg-zinc-900/50 border border-zinc-800 rounded-xl flex items-center justify-center gap-3 text-xs text-zinc-400 font-bold">
-                                  <Loader2 size={16} className="animate-spin text-emerald-500" />
-                                  A criar o seu logótipo...
-                                </div>
-                              ) : isEditingLogoPrompt ? (
-                                <div className="bg-[#18181b] p-3 rounded-xl border border-[#3f3f46] shadow-2xl space-y-2 animate-in fade-in slide-in-from-bottom-2">
-                                  <div className="flex justify-between items-center">
-                                     <span className="text-[#a1a1aa] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"><Sparkles size={12} className="text-amber-400" /> Comando para a IA</span>
-                                     <button onClick={() => setIsEditingLogoPrompt(false)} className="text-zinc-500 hover:text-white"><X size={14} /></button>
-                                  </div>
-                                  <input 
-                                    ref={logoInputRef}
-                                    type="text" 
-                                    value={logoPromptText}
-                                    onChange={(e) => setLogoPromptText(e.target.value)}
-                                    placeholder="Ex: Ícone minimalista de um café com um livro..." 
-                                    className="w-full bg-[#27272a] text-white p-2.5 rounded-lg border border-[#52525b] outline-none text-xs focus:border-emerald-500 transition-colors"
-                                    onKeyDown={(e) => e.key === 'Enter' && handleManualGenerateLogo()}
-                                  />
-                                  <button onClick={handleManualGenerateLogo} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2">
-                                    Gerar Logótipo <Sparkles size={14} />
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="flex gap-2 w-full mt-2">
-                                  <label className="flex-1 cursor-pointer border border-dashed border-zinc-700 hover:border-zinc-500 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-zinc-400 hover:text-white transition-colors bg-zinc-900/30">
-                                    <Upload size={14} /> Upload
-                                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                                  </label>
-                                  <button 
-                                    onClick={() => {
-                                      setIsEditingLogoPrompt(true);
-                                      setLogoPromptText(`Empresa: ${formData.businessName}. Nicho: ${formData.description}. Estilo minimalista e moderno.`);
-                                    }}
-                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl p-3 flex justify-center items-center gap-2 text-xs text-white font-bold transition-colors shadow-sm group"
-                                  >
-                                    <Sparkles size={14} className="text-amber-400 group-hover:rotate-12 transition-transform" /> ✨ Criar com IA
-                                  </button>
-                                </div>
-                              )
+                              <div className="space-y-2">
+                                <label className="cursor-pointer w-full border border-dashed border-zinc-700 hover:border-emerald-500 rounded-xl p-4 flex justify-center items-center gap-2 text-xs text-zinc-400 hover:text-emerald-400 transition-colors bg-zinc-900/50">
+                                  <Upload size={14} /> Fazer Upload da Marca
+                                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                                </label>
+                                <p className="text-[10px] text-zinc-500 text-center">
+                                  Não tem um logo? <a href="https://www.canva.com/pt_br/criar/logotipo/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">Crie de graça no Canva</a>
+                                </p>
+                              </div>
                             ) : (
-                              <div className="h-20 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-4 relative group">
-                                <img src={formData.logoBase64} className="h-full object-contain drop-shadow-lg" alt="Logo" />
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                  <button onClick={() => window.open(formData.logoBase64, '_blank')} className="text-white hover:text-emerald-400" title="Ver em tamanho grande"><ExternalLink size={18}/></button>
-                                </div>
+                              <div className="h-14 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-2">
+                                <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
                               </div>
                             )}
                           </div>
@@ -867,23 +796,23 @@ const App: React.FC = () => {
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
                             <div className="grid grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@utilizador)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                           </div>
 
                           <div className="space-y-3 pt-2">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Entregas (Opcional)</label>
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Delivery (Opcional)</label>
                             <div className="grid grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="UberEats (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="col-span-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Glovo (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="col-span-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                           </div>
 
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contacto e Localização</label>
+                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
                             <div className="grid grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
@@ -901,7 +830,7 @@ const App: React.FC = () => {
                       {!currentProjectSlug ? (
                         <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/30">
                           <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2 mb-2"><Globe size={16}/> Qual será o endereço?</h4>
-                          <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de guardar, precisamos saber se vai usar um domínio oficial (Ex: Registo.br).</p>
+                          <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Ex: Registro.br).</p>
                           <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
                         </div>
                       ) : (
@@ -911,7 +840,7 @@ const App: React.FC = () => {
                               <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-5 h-5" /></div>
                               <div>
                                 <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
-                                <p className="text-[10px] text-zinc-400">Configure no seu fornecedor de domínio</p>
+                                <p className="text-[10px] text-zinc-400">Configure no seu provedor de domínio</p>
                               </div>
                             </div>
                             <div className="bg-[#050505] p-4 rounded-xl border border-zinc-800/50 space-y-4">
@@ -938,7 +867,7 @@ const App: React.FC = () => {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] rounded-full pointer-events-none"></div>
                         
                         <h3 className="text-lg font-black text-white mb-1 flex items-center gap-2"><CreditCard size={18} className="text-amber-400" /> Painel de Assinatura</h3>
-                        <p className="text-xs text-zinc-400 mb-6">Faça a gestão do plano do seu projeto <span className="text-amber-400 font-mono">{currentProjectSlug}</span></p>
+                        <p className="text-xs text-zinc-400 mb-6">Gerencie o plano do seu projeto <span className="text-amber-400 font-mono">{currentProjectSlug}</span></p>
 
                         <div className="bg-[#050505] p-5 rounded-xl border border-zinc-800/50 mb-6">
                           <div className="flex justify-between items-center mb-3">
@@ -953,11 +882,11 @@ const App: React.FC = () => {
                         {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
                           <div className="space-y-4">
                             <div className="flex items-end gap-2">
-                              <span className="text-4xl font-black text-white">€ 99</span>
+                              <span className="text-4xl font-black text-white">R$ 499</span>
                               <span className="text-sm text-zinc-500 font-medium pb-1">/ 1º ano</span>
                             </div>
                             <ul className="space-y-2 text-xs text-zinc-300 mb-4">
-                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Domínio próprio libertado</li>
+                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Domínio próprio liberado</li>
                               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Site blindado no Google</li>
                               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Suporte e renovação garantida</li>
                             </ul>
@@ -968,9 +897,9 @@ const App: React.FC = () => {
                               className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3.5 rounded-xl font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-lg shadow-amber-500/20"
                             >
                               {checkoutLoading === currentProjectSlug ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />} 
-                              {checkoutLoading === currentProjectSlug ? 'A iniciar o Seguro...' : 'Ativar Plano Anual Seguro'}
+                              {checkoutLoading === currentProjectSlug ? 'Iniciando Pagamento...' : 'Ativar Plano Anual'}
                             </button>
-                            <p className="text-[9px] text-center text-zinc-500 mt-3 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamento encriptado via Stripe</p>
+                            <p className="text-[9px] text-center text-zinc-500 mt-3 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamento processado via Stripe</p>
                           </div>
                         ) : (
                           <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-xl text-center space-y-3">
@@ -989,7 +918,7 @@ const App: React.FC = () => {
                   {loggedUserEmail && (
                     <div className="mt-8 border-t border-zinc-800/50 pt-6 space-y-4">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Os meus Projetos</p>
+                        <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
                         <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2.5 py-1 rounded-lg">Sair</button>
                       </div>
                       
@@ -1026,7 +955,7 @@ const App: React.FC = () => {
                       className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
                     >
                       {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />}
-                      {currentProjectSlug ? 'Atualizar' : 'Guardar Projeto'}
+                      {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
                     </button>
 
                     <button 
