@@ -265,8 +265,8 @@ const getPreviewHtml = (baseHtml: string | null) => {
             const promptText = inp ? inp.value.trim() : '';
             if(!promptText) return;
 
-            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#60a5fa;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Buscando imagens...</span></div>';
-            window.parent.postMessage({ type: 'REQUEST_STOCK_IMAGES', targetId: currentImgTarget.dataset.id, prompt: promptText }, '*');
+            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#10b981;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Criando imagem realista...</span></div>';
+            window.parent.postMessage({ type: 'REQUEST_AI', targetId: currentImgTarget.dataset.id, prompt: promptText }, '*');
           });
         });
 
@@ -287,46 +287,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
             }
           }
 
-          if (e.data.type === 'STOCK_IMAGE_OPTIONS') {
-            const targetEl = document.querySelector(\`.editable-image[data-id="\${e.data.targetId}"]\`);
-            if (!targetEl) return;
 
-            const options = Array.isArray(e.data.options) ? e.data.options : [];
-            if (!options.length) {
-              targetEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;color:#fca5a5;"><i class="fas fa-triangle-exclamation text-2xl mb-2"></i><span class="text-xs font-bold uppercase tracking-widest">Sem resultados</span></div>';
-              return;
-            }
-
-            targetEl.innerHTML = \`<div style="width:100%;display:flex;flex-direction:column;gap:8px;"><span style="font-size:10px;color:#a1a1aa;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Escolha 1 imagem</span><div id="stock-grid-\${e.data.targetId}" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;"></div></div>\`;
-
-            const grid = document.getElementById(\`stock-grid-\${e.data.targetId}\`);
-            options.slice(0, 4).forEach((rawUrl) => {
-              const [primaryUrl, fallbackUrl] = String(rawUrl).split('|');
-              const btn = document.createElement('button');
-              btn.type = 'button';
-              btn.style.cssText = 'padding:0;border:none;background:#111827;border-radius:10px;overflow:hidden;cursor:pointer;';
-              btn.innerHTML = \`<img src="\${primaryUrl}" style="display:block;width:100%;height:120px;object-fit:cover;" />\`;
-              const previewImg = btn.querySelector('img');
-              if (previewImg && fallbackUrl) {
-                previewImg.addEventListener('error', () => {
-                  if (previewImg.src !== fallbackUrl) previewImg.src = fallbackUrl;
-                }, { once: true });
-              }
-
-              btn.addEventListener('click', (evt) => {
-                evt.stopPropagation();
-                targetEl.innerHTML = \`<img src="\${primaryUrl}" class="w-full h-full block object-cover" style="border-radius: inherit; margin: 0; box-shadow: none;" />\`;
-                const finalImg = targetEl.querySelector('img');
-                if (finalImg && fallbackUrl) {
-                  finalImg.addEventListener('error', () => {
-                    if (finalImg.src !== fallbackUrl) finalImg.src = fallbackUrl;
-                  }, { once: true });
-                }
-                sendCleanHtml();
-              });
-              grid?.appendChild(btn);
-            });
-          }
         });
       });
     </script>
