@@ -97,7 +97,7 @@ const PROMO_HTML = `
 </html>
 `;
 
-const cleanHtmlForPublishing = (rawHtml: string | null) => {
+const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false) => {
   if (!rawHtml) return '';
   if (!rawHtml.includes('editor-toolbar')) return rawHtml;
 
@@ -114,26 +114,28 @@ const cleanHtmlForPublishing = (rawHtml: string | null) => {
     if (el.getAttribute('class') === '') el.removeAttribute('class');
   });
 
-  doc.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
-    const hasImg = wrapper.querySelector('img');
-    if (!hasImg) {
-      wrapper.remove();
-    } else {
-      wrapper.classList.remove('editable-image-wrapper');
-      const core = wrapper.querySelector('.editable-image');
-      if (core) {
-        core.classList.remove('editable-image', 'border-2', 'border-dashed', 'border-zinc-600', 'cursor-pointer', 'hover:border-emerald-500');
-        core.querySelectorAll('i, span').forEach(el => el.remove());
+  if (!preserveEditable) {
+    doc.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
+      const hasImg = wrapper.querySelector('img');
+      if (!hasImg) {
+        wrapper.remove();
+      } else {
+        wrapper.classList.remove('editable-image-wrapper');
+        const core = wrapper.querySelector('.editable-image');
+        if (core) {
+          core.classList.remove('editable-image', 'border-2', 'border-dashed', 'border-zinc-600', 'cursor-pointer', 'hover:border-emerald-500');
+          core.querySelectorAll('i, span').forEach(el => el.remove());
+        }
       }
-    }
-  });
+    });
+  }
   
   return doc.documentElement.outerHTML;
 };
 
 const getPreviewHtml = (baseHtml: string | null) => {
   if (!baseHtml) return '';
-  const clean = cleanHtmlForPublishing(baseHtml);
+  const clean = cleanHtmlForPublishing(baseHtml, true);
   
   const editorScript = `
     <style id="editor-style">
