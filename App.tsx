@@ -167,6 +167,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
 
     <div id="image-toolbar" class="custom-editor-toolbar flex gap-2">
       <button id="btn-upload" style="background: #27272a; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">📤 Upload</button>
+      <button id="btn-stock" style="background: #2563eb; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">🖼️ Banco Público</button>
       <button id="btn-img-delete" style="color: #ef4444; background: none; border: none; font-size: 12px; cursor: pointer; margin-left: 4px;">✖ Remover</button>
     </div>
 
@@ -245,27 +246,27 @@ const getPreviewHtml = (baseHtml: string | null) => {
           imgToolbar.style.display = 'none';
         });
 
-        document.getElementById('btn-ai').addEventListener('click', () => {
+        document.getElementById('btn-stock').addEventListener('click', () => {
           imgToolbar.style.display = 'none';
           if (!currentImgTarget) return;
 
-          currentImgTarget.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 350px; background: #18181b; padding: 16px; border-radius: 12px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 50;"><span style="color: #a1a1aa; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">✨ Comando para a IA</span><input type="text" id="ai-img-prompt" placeholder="Ex: Uma padaria moderna, luz natural..." style="width: 100%; background: #27272a; color: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #52525b; outline: none; font-size: 13px;" autocomplete="off"><div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;"><button id="ai-img-cancel" style="background: transparent; color: #a1a1aa; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Cancelar</button><button id="ai-img-confirm" style="background: #10b981; color: #064e3b; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Gerar Imagem</button></div></div>';
+          currentImgTarget.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 460px; background: #18181b; padding: 16px; border-radius: 12px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 50;"><span style="color: #a1a1aa; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🖼️ Buscar em banco público</span><input type="text" id="stock-img-prompt" placeholder="Ex: hamburguer artesanal" style="width: 100%; background: #27272a; color: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #52525b; outline: none; font-size: 13px;" autocomplete="off"><div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;"><button id="stock-img-cancel" style="background: transparent; color: #a1a1aa; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Cancelar</button><button id="stock-img-confirm" style="background: #2563eb; color: #dbeafe; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Buscar 4 opções</button></div></div>';
 
-          setTimeout(() => { const inp = document.getElementById('ai-img-prompt'); if(inp) inp.focus(); }, 50);
+          setTimeout(() => { const inp = document.getElementById('stock-img-prompt'); if(inp) inp.focus(); }, 50);
 
-          document.getElementById('ai-img-cancel').addEventListener('click', (e) => {
+          document.getElementById('stock-img-cancel').addEventListener('click', (e) => {
             e.stopPropagation();
             currentImgTarget.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem</span>';
           });
 
-          document.getElementById('ai-img-confirm').addEventListener('click', (e) => {
+          document.getElementById('stock-img-confirm').addEventListener('click', (e) => {
             e.stopPropagation();
-            const inp = document.getElementById('ai-img-prompt');
+            const inp = document.getElementById('stock-img-prompt');
             const promptText = inp ? inp.value.trim() : '';
             if(!promptText) return;
 
-            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#10b981;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Criando imagem realista...</span></div>';
-            window.parent.postMessage({ type: 'REQUEST_AI', targetId: currentImgTarget.dataset.id, prompt: promptText }, '*');
+            currentImgTarget.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; color:#60a5fa;"><i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Buscando imagens...</span></div>';
+            window.parent.postMessage({ type: 'REQUEST_STOCK_IMAGES', targetId: currentImgTarget.dataset.id, prompt: promptText }, '*');
           });
         });
 
@@ -284,6 +285,33 @@ const getPreviewHtml = (baseHtml: string | null) => {
               targetEl.innerHTML = \`<img src="\${e.data.url}" class="w-full h-full block object-cover" style="border-radius: inherit; margin: 0; box-shadow: none;" />\`;
               sendCleanHtml();
             }
+          }
+
+          if (e.data.type === 'STOCK_IMAGE_OPTIONS') {
+            const targetEl = document.querySelector(\`.editable-image[data-id="\${e.data.targetId}"]\`);
+            if (!targetEl) return;
+
+            const options = Array.isArray(e.data.options) ? e.data.options : [];
+            if (!options.length) {
+              targetEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;color:#fca5a5;"><i class="fas fa-triangle-exclamation text-2xl mb-2"></i><span class="text-xs font-bold uppercase tracking-widest">Sem resultados</span></div>';
+              return;
+            }
+
+            targetEl.innerHTML = \`<div style="width:100%;display:flex;flex-direction:column;gap:8px;"><span style="font-size:10px;color:#a1a1aa;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Escolha 1 imagem</span><div id="stock-grid-\${e.data.targetId}" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;"></div></div>\`;
+
+            const grid = document.getElementById(\`stock-grid-\${e.data.targetId}\`);
+            options.slice(0, 4).forEach((url) => {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.style.cssText = 'padding:0;border:none;background:#111827;border-radius:10px;overflow:hidden;cursor:pointer;';
+              btn.innerHTML = \`<img src="\${url}" style="display:block;width:100%;height:120px;object-fit:cover;" />\`;
+              btn.addEventListener('click', (evt) => {
+                evt.stopPropagation();
+                targetEl.innerHTML = \`<img src="\${url}" class="w-full h-full block object-cover" style="border-radius: inherit; margin: 0; box-shadow: none;" />\`;
+                sendCleanHtml();
+              });
+              grid?.appendChild(btn);
+            });
           }
         });
       });
