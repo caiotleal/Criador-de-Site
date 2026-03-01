@@ -165,7 +165,6 @@ const getPreviewHtml = (baseHtml: string | null) => {
 
     <div id="image-toolbar" class="custom-editor-toolbar flex gap-2">
       <button id="btn-upload" style="background: #27272a; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">📤 Upload</button>
-      <button id="btn-ai" style="background: #059669; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">✨ Gerar IA</button>
       <button id="btn-img-delete" style="color: #ef4444; background: none; border: none; font-size: 12px; cursor: pointer; margin-left: 4px;">✖ Remover</button>
     </div>
 
