@@ -10,7 +10,6 @@ import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
 import { useIframeEditor } from './components/useIframeEditor'; 
-import PromoView from './components/PromoView';
 
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
@@ -34,6 +33,79 @@ const COLORS = [
   { id: 'peach', name: 'Pêssego', c1: '#fff7ed', c2: '#ffedd5', c3: '#fed7aa', c4: '#c2410c', c5: '#ea580c', c6: '#f97316', c7: '#fb923c', light: '#431407', dark: '#ffffff' },
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
 ];
+
+const PROMO_HTML = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiteCraft - Criação Inteligente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
+    ::-webkit-scrollbar { display: none; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
+    .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  </style>
+</head>
+<body class="antialiased selection:bg-indigo-500 selection:text-white">
+  <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none"></div>
+
+    <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
+      <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-indigo-400 mb-6 uppercase">O futuro da web</div>
+      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
+        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-500">segundos.</span>
+      </h1>
+      <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
+        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-white">Teste Grátis</h3>
+        <p class="text-white/50 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
+        <div class="text-4xl font-black mb-1">R$ 0 <span class="text-sm text-white/40 font-normal">/ 5 dias</span></div>
+        <p class="text-[11px] text-blue-400 font-bold mb-6">Após 5 dias, o site é congelado.</p>
+        <ul class="space-y-3 text-white/70 text-sm">
+          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Geração por IA</li>
+          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
+        </ul>
+      </div>
+
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group border-zinc-500/30">
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-zinc-300">Mensal</h3>
+        <p class="text-white/50 mb-6 text-sm">Ideal para validar seu negócio.</p>
+        <div class="text-4xl font-black mb-1">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-white/40 font-normal">/ mês</span></div>
+        <p class="text-[11px] text-zinc-400 font-bold mb-6">Cancele quando quiser.</p>
+        <ul class="space-y-3 text-white/70 text-sm">
+          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-zinc-500/20 flex items-center justify-center text-zinc-300 text-[10px]">✔</span> Site online 24/7</li>
+          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-zinc-500/20 flex items-center justify-center text-zinc-300 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
+        </ul>
+      </div>
+
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-indigo-500/30 bg-indigo-950/20 shadow-[0_0_30px_rgba(99,102,241,0.15)] transform md:-translate-y-4">
+        <div class="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-black tracking-widest px-4 py-1.5 rounded-bl-2xl uppercase">Mais Assinado</div>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-indigo-400">Anual</h3>
+        <p class="text-white/50 mb-6 text-sm">A solução definitiva e econômica.</p>
+        <div class="text-4xl font-black mb-1">R$ 499 <span class="text-sm text-white/40 font-normal">/ 1º ano</span></div>
+        <p class="text-[11px] text-indigo-300/70 font-medium mb-6">Equivale a R$ 41,58 por mês.</p>
+        <ul class="space-y-3 text-white/70 text-sm">
+          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px]">★</span> 2 meses grátis</li>
+          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px]">★</span> Apontamento de Domínio</li>
+          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px]">★</span> Alta velocidade Google</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
+`;
 
 const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false) => {
   if (!rawHtml) return '';
