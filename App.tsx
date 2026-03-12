@@ -520,8 +520,9 @@ const App: React.FC = () => {
     const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-   // Configuração inteligente do FormSubmit para envio de emails
-    const formAction = data.email ? `action="https://formsubmit.co/${data.email}" method="POST"` : '';
+// Configuração inteligente do FormSubmit para envio de emails via AJAX (Sem sair da página)
+    // Usamos o endpoint /ajax/ para evitar o redirecionamento
+    const formAction = data.email ? `action="https://formsubmit.co/ajax/${data.email}"` : '';
     const hiddenInputs = data.email ? `
       <input type="hidden" name="_subject" value="Novo contato pelo site - ${data.businessName}">
       <input type="hidden" name="_template" value="table">
@@ -529,14 +530,59 @@ const App: React.FC = () => {
     ` : '';
 
     const formCode = data.showForm ? `
-    <form ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]">
+    <form id="sitecraft-contact-form" ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem] relative">
       ${hiddenInputs}
       <input name="Nome" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu nome" />
       <input name="Email" type="email" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu email" />
       <textarea name="Mensagem" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" rows="4" placeholder="Sua mensagem"></textarea>
       <button type="${data.email ? 'submit' : 'button'}" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button>
-    </form>` : '';
-replaceAll('[[CONTACT_FORM]]', formCode);
+    </form>
+    
+    <script id="contact-form-script">
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('sitecraft-contact-form');
+        if (form && form.hasAttribute('action')) {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Impede o redirecionamento padrão da página
+            
+            const btn = form.querySelector('button[type="submit"]');
+            if(btn) { 
+              btn.innerText = 'Enviando...'; 
+              btn.style.opacity = '0.7';
+              btn.disabled = true; 
+            }
+            
+            // Pega os dados do formulário
+            const formData = new FormData(form);
+            const dataObj = Object.fromEntries(formData.entries());
+
+            // Envia "por baixo dos panos" via Fetch API
+            fetch(form.action, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify(dataObj)
+            })
+            .then(response => response.json())
+            .then(data => {
+              // Troca o formulário por uma mensagem de sucesso elegante
+              form.innerHTML = '<div style="text-align:center; padding: 20px; animation: fadeUp 0.5s ease;"><div style="width: 64px; height: 64px; background: rgba(16,185,129,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;"><i class="fas fa-check" style="font-size: 30px; color: #10b981;"></i></div><h3 style="font-size: 24px; font-weight: 900; color: ${colors.c4}; margin-bottom: 8px;">Enviado com sucesso!</h3><p style="font-size: 14px; color: ${colors.c6};">Agradecemos o seu contato. Retornaremos o mais breve possível.</p></div>';
+            })
+            .catch(error => {
+              if(btn) { 
+                btn.innerText = 'Erro ao enviar. Tente novamente.'; 
+                btn.style.opacity = '1';
+                btn.disabled = false; 
+              }
+            });
+          });
+        }
+      });
+    </script>` : '';
+
+    replaceAll('[[CONTACT_FORM]]', formCode);
     const imgPlaceholder = (id: string, label: string) => {
       if (customImages[id]) {
          return `
