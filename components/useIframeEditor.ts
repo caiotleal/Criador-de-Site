@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase';
 
 interface UseIframeEditorProps {
   setGeneratedHtml: (html: string | null) => void;
@@ -7,6 +9,35 @@ interface UseIframeEditorProps {
 
 export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseIframeEditorProps) => {
   useEffect(() => {
+    // Helper function to compress base64 images to prevent Firestore 1MB limit errors
+    const compressImage = async (base64Str: string, maxWidth = 1200, quality = 0.7): Promise<string> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(base64Str); // Fallback if no context
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality)); // Compress as JPEG
+        };
+        img.onerror = () => resolve(base64Str); // Fallback on error
+      });
+    };
+
     const handleIframeMessage = async (event: MessageEvent) => {
       
       // 1. Textos e Cores
@@ -23,9 +54,10 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
         input.onchange = (e: any) => {
           const file = e.target.files[0];
           const reader = new FileReader();
-          reader.onload = () => {
+          reader.onload = async () => {
+            const compressedBase64 = await compressImage(reader.result as string);
             const iframe = document.querySelector('iframe');
-            iframe?.contentWindow?.postMessage({ type: 'INSERT_IMAGE', targetId: event.data.targetId, url: reader.result }, '*');
+            iframe?.contentWindow?.postMessage({ type: 'INSERT_IMAGE', targetId: event.data.targetId, url: compressedBase64 }, '*');
           };
           reader.readAsDataURL(file);
         };
@@ -54,6 +86,41 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
           options,
         }, '*');
         setHasUnsavedChanges(true);
+      }
+
+      // 3. Geração de Imagem com IA
+      if (event.data?.type === 'REQUEST_AI') {
+        const promptText = event.data.prompt;
+        const targetId = event.data.targetId;
+        if (!promptText) return;
+
+        try {
+          const generateImageFn = httpsCallable(functions, 'generateImage');
+          const result: any = await generateImageFn({ prompt: promptText });
+          
+          if (result.data?.imageUrl) {
+            let optimizedUrl = result.data.imageUrl;
+            // Compress only if it's a data URI (base64) returned from the function
+            if (optimizedUrl.startsWith('data:image')) {
+               optimizedUrl = await compressImage(optimizedUrl);
+            }
+            const iframe = document.querySelector('iframe');
+            iframe?.contentWindow?.postMessage({ type: 'INSERT_IMAGE', targetId, url: optimizedUrl }, '*');
+            setHasUnsavedChanges(true);
+          }
+        } catch (error: any) {
+          console.error("Erro ao gerar imagem AI:", error);
+          alert("Falha ao gerar imagem com IA: " + error.message);
+          
+          // Reverte o estado de carregamento
+          const iframe = document.querySelector('iframe');
+          if (iframe && iframe.contentDocument) {
+             const targetEl = iframe.contentDocument.querySelector(`.editable-image[data-id="${targetId}"]`);
+             if (targetEl) {
+               targetEl.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem</span>';
+             }
+          }
+        }
       }
 
     };

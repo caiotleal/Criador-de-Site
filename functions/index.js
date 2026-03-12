@@ -145,80 +145,52 @@ exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB"
 // ============================================================================
 // MOTOR DE IMAGEM POR IA (OPENAI DALL-E 3)
 // ============================================================================
-exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [openAiKey] }, async (request) => {
-  const uid = ensureAuthed(request); 
+exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [geminiKey] }, async (request) => {
+  const uid = ensureAuthed(request);
   const { prompt } = request.data;
-  
+
   if (!prompt) throw new HttpsError("invalid-argument", "O descritivo da imagem é obrigatório.");
 
   try {
-    const response = await fetch("https://api.openai.com/v1/images/generations", {
+    const refinedPrompt = `A high-end, realistic commercial photograph of: ${prompt}. Shot on a 35mm lens, natural lighting, authentic detailed textures, 8k resolution. This is a raw, unedited photograph, NOT a 3d render. Absolutely no text, no interface, no borders, pure photography.`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=${geminiKey.value()}`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${openAiKey.value()}`
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "dall-e-3",
-        style: "natural", // <- O BOTÃO MÁGICO DO REALISMO
-        prompt: "A highly realistic, professional full-frame photograph of: " + prompt + ". Shot with a high-end DSLR camera, 85mm lens, natural cinematic lighting, lifelike textures. STRICTLY REAL LIFE PHOTOGRAPHY. ABSOLUTELY NO film borders, NO film strips, NO camera UI, NO text, NO watermarks, NO polaroid frames, NO split screens, NO 3D render, NO illustration.",
-        n: 1,
-        size: "1024x1024"
+        instances: [{ prompt: refinedPrompt }],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: "1:1"
+        }
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Erro OpenAI:", errorData);
+      const errorText = await response.text();
+      console.error("Erro Google Imagen 3:", errorText);
       throw new HttpsError("internal", "A IA não conseguiu gerar a imagem. Tente outra descrição.");
     }
 
     const data = await response.json();
-    return { imageUrl: data.data[0].url };
-    
+
+    if (!data.predictions || data.predictions.length === 0) {
+      throw new HttpsError("internal", "Nenhuma imagem foi retornada pela API.");
+    }
+
+    const base64Image = data.predictions[0].bytesBase64Encoded;
+    const mimeType = data.predictions[0].mimeType || "image/jpeg";
+
+    return { imageUrl: `data:${mimeType};base64,${base64Image}` };
+
   } catch (error) {
     console.error("Falha no gerador de imagens:", error);
     throw new HttpsError("internal", error.message);
   }
 });
-// ============================================================================
-// MOTOR DE LOGOMARCAS POR IA (OPENAI DALL-E 3) - DESIGN GRÁFICO
-// ============================================================================
-exports.generateLogo = onCall({ cors: true, timeoutSeconds: 120, secrets: [openAiKey] }, async (request) => {
-  const uid = ensureAuthed(request); 
-  const { prompt } = request.data;
-  
-  if (!prompt) throw new HttpsError("invalid-argument", "O descritivo do logo é obrigatório.");
 
-  try {
-    const response = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${openAiKey.value()}`
-      },
-      body: JSON.stringify({
-        model: "dall-e-3", // Motor oficial e estável
-        prompt: "A modern, minimalist flat vector logo design for: " + prompt + ". Clean lines, simple geometric shapes, solid white background, highly professional corporate identity. NO photorealism, NO 3D render, NO drop shadows, NO textures, NO words, NO letters, NO text.",
-        n: 1,
-        size: "1024x1024"
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Erro OpenAI (Logo):", errorData);
-      throw new HttpsError("internal", "A IA não conseguiu gerar o logo.");
-    }
-
-    const data = await response.json();
-    return { imageUrl: data.data[0].url };
-    
-  } catch (error) {
-    console.error("Falha no gerador de logos:", error);
-    throw new HttpsError("internal", error.message);
-  }
-});
 exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
   const { desiredDomain } = request.data || {};
   const cleanDomain = slugify(desiredDomain).slice(0, 30);
@@ -230,7 +202,7 @@ exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
 exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (request) => {
   const uid = ensureAuthed(request);
   const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
-  const projectSlug = internalDomain; 
+  const projectSlug = internalDomain;
 
   // 1. A CORREÇÃO: Garante que o documento do usuário seja real (não-fantasma)
   await admin.firestore().collection("users").doc(uid).set({
@@ -242,13 +214,13 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
   await configureSiteRetention(projectSlug);
 
   const now = admin.firestore.FieldValue.serverTimestamp();
-  
+
   // 2. Salva o projeto normalmente na subcoleção
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
     uid, businessName, projectSlug, hostingSiteId: projectSlug, internalDomain,
     officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
-    hosting, autoDeploy: true, needsDeploy: true, updatedAt: now, createdAt: now, 
-    status: "draft", paymentStatus: "pending" 
+    hosting, autoDeploy: true, needsDeploy: true, updatedAt: now, createdAt: now,
+    status: "draft", paymentStatus: "pending"
   }, { merge: true });
 
   return { success: true, projectSlug, hostingSiteId: projectSlug };
@@ -257,7 +229,7 @@ exports.updateSiteProject = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
   const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
   const { html, formData, aiContent } = request.data;
-  
+
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId).update({
     generatedHtml: html, ...(formData && { formData }), ...(aiContent && { aiContent }),
     needsDeploy: true, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -269,14 +241,14 @@ exports.updateSiteProject = onCall({ cors: true }, async (request) => {
 exports.listUserProjects = onCall({ cors: true }, async (request) => {
   const uid = ensureAuthed(request);
   const snap = await admin.firestore().collection("users").doc(uid).collection("projects").get();
-  
+
   const projects = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   projects.sort((a, b) => {
     const timeA = a.updatedAt ? (a.updatedAt._seconds || a.updatedAt.seconds || 0) : 0;
     const timeB = b.updatedAt ? (b.updatedAt._seconds || b.updatedAt.seconds || 0) : 0;
     return timeB - timeA;
   });
-  
+
   return { projects };
 });
 
@@ -289,7 +261,7 @@ exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "
     const db = admin.firestore();
     const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
     const snap = await ref.get();
-    
+
     if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
     const project = snap.data();
 
@@ -376,7 +348,7 @@ exports.createStripeCheckoutSession = onCall({ cors: true }, async (request) => 
 // ==============================================================================
 exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   const sig = req.headers["stripe-signature"];
-  const endpointSecret = "whsec_s0sKkzYh75uyzOgD7j2N9AKJ6BogsUum"; 
+  const endpointSecret = "whsec_s0sKkzYh75uyzOgD7j2N9AKJ6BogsUum";
 
   let event;
   try {
@@ -390,7 +362,7 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    const projectId = session.client_reference_id; 
+    const projectId = session.client_reference_id;
 
     // O RASTREADOR DE PAYLOAD: Mostra exatamente o que a Stripe enviou
     console.log(`[STRIPE PAYLOAD] Dados recebidos:`, JSON.stringify({
@@ -405,25 +377,25 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
         const db = admin.firestore();
         const usersSnap = await db.collection("users").get();
         let encontrouProjeto = false;
-        
+
         for (const userDoc of usersSnap.docs) {
           const projectRef = db.collection("users").doc(userDoc.id).collection("projects").doc(projectId);
           const pDoc = await projectRef.get();
-          
+
           if (pDoc.exists) {
             encontrouProjeto = true;
             const newExpiration = new Date();
-            newExpiration.setDate(newExpiration.getDate() + 365); 
+            newExpiration.setDate(newExpiration.getDate() + 365);
 
             await projectRef.update({
-              status: "published", 
+              status: "published",
               paymentStatus: "paid", // Aqui a mágica de sumir o botão acontece
               expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
-              needsDeploy: true 
+              needsDeploy: true
             });
-            
+
             console.log(`✅ SUCESSO! Projeto ${projectId} atualizado para 1 ANO PAGO.`);
-            break; 
+            break;
           }
         }
 
@@ -449,7 +421,7 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
   const now = admin.firestore.Timestamp.now();
   const token = await getFirebaseAccessToken();
   const projectIdEnv = getProjectId();
-  
+
   const usersSnap = await db.collection("users").get();
   for (const userDoc of usersSnap.docs) {
     const projectsSnap = await db.collection("users").doc(userDoc.id).collection("projects").where("expiresAt", "<=", now).get();
@@ -460,7 +432,7 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
           await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${data.hostingSiteId}`, {
             method: "DELETE", headers: { Authorization: `Bearer ${token}` }
           });
-        } catch (e) {}
+        } catch (e) { }
         await doc.ref.update({ status: "frozen", paymentStatus: "expired", published: false });
       }
     }

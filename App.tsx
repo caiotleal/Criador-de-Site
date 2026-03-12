@@ -167,7 +167,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
 
     <div id="image-toolbar" class="custom-editor-toolbar flex gap-2">
       <button id="btn-upload" style="background: #27272a; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">📤 Upload</button>
-      <button id="btn-stock" style="background: #2563eb; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">🖼️ Banco Público</button>
+      <button id="btn-ai" style="background: #10b981; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">✨ Gerar com IA</button>
       <button id="btn-img-delete" style="color: #ef4444; background: none; border: none; font-size: 12px; cursor: pointer; margin-left: 4px;">✖ Remover</button>
     </div>
 
@@ -246,22 +246,22 @@ const getPreviewHtml = (baseHtml: string | null) => {
           imgToolbar.style.display = 'none';
         });
 
-        document.getElementById('btn-stock').addEventListener('click', () => {
+        document.getElementById('btn-ai').addEventListener('click', () => {
           imgToolbar.style.display = 'none';
           if (!currentImgTarget) return;
 
-          currentImgTarget.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 460px; background: #18181b; padding: 16px; border-radius: 12px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 50;"><span style="color: #a1a1aa; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🖼️ Buscar em banco público</span><input type="text" id="stock-img-prompt" placeholder="Ex: hamburguer artesanal" style="width: 100%; background: #27272a; color: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #52525b; outline: none; font-size: 13px;" autocomplete="off"><div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;"><button id="stock-img-cancel" style="background: transparent; color: #a1a1aa; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Cancelar</button><button id="stock-img-confirm" style="background: #2563eb; color: #dbeafe; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Buscar 4 opções</button></div></div>';
+          currentImgTarget.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 460px; background: #18181b; padding: 16px; border-radius: 12px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 50;"><span style="color: #10b981; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">✨ Gerar Imagem com IA</span><input type="text" id="ai-img-prompt" placeholder="Ex: foto realista de um hamburguer na mesa" style="width: 100%; background: #27272a; color: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #52525b; outline: none; font-size: 13px;" autocomplete="off"><div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;"><button id="ai-img-cancel" style="background: transparent; color: #a1a1aa; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Cancelar</button><button id="ai-img-confirm" style="background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none;">Gerar Imagem</button></div></div>';
 
-          setTimeout(() => { const inp = document.getElementById('stock-img-prompt'); if(inp) inp.focus(); }, 50);
+          setTimeout(() => { const inp = document.getElementById('ai-img-prompt'); if(inp) inp.focus(); }, 50);
 
-          document.getElementById('stock-img-cancel').addEventListener('click', (e) => {
+          document.getElementById('ai-img-cancel').addEventListener('click', (e) => {
             e.stopPropagation();
             currentImgTarget.innerHTML = '<i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem</span>';
           });
 
-          document.getElementById('stock-img-confirm').addEventListener('click', (e) => {
+          document.getElementById('ai-img-confirm').addEventListener('click', (e) => {
             e.stopPropagation();
-            const inp = document.getElementById('stock-img-prompt');
+            const inp = document.getElementById('ai-img-prompt');
             const promptText = inp ? inp.value.trim() : '';
             if(!promptText) return;
 
@@ -287,12 +287,56 @@ const getPreviewHtml = (baseHtml: string | null) => {
             }
           }
 
-
+          if (e.data.type === 'STOCK_IMAGE_OPTIONS') {
+            const targetEl = document.querySelector(\`.editable-image[data-id="\${e.data.targetId}"]\`);
+            if (targetEl && e.data.options && e.data.options.length) {
+              let html = \`<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; height: 100%; min-height: 200px; background: #18181b; padding: 12px; border-radius: 12px;">\`;
+              e.data.options.forEach((optStr, idx) => {
+                 const urls = optStr.split('|');
+                 html += \`<div class="stock-opt stock-opt-\${idx}" style="cursor:pointer; position:relative; overflow:hidden; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#27272a;">
+                     <img src="\${urls[0]}" onerror="this.src='\${urls[1]||urls[0]}'" style="width:100%; height:100%; object-fit:cover; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"/>
+                     <div style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.7); color:white; font-size:10px; padding:2px 6px; border-radius:4px; pointer-events:none;">Usar esta</div>
+                  </div>\`;
+              });
+              html += \`</div>\`;
+              targetEl.innerHTML = html;
+              
+              setTimeout(() => {
+                 e.data.options.forEach((optStr, idx) => {
+                    const el = targetEl.querySelector('.stock-opt-' + idx);
+                    if(el) {
+                       el.addEventListener('click', (ev) => {
+                          ev.stopPropagation();
+                          const img = el.querySelector('img');
+                          if(img && img.src) {
+                             window.parent.postMessage({ type: 'INSERT_IMAGE', targetId: e.data.targetId, url: img.src }, '*');
+                          }
+                       });
+                    }
+                 });
+              }, 100);
+            }
+          }
         });
       });
     </script>
   `;
   return clean.replace(/<\/body>/i, `${editorScript}</body>`);
+};
+
+const extractCustomImages = (html: string | null) => {
+  if (!html) return {};
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const images: Record<string, string> = {};
+  doc.querySelectorAll('.editable-image').forEach(el => {
+    const id = el.getAttribute('data-id');
+    const img = el.querySelector('img');
+    if (id && img && img.src) {
+      images[id] = img.src;
+    }
+  });
+  return images;
 };
 
 const App: React.FC = () => {
@@ -319,17 +363,20 @@ const App: React.FC = () => {
 
   const [formData, setFormData] = useState({
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
-    ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '',
-    showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
+    ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
+    showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
   });
 
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
 
   useEffect(() => {
     if (aiContent) {
-      setGeneratedHtml(renderTemplate(aiContent, formData));
+      setGeneratedHtml(prevHtml => {
+        const extractedImages = extractCustomImages(prevHtml);
+        return renderTemplate(aiContent, formData, extractedImages);
+      });
     }
-  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.linkedin, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.address, formData.mapEmbed, formData.phone, formData.email, formData.region]);
+  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.linkedin, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.showFloatingContact, formData.showMap, formData.address, formData.phone, formData.email, formData.region]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => setLoggedUserEmail(user?.email || null));
@@ -347,7 +394,7 @@ const App: React.FC = () => {
 
   useEffect(() => { fetchProjects(); }, [loggedUserEmail]);
 
-  const renderTemplate = (content: any, data: typeof formData) => {
+  const renderTemplate = (content: any, data: typeof formData, customImages: Record<string, string> = {}) => {
     let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_modern_center'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
@@ -381,45 +428,93 @@ const App: React.FC = () => {
     replaceAll('[[WHATSAPP_BTN]]', ''); replaceAll('[[INSTAGRAM_BTN]]', ''); replaceAll('[[FACEBOOK_BTN]]', '');
     replaceAll('[[TIKTOK_BTN]]', ''); replaceAll('[[LINKEDIN_BTN]]', ''); replaceAll('[[IFOOD_BTN]]', ''); replaceAll('[[NOVE_NOVE_BTN]]', ''); replaceAll('[[KEETA_BTN]]', '');
 
-    let floatingHtml = '';
-    const addFloatBtn = (href: string, bg: string, color: string, label: string, innerHtml: string) => {
-      floatingHtml += `<a href="${href}" target="_blank" class="float-btn" style="background-color: ${bg}; color: ${color};" title="${label}">${innerHtml}</a>`;
+    let socialHtml = '';
+    const addSocialBtn = (href: string, brandColor: string, label: string, innerHtml: string) => {
+      socialHtml += `<a href="${href}" target="_blank" class="social-icon" style="color: ${brandColor};" title="${label}">${innerHtml}</a>`;
     };
 
-    if (data.whatsapp) addFloatBtn(`https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, '#25D366', '#fff', 'WhatsApp', '<i class="fab fa-whatsapp"></i>');
-    if (data.instagram) addFloatBtn(`https://instagram.com/${data.instagram.replace('@', '')}`, '#E1306C', '#fff', 'Instagram', '<i class="fab fa-instagram"></i>');
-    if (data.facebook) addFloatBtn(data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, '#1877F2', '#fff', 'Facebook', '<i class="fab fa-facebook-f"></i>');
-    if (data.linkedin) addFloatBtn(data.linkedin.startsWith('http') ? data.linkedin : `https://${data.linkedin}`, '#0A66C2', '#fff', 'LinkedIn', '<i class="fab fa-linkedin-in"></i>');
-    if (data.tiktok) addFloatBtn(data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, '#000000', '#fff', 'TikTok', '<i class="fab fa-tiktok"></i>');
-    if (data.ifood) addFloatBtn(data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, '#EA1D2C', '#fff', 'iFood', '<img src="https://cdn.simpleicons.org/ifood/ffffff" alt="iFood" class="float-logo"/>');
-    if (data.noveNove) addFloatBtn(data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, '#FFC700', '#111', '99', '<span class="float-brand">99</span>');
-    if (data.keeta) addFloatBtn(data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, '#19B84A', '#fff', 'Keeta', '<span class="float-brand">Keeta</span>');
+    if (data.whatsapp) addSocialBtn(`https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, '#25D366', 'WhatsApp', '<i class="fab fa-whatsapp"></i>');
+    if (data.instagram) addSocialBtn(`https://instagram.com/${data.instagram.replace('@', '')}`, '#E1306C', 'Instagram', '<i class="fab fa-instagram"></i>');
+    if (data.facebook) addSocialBtn(data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, '#1877F2', 'Facebook', '<i class="fab fa-facebook-f"></i>');
+    if (data.linkedin) addSocialBtn(data.linkedin.startsWith('http') ? data.linkedin : `https://${data.linkedin}`, '#0A66C2', 'LinkedIn', '<i class="fab fa-linkedin-in"></i>');
+    if (data.tiktok) addSocialBtn(data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, '#fff', 'TikTok', '<i class="fab fa-tiktok"></i>');
+    if (data.ifood) addSocialBtn(data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, '#EA1D2C', 'iFood', '<img src="https://cdn.simpleicons.org/ifood/EA1D2C" alt="iFood" class="float-logo"/>');
+    if (data.noveNove) addSocialBtn(data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, '#FFC700', '99', '<span class="float-brand inline-block" style="color: #FFC700">99</span>');
+    if (data.keeta) addSocialBtn(data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, '#19B84A', 'Keeta', '<span class="float-brand inline-block" style="color: #19B84A">Keeta</span>');
 
-    if (floatingHtml) {
-      const floatStyle = `
-      <style>
-        .floating-actions { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 99999; }
-        .float-btn { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s ease; text-decoration: none; outline: none; }
-        .float-logo { width: 24px; height: 24px; object-fit: contain; }
-        .float-brand { font-size: 13px; font-weight: 900; letter-spacing: .2px; }
-        .float-btn:hover { transform: scale(1.1) translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-      </style>`;
-      headInjection += floatStyle;
-      html = html.replace('</body>', `<div class="floating-actions">${floatingHtml}</div></body>`);
+    let contactHtml = '';
+    if (data.showFloatingContact) {
+      contactHtml = `<a href="#contato" class="contact-dock-btn"><i class="fas fa-comment-dots text-[18px]"></i> Fale Conosco</a>`;
     }
 
-    const mapCode = data.mapEmbed ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${data.mapEmbed}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
+    if (socialHtml || contactHtml) {
+      const wrappedSocials = socialHtml ? `<div class="social-dock">${socialHtml}</div>` : '';
+      const floatStyle = `
+      <style>
+        @keyframes gentle-float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+          100% { transform: translateY(0px); }
+        }
+        .floating-dock { position: fixed; bottom: 32px; right: 32px; display: flex; align-items: center; gap: 16px; z-index: 99999; flex-wrap: wrap; justify-content: flex-end; animation: gentle-float 4s ease-in-out infinite; opacity: 0; pointer-events: none; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .floating-dock.scrolled-active { opacity: 1; pointer-events: auto; transform: translateY(0px); }
+        .social-dock { display: flex; align-items: center; gap: 4px; padding: 6px 16px; border-radius: 100px; background-color: ${colors.c2}cc; border: 1px solid ${colors.c3}; box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .social-icon { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; font-size: 22px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none; }
+        .social-icon:hover { transform: translateY(-4px) scale(1.15); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+        .social-icon .float-logo { width: 22px; height: 22px; object-fit: contain; }
+        .social-icon .float-brand { font-size: 13px; font-weight: 900; }
+        .contact-dock-btn { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 100px; background-color: ${colors.c4}; color: ${colors.c1}; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none; border: 1px solid ${colors.c3}40; pointer-events: auto; }
+        .contact-dock-btn:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+        .floating-dock:hover { animation-play-state: paused; }
+        @media (max-width: 640px) {
+           .floating-dock { bottom: 20px; right: 20px; left: 20px; flex-direction: column-reverse; align-items: flex-end; }
+        }
+      </style>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const dock = document.querySelector('.floating-dock');
+          if (!dock) return;
+          const handleScroll = () => {
+             if (window.scrollY > document.documentElement.clientHeight * 0.4) {
+                dock.classList.add('scrolled-active');
+             } else {
+                dock.classList.remove('scrolled-active');
+             }
+          };
+          window.addEventListener('scroll', handleScroll, { passive: true });
+          handleScroll();
+        });
+      </script>`;
+      headInjection += floatStyle;
+      html = html.replace('</body>', `<div class="floating-dock">${contactHtml}${wrappedSocials}</div></body>`);
+    }
+
+    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 13px; opacity: 0.6; width: 100%; font-family: sans-serif;">Criado por <a href="https://sitecraft.com.br" target="_blank" style="text-decoration: underline; font-weight: bold;">SiteCraft</a></div>`;
+    html = html.replace('</body>', `${footerBrand}</body>`);
+
+    const mapUrl = data.address ? `https://www.google.com/maps?q=${encodeURIComponent(data.address)}&output=embed` : '';
+    const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
     const formCode = data.showForm ? `<form class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem]"><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu nome" /><input class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" placeholder="Seu email" /><textarea class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all placeholder:text-white/30 text-white" rows="4" placeholder="Sua mensagem"></textarea><button type="button" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button></form>` : '';
     replaceAll('[[CONTACT_FORM]]', formCode);
 
-    const imgPlaceholder = (id: string, label: string) => `
+    const imgPlaceholder = (id: string, label: string) => {
+      if (customImages[id]) {
+         return `
+      <div class="editable-image-wrapper w-full py-4">
+        <div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}">
+          <img src="${customImages[id]}" class="w-full h-full block object-cover" style="border-radius: inherit; margin: 0; box-shadow: none;" />
+        </div>
+      </div>`;
+      }
+      return `
       <div class="editable-image-wrapper w-full py-4">
         <div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}">
           <i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem - ${label}</span>
         </div>
       </div>`;
+    };
 
     replaceAll('[[HERO_IMAGE]]', imgPlaceholder('hero-img', 'Destaque (Topo)'));
     replaceAll('[[ABOUT_IMAGE]]', imgPlaceholder('about-img', 'Quem Somos'));
@@ -432,7 +527,8 @@ const App: React.FC = () => {
     setIsGenerating(true);
     try {
       if (aiContent && generatedHtml) {
-        setGeneratedHtml(renderTemplate(aiContent, formData));
+        const extractedImages = extractCustomImages(generatedHtml);
+        setGeneratedHtml(renderTemplate(aiContent, formData, extractedImages));
         setHasUnsavedChanges(true);
         setIsGenerating(false);
         return;
@@ -440,7 +536,8 @@ const App: React.FC = () => {
       const generateFn = httpsCallable(functions, 'generateSite');
       const result: any = await generateFn({ businessName: formData.businessName, description: formData.description, region: formData.region });
       setAiContent(result.data);
-      setGeneratedHtml(renderTemplate(result.data, formData));
+      const extractedImages = extractCustomImages(generatedHtml);
+      setGeneratedHtml(renderTemplate(result.data, formData, extractedImages));
       setHasUnsavedChanges(true);
     } catch (error: any) { alert('Erro: ' + error.message); } 
     finally { setIsGenerating(false); }
@@ -512,18 +609,18 @@ const App: React.FC = () => {
       
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
-        setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', mapEmbed: '', showForm: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
+        setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) { alert("Erro ao excluir o site."); }
   };
 
-  const handleStripeCheckout = async (projectId: string) => {
+  const handleStripeCheckout = async (projectId: string, planType: 'monthly' | 'annual') => {
     if (!projectId) return;
     setCheckoutLoading(projectId);
     try {
       const createCheckoutFn = httpsCallable(functions, 'createStripeCheckoutSession');
-      const res: any = await createCheckoutFn({ projectId, origin: window.location.origin });
+      const res: any = await createCheckoutFn({ projectId, origin: window.location.origin, planType });
       if (res.data?.url) {
         window.location.href = res.data.url;
         return;
@@ -834,7 +931,17 @@ const App: React.FC = () => {
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                             <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                            <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Link do Google Maps" value={formData.mapEmbed} onChange={e => {setFormData({ ...formData, mapEmbed: e.target.value }); setHasUnsavedChanges(true)}} />
+                            
+                            <label className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300">
+                              <span>Exibir Mapa do Google no site</span>
+                              <input type="checkbox" checked={formData.showMap} onChange={e => {setFormData({ ...formData, showMap: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
+                            </label>
+
+                            <label className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300">
+                              <span>Exibir botão Contato flutuante na tela</span>
+                              <input type="checkbox" checked={formData.showFloatingContact} onChange={e => {setFormData({ ...formData, showFloatingContact: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
+                            </label>
+
                             <label className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300">
                               <span>Exibir formulário de contato no site</span>
                               <input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
@@ -902,34 +1009,65 @@ const App: React.FC = () => {
                         </div>
 
                         {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
-                          <div className="space-y-4">
-                            <div className="flex items-end gap-2">
-                              <span className="text-4xl font-black text-white">R$ 499</span>
-                              <span className="text-sm text-zinc-500 font-medium pb-1">/ 1º ano</span>
+                          <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Plano Mensal */}
+                              <div className="bg-zinc-800/30 p-5 rounded-xl border border-zinc-700 hover:border-amber-500/50 transition-colors flex flex-col h-full">
+                                <h4 className="text-zinc-300 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
+                                <div className="flex items-end gap-1 mb-4">
+                                  <span className="text-3xl font-black text-white">R$ 49,99</span>
+                                  <span className="text-xs text-zinc-500 font-medium pb-1">/mês</span>
+                                </div>
+                                <ul className="space-y-2 text-xs text-zinc-400 mb-6 flex-1">
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Domínio próprio liberado</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Site blindado no Google</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Hospedagem rápida garantida</li>
+                                </ul>
+                                <button 
+                                  onClick={() => handleStripeCheckout(currentProjectSlug, 'monthly')}
+                                  disabled={checkoutLoading === currentProjectSlug}
+                                  className="w-full bg-zinc-700 hover:bg-zinc-600 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors"
+                                >
+                                  {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Mensal'}
+                                </button>
+                              </div>
+
+                              {/* Plano Anual */}
+                              <div className="bg-gradient-to-br from-amber-500/10 to-amber-900/10 p-5 rounded-xl border border-amber-500/30 shadow-lg relative flex flex-col h-full">
+                                <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vantajoso</div>
+                                <h4 className="text-amber-400 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
+                                <div className="flex items-end gap-1 mb-4">
+                                  <span className="text-3xl font-black text-amber-400">R$ 499</span>
+                                  <span className="text-xs text-amber-600/60 font-medium pb-1">/ano</span>
+                                </div>
+                                <ul className="space-y-2 text-xs text-amber-200/60 mb-6 flex-1">
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-amber-400 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-amber-400 shrink-0 mt-0.5"/> Domínio premium configurado</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-amber-400 shrink-0 mt-0.5"/> Maior prioridade de suporte</li>
+                                </ul>
+                                <button 
+                                  onClick={() => handleStripeCheckout(currentProjectSlug, 'annual')}
+                                  disabled={checkoutLoading === currentProjectSlug}
+                                  className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-amber-500/20"
+                                >
+                                  {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Anual'}
+                                </button>
+                              </div>
                             </div>
-                            <ul className="space-y-2 text-xs text-zinc-300 mb-4">
-                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Domínio próprio liberado</li>
-                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Site blindado no Google</li>
-                              <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400"/> Suporte e renovação garantida</li>
-                            </ul>
                             
-                            <button 
-                              onClick={() => handleStripeCheckout(currentProjectSlug)}
-                              disabled={checkoutLoading === currentProjectSlug}
-                              className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3.5 rounded-xl font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-lg shadow-amber-500/20"
-                            >
-                              {checkoutLoading === currentProjectSlug ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />} 
-                              {checkoutLoading === currentProjectSlug ? 'Iniciando Pagamento...' : 'Ativar Plano Anual'}
-                            </button>
-                            <p className="text-[9px] text-center text-zinc-500 mt-3 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamento processado via Stripe</p>
+                            <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-[10px] text-zinc-500 leading-relaxed font-mono">
+                              <strong className="text-zinc-400 block mb-1">TERMOS DE RENOVAÇÃO E CICLO DE VIDA:</strong>
+                              O site conta com um <span className="text-amber-400 font-bold">período gratuito de 30 dias iniciais</span>. Vencido qualquer plano ou o período gratuito, o site será suspenso ("congelado") após 5 dias de atraso. O sistema exclui permanentemente todos os dados e o site do ar se não houver regularização no prazo de 60 dias após o vencimento, cancelando automaticamente associações na operadora de cartão. 
+                            </div>
+                            <p className="text-[9px] text-center text-zinc-600 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamentos 100% seguros operados globalmente pela Stripe.</p>
                           </div>
                         ) : (
                           <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-xl text-center space-y-3">
                             <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
                               <Star size={24} />
                             </div>
-                            <h4 className="font-bold text-emerald-400">Plano Anual Ativado!</h4>
-                            <p className="text-xs text-emerald-200/70">O seu site está online, seguro e com todas as funções desbloqueadas. Nenhuma ação necessária.</p>
+                            <h4 className="font-bold text-emerald-400">Plano Ativado com Sucesso!</h4>
+                            <p className="text-xs text-emerald-200/70">O seu site está online, seguro e com todas as funções desbloqueadas. Você receberá alertas no seu e-mail caso haja pendências.</p>
                           </div>
                         )}
                       </div>

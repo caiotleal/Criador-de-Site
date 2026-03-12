@@ -20,9 +20,6 @@ export const TEMPLATES: Record<string, string> = {
       <header class="fixed w-full top-0 z-50 glass border-b border-[{{COLOR_3}}]">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div class="text-2xl font-black tracking-tighter">[[LOGO_AREA]]</div>
-          <a href="#contato" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all hover:scale-105" style="background-color: {{COLOR_5}}; color: {{COLOR_1}};">
-            {{CONTACT_CALL}}
-          </a>
         </div>
       </header>
 
@@ -90,7 +87,6 @@ export const TEMPLATES: Record<string, string> = {
     <body class="antialiased flex flex-col min-h-screen">
       <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto w-full absolute top-0 left-0 right-0 z-50">
         <div class="text-2xl font-bold tracking-tighter">[[LOGO_AREA]]</div>
-        <a href="#contato" class="font-bold border-b-2 border-[{{COLOR_5}}] pb-1 hover:opacity-70 transition-opacity">{{CONTACT_CALL}}</a>
       </nav>
 
       <section class="pt-32 pb-20 px-6 max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row items-center gap-12">
@@ -158,7 +154,6 @@ export const TEMPLATES: Record<string, string> = {
         <div class="grid md:grid-cols-3 gap-6">
           <header class="glass-panel p-8 md:col-span-3 flex justify-between items-center">
             <div class="text-3xl font-extrabold uppercase tracking-widest">[[LOGO_AREA]]</div>
-            <a href="#contato" class="bg-[{{COLOR_4}}] text-[{{COLOR_1}}] px-6 py-2 rounded-xl font-bold">{{CONTACT_CALL}}</a>
           </header>
           
           <div class="glass-panel p-10 md:col-span-2 flex flex-col justify-center">
@@ -233,7 +228,6 @@ export const TEMPLATES: Record<string, string> = {
           <h1 class="text-5xl md:text-7xl mb-6">{{HERO_TITLE}}</h1>
           <p class="text-xl uppercase tracking-widest opacity-60 mb-12">{{HERO_SUBTITLE}}</p>
           <div class="w-full mb-12">[[HERO_IMAGE]]</div>
-          <a href="#contato" class="border border-[{{COLOR_4}}] px-10 py-4 hover:bg-[{{COLOR_4}}] hover:text-[{{COLOR_1}}] transition-colors uppercase tracking-widest text-sm">{{CONTACT_CALL}}</a>
         </section>
 
         <div class="w-24 h-px bg-[{{COLOR_3}}] mx-auto my-12"></div>
@@ -291,7 +285,6 @@ export const TEMPLATES: Record<string, string> = {
       <section class="bg-[{{COLOR_2}}] section-curve pt-10 pb-32 px-6 relative z-20 shadow-2xl">
         <header class="max-w-7xl mx-auto flex justify-between items-center mb-20">
           <div class="text-2xl font-black uppercase tracking-tight">[[LOGO_AREA]]</div>
-          <a href="#contato" class="bg-[{{COLOR_4}}] text-[{{COLOR_1}}] px-6 py-2 rounded-full font-bold shadow-lg hover:shadow-xl transition-shadow">{{CONTACT_CALL}}</a>
         </header>
         
         <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
