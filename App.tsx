@@ -41,11 +41,11 @@ const COLORS = [
   // =====================
   // TONS TERROSOS (Novos)
   // =====================
-  { id: 'terracotta', name: 'Terracota', c1: '#1c0f0a', c2: '#2c1810', c3: '#452516', c4: '#d97743', c5: '#e89564', c6: '#f0b48b', c7: '#f5ceb3', light: '#ffffff', dark: '#1c0f0a' }, // Dark: Argila e Laranja Queimado
-  { id: 'sand', name: 'Areia', c1: '#fdfbf7', c2: '#f4eee4', c3: '#e6dac3', c4: '#a37b45', c5: '#b5905d', c6: '#c9a87a', c7: '#dbc19a', light: '#2c1810', dark: '#ffffff' }, // Light: Bege e Dourado Terroso
-  { id: 'rust', name: 'Ferrugem', c1: '#1a0f0a', c2: '#2b1710', c3: '#422216', c4: '#b84a23', c5: '#d4633b', c6: '#e38866', c7: '#f0b097', light: '#ffffff', dark: '#1a0f0a' }, // Dark: Escuro com tons de Ferro/Cobre
-  { id: 'moss', name: 'Musgo', c1: '#f9faf6', c2: '#edf1e6', c3: '#dce4ce', c4: '#5e6b4b', c5: '#76855f', c6: '#91a179', c7: '#adbc95', light: '#1f2617', dark: '#ffffff' }, // Light: Tons naturais de verde terroso
-  { id: 'mocha', name: 'Café', c1: '#1a1614', c2: '#26201e', c3: '#38302c', c4: '#a67c52', c5: '#c0976e', c6: '#d5b38f', c7: '#e6ceb1', light: '#ffffff', dark: '#1a1614' }, // Dark: Tons de madeira, cacau e café
+  { id: 'terracotta', name: 'Terracota', c1: '#1c0f0a', c2: '#2c1810', c3: '#452516', c4: '#d97743', c5: '#e89564', c6: '#f0b48b', c7: '#f5ceb3', light: '#ffffff', dark: '#1c0f0a' },
+  { id: 'sand', name: 'Areia', c1: '#fdfbf7', c2: '#f4eee4', c3: '#e6dac3', c4: '#a37b45', c5: '#b5905d', c6: '#c9a87a', c7: '#dbc19a', light: '#2c1810', dark: '#ffffff' },
+  { id: 'rust', name: 'Ferrugem', c1: '#1a0f0a', c2: '#2b1710', c3: '#422216', c4: '#b84a23', c5: '#d4633b', c6: '#e38866', c7: '#f0b097', light: '#ffffff', dark: '#1a0f0a' },
+  { id: 'moss', name: 'Musgo', c1: '#f9faf6', c2: '#edf1e6', c3: '#dce4ce', c4: '#5e6b4b', c5: '#76855f', c6: '#91a179', c7: '#adbc95', light: '#1f2617', dark: '#ffffff' },
+  { id: 'mocha', name: 'Café', c1: '#1a1614', c2: '#26201e', c3: '#38302c', c4: '#a67c52', c5: '#c0976e', c6: '#d5b38f', c7: '#e6ceb1', light: '#ffffff', dark: '#1a1614' },
 ];
 
 const PROMO_HTML = `
@@ -306,7 +306,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
           if (e.data.type === 'INSERT_IMAGE') {
             const targetEl = document.querySelector(\`.editable-image[data-id="\${e.data.targetId}"]\`);
             if (targetEl) {
-              targetEl.innerHTML = \`<img src="\${e.data.url}" class="w-full h-full block object-cover" style="border-radius: inherit; margin: 0; box-shadow: none;" />\`;
+              targetEl.innerHTML = \`<img src="\${e.data.url}" class="w-full h-full block object-contain" style="border-radius: inherit; margin: 0; box-shadow: none;" />\`;
               sendCleanHtml();
             }
           }
@@ -521,17 +521,14 @@ const App: React.FC = () => {
     const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-// Configuração inteligente do FormSubmit para envio de emails via AJAX (Sem sair da página)
+    // Configuração inteligente do FormSubmit para envio de emails via AJAX (Sem sair da página)
     const formAction = data.email ? `action="https://formsubmit.co/ajax/${data.email}"` : '';
     
     // Configurações de Idioma e Remetente
     const hiddenInputs = data.email ? `
       <input type="hidden" name="_subject" value="[Contato do seu Site] Nova mensagem de um cliente">
-      
       <input type="hidden" name="_language" value="pt-BR">
-      
       <input type="hidden" name="_template" value="box">
-      
       <input type="hidden" name="_captcha" value="false">
     ` : '';
 
@@ -594,7 +591,7 @@ const App: React.FC = () => {
          return `
       <div class="editable-image-wrapper w-full py-4">
         <div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}">
-          <img src="${customImages[id]}" class="w-full h-full block object-cover" style="border-radius: inherit; margin: 0; box-shadow: none;" />
+          <img src="${customImages[id]}" class="w-full h-full block object-contain" style="border-radius: inherit; margin: 0; box-shadow: none;" />
         </div>
       </div>`;
       }
@@ -723,7 +720,7 @@ const App: React.FC = () => {
     }
   };
   
-const handleCancelSubscription = async (projectId: string) => {
+  const handleCancelSubscription = async (projectId: string) => {
     if (!window.confirm("Tem certeza que deseja cancelar sua assinatura?\n\nSeu site continuará no ar até o final do período que já foi pago. Após essa data, ele será congelado e você não será mais cobrado.")) return;
     
     setIsCanceling(projectId);
@@ -1052,6 +1049,18 @@ const handleCancelSubscription = async (projectId: string) => {
                               <span>Exibir formulário de contato no site</span>
                               <input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
                             </label>
+                            
+                            {/* BLOCO DE ORIENTAÇÃO DO FORMULÁRIO */}
+                            {formData.showForm && (
+                              <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl flex gap-3 items-start mt-2">
+                                <Info size={18} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+                                <div className="text-[10px] text-indigo-200/80 leading-relaxed">
+                                  <strong className="text-indigo-300 block mb-1 text-xs">Ativação de Segurança Obrigatória</strong>
+                                  Para proteger seu e-mail <span className="font-mono bg-black/30 px-1 py-0.5 rounded text-indigo-300">{formData.email || 'informado acima'}</span> contra spam, o sistema exige uma ativação inicial. 
+                                  Após publicar, acesse seu novo site e <strong>envie uma mensagem de teste</strong> pelo formulário. Você receberá um e-mail pedindo para "Ativar o Formulário". Clique em confirmar apenas uma vez e tudo estará pronto!
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -1179,37 +1188,63 @@ const handleCancelSubscription = async (projectId: string) => {
                               Seu site está operando com potência máxima e todos os recursos premium estão liberados.
                             </p>
                             
-                            {/* REGRAS DE UPGRADE E DOWNGRADE */}
-                            {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'mensal' ? (
-                              <div className="pt-4 mt-2 border-t border-emerald-500/20 text-left">
-                                <div className="bg-gradient-to-r from-amber-500/10 to-amber-900/10 border border-amber-500/30 p-5 rounded-xl relative shadow-lg">
-                                  <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
-                                  <h5 className="text-amber-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
-                                  <p className="text-[10px] text-amber-200/70 mb-4 leading-relaxed">
-                                    Faça o upgrade agora por R$ 499,00. Seu plano atual será substituído imediatamente e você iniciará um novo ciclo ininterrupto de 12 meses.
+                            {/* SE ESTIVER CANCELADO PARA O FIM DO PERÍODO, MOSTRA AVISO AMARELO */}
+                            {savedProjects.find(p => p.id === currentProjectSlug)?.cancelAtPeriodEnd ? (
+                              <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl text-left flex gap-3 items-start">
+                                <AlertCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                                <div>
+                                  <h5 className="text-yellow-500 font-bold text-xs mb-1 uppercase tracking-wide">Assinatura Cancelada</h5>
+                                  <p className="text-[10px] text-yellow-200/70 leading-relaxed">
+                                    Não haverá novas cobranças. O seu site continuará 100% ativo até o fim do período que já foi pago. Após o vencimento, ele será suspenso automaticamente.
                                   </p>
-                                  <button 
-                                    onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
-                                    disabled={checkoutLoading === currentProjectSlug}
-                                    className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-amber-500/20 flex justify-center items-center gap-2"
-                                  >
-                                    {checkoutLoading === currentProjectSlug ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
-                                    Fazer Upgrade e Pagar R$ 499
-                                  </button>
                                 </div>
                               </div>
                             ) : (
-                              <div className="pt-4 mt-2 border-t border-emerald-500/20">
-                                <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl text-left flex gap-3 items-start">
-                                  <Info size={18} className="text-indigo-400 flex-shrink-0 mt-0.5" />
-                                  <div>
-                                    <h5 className="text-zinc-300 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
-                                    <p className="text-[10px] text-zinc-500 leading-relaxed">
-                                      Você está no plano Anual. A alteração para o plano mensal (downgrade) só estará disponível nesta tela após a expiração do seu ciclo atual de 12 meses.
-                                    </p>
+                              <>
+                                {/* REGRAS DE UPGRADE E DOWNGRADE */}
+                                {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'mensal' ? (
+                                  <div className="pt-4 mt-2 border-t border-emerald-500/20 text-left">
+                                    <div className="bg-gradient-to-r from-amber-500/10 to-amber-900/10 border border-amber-500/30 p-5 rounded-xl relative shadow-lg">
+                                      <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
+                                      <h5 className="text-amber-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
+                                      <p className="text-[10px] text-amber-200/70 mb-4 leading-relaxed">
+                                        Faça o upgrade agora por R$ 499,00. Seu plano atual será substituído imediatamente e você iniciará um novo ciclo ininterrupto de 12 meses.
+                                      </p>
+                                      <button 
+                                        onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
+                                        disabled={checkoutLoading === currentProjectSlug}
+                                        className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-amber-500/20 flex justify-center items-center gap-2"
+                                      >
+                                        {checkoutLoading === currentProjectSlug ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
+                                        Fazer Upgrade e Pagar R$ 499
+                                      </button>
+                                    </div>
+                                    
+                                    {/* AQUI ESTÁ O BOTÃO DE CANCELAR MENSAL CORRIGIDO */}
+                                    <div className="text-center mt-5">
+                                      <button 
+                                        onClick={() => handleCancelSubscription(currentProjectSlug)}
+                                        disabled={isCanceling === currentProjectSlug}
+                                        className="text-[10px] font-bold text-red-500/60 hover:text-red-400 transition-colors uppercase tracking-widest"
+                                      >
+                                        {isCanceling === currentProjectSlug ? 'Processando...' : 'Cancelar Assinatura Mensal'}
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
+                                ) : (
+                                  <div className="pt-4 mt-2 border-t border-emerald-500/20">
+                                    <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl text-left flex gap-3 items-start">
+                                      <Info size={18} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+                                      <div>
+                                        <h5 className="text-zinc-300 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
+                                        <p className="text-[10px] text-zinc-500 leading-relaxed">
+                                          Você está no plano Anual. A alteração para o plano mensal (downgrade) só estará disponível nesta tela após a expiração do seu ciclo atual de 12 meses.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         )}
