@@ -635,16 +635,12 @@ const App: React.FC = () => {
 
       <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
         
-    <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
-          {generatedHtml ? (
-            <iframe 
-              srcDoc={getPreviewHtml(generatedHtml)} 
-              className="w-full h-full border-none bg-transparent" 
-              title="Visão Principal" 
-            />
-          ) : (
-            <PromoView />
-          )}
+        <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
+          <iframe 
+            srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
+            className="w-full h-full border-none bg-transparent" 
+            title="Visão Principal" 
+          />
 
           <AnimatePresence>
             {!isMenuOpen && (
@@ -1004,12 +1000,49 @@ const App: React.FC = () => {
                             <p className="text-[9px] text-center text-zinc-600 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamentos 100% seguros operados globalmente pela Stripe.</p>
                           </div>
                         ) : (
-                          <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-xl text-center space-y-3">
-                            <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                              <Star size={24} />
+                          <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-xl text-center space-y-4 shadow-lg relative overflow-hidden">
+                            <div className="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                              <Star size={28} />
                             </div>
-                            <h4 className="font-bold text-emerald-400">Plano Ativado com Sucesso!</h4>
-                            <p className="text-xs text-emerald-200/70">O seu site está online, seguro e com todas as funções desbloqueadas. Você receberá alertas no seu e-mail caso haja pendências.</p>
+                            <h4 className="font-black text-emerald-400 text-lg uppercase tracking-wider">
+                              Plano {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'anual' ? 'Anual' : 'Mensal'} Ativo
+                            </h4>
+                            <p className="text-xs text-emerald-200/70 leading-relaxed max-w-sm mx-auto">
+                              Seu site está operando com potência máxima e todos os recursos premium estão liberados.
+                            </p>
+                            
+                            {/* REGRAS DE UPGRADE E DOWNGRADE */}
+                            {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'mensal' ? (
+                              <div className="pt-4 mt-2 border-t border-emerald-500/20 text-left">
+                                <div className="bg-gradient-to-r from-amber-500/10 to-amber-900/10 border border-amber-500/30 p-5 rounded-xl relative shadow-lg">
+                                  <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
+                                  <h5 className="text-amber-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
+                                  <p className="text-[10px] text-amber-200/70 mb-4 leading-relaxed">
+                                    Faça o upgrade agora por R$ 499,00. Seu plano atual será substituído imediatamente e você iniciará um novo ciclo ininterrupto de 12 meses.
+                                  </p>
+                                  <button 
+                                    onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
+                                    disabled={checkoutLoading === currentProjectSlug}
+                                    className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-amber-500/20 flex justify-center items-center gap-2"
+                                  >
+                                    {checkoutLoading === currentProjectSlug ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
+                                    Fazer Upgrade e Pagar R$ 499
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="pt-4 mt-2 border-t border-emerald-500/20">
+                                <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl text-left flex gap-3 items-start">
+                                  <Info size={18} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <h5 className="text-zinc-300 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
+                                    <p className="text-[10px] text-zinc-500 leading-relaxed">
+                                      Você está no plano Anual. A alteração para o plano mensal (downgrade) só estará disponível nesta tela após a expiração do seu ciclo atual de 12 meses.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
