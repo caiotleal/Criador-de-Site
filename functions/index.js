@@ -460,7 +460,31 @@ exports.resumeStripeSubscription = onCall({ cors: true }, async (request) => {
   const projectRef = db.collection("users").doc(uid).collection("projects").doc(projectId);
   const snap = await projectRef.get();
 
-  if (!snap.exists) throw new HttpsError("not-found", "Projeto não
+  if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
+  const project = snap.data();
+
+  if (!project.stripeSubscriptionId) {
+    throw new HttpsError("failed-precondition", "Nenhuma assinatura ativa encontrada.");
+  }
+
+  try {
+    // Avisa a Stripe para cancelar o agendamento de exclusão e voltar a cobrar normalmente
+    await stripe.subscriptions.update(project.stripeSubscriptionId, {
+      cancel_at_period_end: false
+    });
+
+    // Atualiza o banco de dados removendo a tag amarela de aviso
+    await projectRef.update({
+      cancelAtPeriodEnd: false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao retomar assinatura:", error.message);
+    throw new HttpsError("internal", "Erro ao comunicar com o provedor de pagamentos.");
+  }
+});
 
 // ==============================================================================
 // CRON JOB DIÁRIO
