@@ -10,6 +10,7 @@ import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
 import { useIframeEditor } from './components/useIframeEditor'; 
+import PromoView from './components/PromoView';
 
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
@@ -697,12 +698,16 @@ const App: React.FC = () => {
 
       <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
         
-        <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
-          <iframe 
-            srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
-            className="w-full h-full border-none bg-transparent" 
-            title="Visão Principal" 
-          />
+    <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
+          {generatedHtml ? (
+            <iframe 
+              srcDoc={getPreviewHtml(generatedHtml)} 
+              className="w-full h-full border-none bg-transparent" 
+              title="Visão Principal" 
+            />
+          ) : (
+            <PromoView />
+          )}
 
           <AnimatePresence>
             {!isMenuOpen && (
