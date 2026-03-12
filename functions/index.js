@@ -16,7 +16,6 @@ const stripe = require("stripe")("sk_test_51T3iV5LK0sp6cEMAbpSV1cM4MGESQ9s3EOffF
 if (!admin.apps.length) admin.initializeApp();
 
 const geminiKey = defineSecret("GEMINI_KEY");
-const openAiKey = defineSecret("OPENAI_KEY"); // <-- NOVA CHAVE DA OPENAI ADICIONADA AQUI
 
 const getProjectId = () => process.env.GCLOUD_PROJECT || JSON.parse(process.env.FIREBASE_CONFIG || '{}').projectId;
 
@@ -141,62 +140,28 @@ exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB"
   } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
-// ============================================================================
-// ============================================================================
-// MOTOR DE IMAGEM POR IA (OPENAI DALL-E 3)
-// ============================================================================
 exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [geminiKey] }, async (request) => {
   const uid = ensureAuthed(request);
   const { prompt } = request.data;
-
   if (!prompt) throw new HttpsError("invalid-argument", "O descritivo da imagem é obrigatório.");
 
   try {
-    const refinedPrompt = `A high-end, realistic commercial photograph of: ${prompt}. Shot on a 35mm lens, natural lighting, authentic detailed textures, 8k resolution. This is a raw, unedited photograph, NOT a 3d render. Absolutely no text, no interface, no borders, pure photography.`;
-
+    const refinedPrompt = `A high-end, realistic commercial photograph of: ${prompt}. Shot on a 35mm lens, natural lighting, authentic detailed textures, 8k resolution. Pure photography.`;
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=${geminiKey.value()}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         instances: [{ prompt: refinedPrompt }],
-        parameters: {
-          sampleCount: 1,
-          aspectRatio: "1:1"
-        }
+        parameters: { sampleCount: 1, aspectRatio: "1:1" }
       })
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erro Google Imagen 3:", errorText);
-      throw new HttpsError("internal", "A IA não conseguiu gerar a imagem. Tente outra descrição.");
-    }
-
+    if (!response.ok) throw new HttpsError("internal", "A IA não conseguiu gerar a imagem.");
     const data = await response.json();
-
-    if (!data.predictions || data.predictions.length === 0) {
-      throw new HttpsError("internal", "Nenhuma imagem foi retornada pela API.");
-    }
-
     const base64Image = data.predictions[0].bytesBase64Encoded;
     const mimeType = data.predictions[0].mimeType || "image/jpeg";
-
     return { imageUrl: `data:${mimeType};base64,${base64Image}` };
-
-  } catch (error) {
-    console.error("Falha no gerador de imagens:", error);
-    throw new HttpsError("internal", error.message);
-  }
-});
-
-exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
-  const { desiredDomain } = request.data || {};
-  const cleanDomain = slugify(desiredDomain).slice(0, 30);
-  const snap = await admin.firestore().collectionGroup("projects").where("hostingSiteId", "==", cleanDomain).get();
-  if (!snap.empty) return { available: false, cleanDomain, message: "Já em uso." };
-  return { available: true, cleanDomain };
+  } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
 exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (request) => {
@@ -204,18 +169,11 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
   const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
   const projectSlug = internalDomain;
 
-  // 1. A CORREÇÃO: Garante que o documento do usuário seja real (não-fantasma)
-  await admin.firestore().collection("users").doc(uid).set({
-    activeUser: true,
-    uid: uid
-  }, { merge: true });
-
+  await admin.firestore().collection("users").doc(uid).set({ activeUser: true, uid: uid }, { merge: true });
   const hosting = await createHostingSiteIfPossible(projectSlug);
   await configureSiteRetention(projectSlug);
 
   const now = admin.firestore.FieldValue.serverTimestamp();
-
-  // 2. Salva o projeto normalmente na subcoleção
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
     uid, businessName, projectSlug, hostingSiteId: projectSlug, internalDomain,
     officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
@@ -225,43 +183,13 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
 
   return { success: true, projectSlug, hostingSiteId: projectSlug };
 });
-exports.updateSiteProject = onCall({ cors: true }, async (request) => {
-  const uid = ensureAuthed(request);
-  const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
-  const { html, formData, aiContent } = request.data;
-
-  await admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId).update({
-    generatedHtml: html, ...(formData && { formData }), ...(aiContent && { aiContent }),
-    needsDeploy: true, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  return { success: true };
-});
-
-// Listagem blindada contra ocultação do banco de dados
-exports.listUserProjects = onCall({ cors: true }, async (request) => {
-  const uid = ensureAuthed(request);
-  const snap = await admin.firestore().collection("users").doc(uid).collection("projects").get();
-
-  const projects = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  projects.sort((a, b) => {
-    const timeA = a.updatedAt ? (a.updatedAt._seconds || a.updatedAt.seconds || 0) : 0;
-    const timeB = b.updatedAt ? (b.updatedAt._seconds || b.updatedAt.seconds || 0) : 0;
-    return timeB - timeA;
-  });
-
-  return { projects };
-});
 
 exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "512MiB" }, async (request) => {
   try {
     const uid = ensureAuthed(request);
     const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
-    if (!targetId) throw new HttpsError("invalid-argument", "ID obrigatório.");
-
-    const db = admin.firestore();
-    const ref = db.collection("users").doc(uid).collection("projects").doc(targetId);
+    const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
     const snap = await ref.get();
-
     if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
     const project = snap.data();
 
@@ -269,71 +197,47 @@ exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "
     const deployResult = await deployHtmlToFirebaseHosting(project.hostingSiteId, project.generatedHtml);
     const publicUrl = hostingProvision.defaultUrl || `https://${project.hostingSiteId}.web.app`;
 
-    const isPaidProject = project.paymentStatus === "paid";
-    let nextExpiresAt = project.expiresAt || null;
-
-    if (!isPaidProject) {
-      const trialExpiration = new Date();
-      trialExpiration.setDate(trialExpiration.getDate() + 5); // 5 dias de trial
-      nextExpiresAt = admin.firestore.Timestamp.fromDate(trialExpiration);
-    }
-
     await ref.set({
       published: true, publishUrl: publicUrl, publishedAt: admin.firestore.FieldValue.serverTimestamp(),
-      ...(nextExpiresAt ? { expiresAt: nextExpiresAt } : {}),
-      status: "published", paymentStatus: isPaidProject ? "paid" : "trial", needsDeploy: false, lastDeploy: deployResult,
+      status: "published", needsDeploy: false, lastDeploy: deployResult,
       hosting: { ...(project.hosting || {}), ...hostingProvision },
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
-    return { success: true, publishUrl: publicUrl, expiresAt: nextExpiresAt?.toDate?.()?.toISOString?.() || null };
+    return { success: true, publishUrl: publicUrl };
   } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
-exports.deleteUserProject = onCall({ cors: true }, async (request) => {
-  const uid = ensureAuthed(request);
-  const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
-  const ref = admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId);
-  const snap = await ref.get();
-
-  if (snap.exists) {
-    const siteId = snap.data().hostingSiteId;
-    if (siteId) {
-      try {
-        const projectIdEnv = getProjectId();
-        const token = await getFirebaseAccessToken();
-        await fetch(`https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${siteId}`, {
-          method: "DELETE", headers: { Authorization: `Bearer ${token}` }
-        });
-      } catch (e) { console.error("Falha ao deletar site no Hosting", e); }
-    }
-    await ref.delete();
-  }
-  return { success: true };
-});
-
-
+// ============================================================================
+// STRIPE: CHECKOUT E MENSALIDADE (ATUALIZADO)
+// ============================================================================
 exports.createStripeCheckoutSession = onCall({ cors: true }, async (request) => {
   ensureAuthed(request);
-  const { projectId, origin } = request.data || {};
+  const { projectId, origin, planType } = request.data || {};
   if (!projectId) throw new HttpsError("invalid-argument", "projectId é obrigatório.");
 
   const safeOrigin = origin && /^https?:\/\//.test(origin) ? origin : "https://sitecraft-ai.web.app";
+  
+  const isAnual = planType === 'anual';
+  const amount = isAnual ? 49900 : 4990; // R$ 499,00 ou R$ 49,90
+  const interval = isAnual ? "year" : "month";
 
   const session = await stripe.checkout.sessions.create({
-    mode: "payment",
+    mode: "subscription", // Define como assinatura recorrente
     payment_method_types: ["card"],
     line_items: [{
       price_data: {
         currency: "brl",
         product_data: {
-          name: "Plano anual SiteCraft",
-          description: "Hospedagem e manutenção por 12 meses"
+          name: `SiteCraft - Plano ${isAnual ? 'Anual' : 'Mensal'}`,
+          description: isAnual ? "Hospedagem e manutenção por 12 meses" : "Hospedagem e manutenção mensal"
         },
-        unit_amount: 49900
+        unit_amount: amount,
+        recurring: { interval: interval }
       },
       quantity: 1
     }],
+    metadata: { planType: isAnual ? 'anual' : 'mensal' },
     locale: "pt-BR",
     client_reference_id: projectId,
     success_url: `${safeOrigin}?payment=success&project=${projectId}`,
@@ -344,7 +248,7 @@ exports.createStripeCheckoutSession = onCall({ cors: true }, async (request) => 
 });
 
 // ==============================================================================
-// WEBHOOK DA STRIPE (COM RASTREIO E LOG DE PAYLOAD)
+// WEBHOOK DA STRIPE (ATUALIZADO PARA MENSAL/ANUAL)
 // ==============================================================================
 exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   const sig = req.headers["stripe-signature"];
@@ -354,67 +258,51 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
   } catch (err) {
-    console.error("❌ Erro na assinatura:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
-  console.log(`[WEBHOOK] Evento disparado: ${event.type}`);
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const projectId = session.client_reference_id;
-
-    // O RASTREADOR DE PAYLOAD: Mostra exatamente o que a Stripe enviou
-    console.log(`[STRIPE PAYLOAD] Dados recebidos:`, JSON.stringify({
-      sessionId: session.id,
-      cliente_email: session.customer_details?.email,
-      status_pagamento: session.payment_status,
-      ID_DO_PROJETO_RECEBIDO: projectId
-    }, null, 2));
+    const planType = session.metadata.planType;
 
     if (projectId) {
       try {
         const db = admin.firestore();
         const usersSnap = await db.collection("users").get();
-        let encontrouProjeto = false;
-
+        
         for (const userDoc of usersSnap.docs) {
           const projectRef = db.collection("users").doc(userDoc.id).collection("projects").doc(projectId);
           const pDoc = await projectRef.get();
 
           if (pDoc.exists) {
-            encontrouProjeto = true;
             const newExpiration = new Date();
-            newExpiration.setDate(newExpiration.getDate() + 365);
+            if (planType === 'anual') {
+              newExpiration.setFullYear(newExpiration.getFullYear() + 1);
+            } else {
+              newExpiration.setMonth(newExpiration.getMonth() + 1);
+            }
 
             await projectRef.update({
               status: "published",
-              paymentStatus: "paid", // Aqui a mágica de sumir o botão acontece
+              paymentStatus: "paid",
+              planSelected: planType,
               expiresAt: admin.firestore.Timestamp.fromDate(newExpiration),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
               needsDeploy: true
             });
-
-            console.log(`✅ SUCESSO! Projeto ${projectId} atualizado para 1 ANO PAGO.`);
+            console.log(`✅ Projeto ${projectId} renovado (${planType}).`);
             break;
           }
         }
-
-        if (!encontrouProjeto) {
-          console.error(`⚠️ ALERTA: A Stripe mandou o ID "${projectId}", mas ele não foi achado no banco.`);
-        }
-      } catch (error) {
-        console.error(`❌ Erro ao escrever no banco de dados:`, error);
-      }
-    } else {
-      console.error("⚠️ ALERTA: Pagamento concluído, mas a Stripe NÃO DEVOLVEU o client_reference_id.");
+      } catch (error) { console.error(`Erro banco:`, error); }
     }
   }
-
   res.status(200).send({ received: true });
 });
 
 // ==============================================================================
-// CRON JOB DIÁRIO
+// CRON JOB DIÁRIO (LIMPEZA)
 // ==============================================================================
 exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
   const db = admin.firestore();
