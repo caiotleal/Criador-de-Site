@@ -10,6 +10,7 @@ import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
 import { useIframeEditor } from './components/useIframeEditor'; 
+const [isCanceling, setIsCanceling] = useState<string | null>(null);
 
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
@@ -721,7 +722,23 @@ const App: React.FC = () => {
       setCheckoutLoading(null);
     }
   };
-
+  
+const handleCancelSubscription = async (projectId: string) => {
+    if (!window.confirm("Tem certeza que deseja cancelar sua assinatura?\n\nSeu site continuará no ar até o final do período que já foi pago. Após essa data, ele será congelado e você não será mais cobrado.")) return;
+    
+    setIsCanceling(projectId);
+    try {
+      const cancelFn = httpsCallable(functions, 'cancelStripeSubscription');
+      await cancelFn({ projectId });
+      alert("Assinatura cancelada com sucesso! O site permanecerá ativo até o fim do ciclo vigente.");
+      fetchProjects(); // Recarrega os dados para mostrar o aviso amarelo
+    } catch (error: any) {
+      alert("Erro ao cancelar: " + error.message);
+    } finally {
+      setIsCanceling(null);
+    }
+  };
+  
   const handleLoadProject = (project: any) => {
     if (!project) return;
     setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
