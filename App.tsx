@@ -23,43 +23,24 @@ const LAYOUT_STYLES = [
 ];
 
 const COLORS = [
-  // ==========================================
-  // PALETAS ORIGINAIS (Essenciais da Marca)
-  // ==========================================
   { id: 'obsidian', name: 'Obsidiana', c1: '#000000', c2: '#0a0a0a', c3: '#171717', c4: '#ffffff', c5: '#d4d4d8', c6: '#a1a1aa', c7: '#71717a', light: '#ffffff', dark: '#000000' },
   { id: 'slate', name: 'Ardósia', c1: '#020617', c2: '#0f172a', c3: '#1e293b', c4: '#3b82f6', c5: '#60a5fa', c6: '#93c5fd', c7: '#bfdbfe', light: '#f8fafc', dark: '#020617' },
   { id: 'snow', name: 'Neve Pura', c1: '#ffffff', c2: '#f4f4f5', c3: '#e4e4e7', c4: '#09090b', c5: '#27272a', c6: '#3f3f46', c7: '#52525b', light: '#09090b', dark: '#ffffff' },
-  
-  // ==========================================
-  // 1. TONS CELESTES (Ar puro, Céu, Leveza)
-  // ==========================================
   { id: 'celeste_suave', name: 'Celeste Suave', c1: '#F0F9FF', c2: '#E0F2FE', c3: '#BAE6FD', c4: '#0369A1', c5: '#0284C7', c6: '#475569', c7: '#0EA5E9', light: '#FFFFFF', dark: '#0F172A' },
   { id: 'celeste_aurora', name: 'Celeste Aurora', c1: '#FDFEFE', c2: '#F0F9FF', c3: '#E0F2FE', c4: '#075985', c5: '#0369A1', c6: '#64748B', c7: '#F59E0B', light: '#FFFFFF', dark: '#020617' },
   { id: 'celeste_nuvens', name: 'Celeste Nuvens', c1: '#F8FAFC', c2: '#F1F5F9', c3: '#E2E8F0', c4: '#0F172A', c5: '#334155', c6: '#64748B', c7: '#0284C7', light: '#FFFFFF', dark: '#0F172A' },
   { id: 'celeste_brisa', name: 'Celeste Brisa', c1: '#ECFEFF', c2: '#CFFAFE', c3: '#A5F3FC', c4: '#164E63', c5: '#0891B2', c6: '#3F6212', c7: '#06B6D4', light: '#FFFFFF', dark: '#083344' },
   { id: 'celeste_cristal', name: 'Celeste Cristal', c1: '#FFFFFF', c2: '#F4F4F5', c3: '#E4E4E7', c4: '#0369A1', c5: '#0284C7', c6: '#94A3B8', c7: '#3B82F6', light: '#FFFFFF', dark: '#0F172A' },
-
-  // ==========================================
-  // 2. TONS MARINHOS (Profundidade, Corporativo)
-  // ==========================================
   { id: 'marinha_profundo', name: 'Marinha Profundo', c1: '#0A192F', c2: '#112240', c3: '#233554', c4: '#F8FAFC', c5: '#E2E8F0', c6: '#8892B0', c7: '#64FFDA', light: '#0A192F', dark: '#F8FAFC' },
   { id: 'marinha_classico', name: 'Marinha Clássico', c1: '#0B1120', c2: '#151F32', c3: '#1E293B', c4: '#F1F5F9', c5: '#CBD5E1', c6: '#94A3B8', c7: '#3B82F6', light: '#0B1120', dark: '#F8FAFC' },
   { id: 'marinha_oceano', name: 'Marinha Oceano', c1: '#0F172A', c2: '#1E293B', c3: '#334155', c4: '#F8FAFC', c5: '#E2E8F0', c6: '#94A3B8', c7: '#0EA5E9', light: '#0F172A', dark: '#FFFFFF' },
   { id: 'marinha_noturno', name: 'Marinha Noturno', c1: '#020617', c2: '#0F172A', c3: '#1E293B', c4: '#F8FAFC', c5: '#E2E8F0', c6: '#64748B', c7: '#818CF8', light: '#020617', dark: '#FFFFFF' },
   { id: 'marinha_atlantico', name: 'Marinha Atlântico', c1: '#082F49', c2: '#0C4A6E', c3: '#164E63', c4: '#ECFEFF', c5: '#CFFAFE', c6: '#A5F3FC', c7: '#22D3EE', light: '#082F49', dark: '#ECFEFF' },
-
-  // ==========================================
-  // 3. TONS MEDITERRÂNEOS (Terrosos, Praia)
-  // ==========================================
   { id: 'med_santorini', name: 'Mediterrâneo Santorini', c1: '#FAFAFA', c2: '#F4F4F5', c3: '#E5E7EB', c4: '#0F172A', c5: '#1E293B', c6: '#64748B', c7: '#0284C7', light: '#FFFFFF', dark: '#0F172A' },
   { id: 'med_terracota', name: 'Mediterrâneo Terracota', c1: '#FFF7ED', c2: '#FFEDD5', c3: '#FED7AA', c4: '#431407', c5: '#78350F', c6: '#9A3412', c7: '#EA580C', light: '#FFFFFF', dark: '#431407' },
   { id: 'med_azeite', name: 'Mediterrâneo Azeite', c1: '#FAFAF9', c2: '#F5F5F4', c3: '#E7E5E4', c4: '#1C1917', c5: '#292524', c6: '#57534E', c7: '#65A30D', light: '#FFFFFF', dark: '#1C1917' },
   { id: 'med_areia', name: 'Mediterrâneo Areia', c1: '#FEFCE8', c2: '#FEF9C3', c3: '#FEF08A', c4: '#451A03', c5: '#78350F', c6: '#A16207', c7: '#0284C7', light: '#FFFFFF', dark: '#451A03' },
   { id: 'med_capri', name: 'Mediterrâneo Capri', c1: '#FFFFFF', c2: '#F0FDF4', c3: '#DCFCE7', c4: '#064E3B', c5: '#065F46', c6: '#475569', c7: '#10B981', light: '#FFFFFF', dark: '#064E3B' },
-
-  // ==========================================
-  // 4. TONS CARIBE (Quentes, Turquesa, Coral)
-  // ==========================================
   { id: 'caribe_coral', name: 'Caribe Coral', c1: '#FFF1F2', c2: '#FFE4E6', c3: '#FECDD3', c4: '#F43F5E', c5: '#E11D48', c6: '#9F1239', c7: '#0D9488', light: '#FFFFFF', dark: '#4C0519' },
   { id: 'caribe_turquesa', name: 'Caribe Turquesa', c1: '#F0FDFA', c2: '#CCFBF1', c3: '#99F6E4', c4: '#0D9488', c5: '#0F766E', c6: '#115E59', c7: '#F59E0B', light: '#FFFFFF', dark: '#134E4A' },
   { id: 'caribe_sol', name: 'Caribe Sol', c1: '#FFFBEB', c2: '#FEF3C7', c3: '#FDE047', c4: '#D97706', c5: '#B45309', c6: '#78350F', c7: '#0D9488', light: '#FFFFFF', dark: '#451A03' },
@@ -86,7 +67,6 @@ const PROMO_HTML = `
   </style>
 </head>
 <body class="antialiased selection:bg-orange-500 selection:text-white">
-  
   <header class="fixed top-0 left-0 w-full z-[80] bg-[#FAFAF9]/80 backdrop-blur-md border-b border-stone-200/60 h-24 flex items-center px-6 md:px-12 transition-all">
     <div class="max-w-7xl mx-auto w-full flex items-center">
        <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-16 md:h-20 w-auto drop-shadow-sm" />
@@ -265,7 +245,14 @@ const getPreviewHtml = (baseHtml: string | null) => {
             bgColorPicker.value = rgbToHex(window.getComputedStyle(el).backgroundColor);
             const rect = el.getBoundingClientRect();
             textToolbar.style.display = 'flex';
-            textToolbar.style.top = (rect.top + window.scrollY - 60) + 'px';
+            
+            // 👇 SOLUÇÃO: Evita que a barra fique escondida no topo
+            if (rect.top < 60) {
+              textToolbar.style.top = (rect.bottom + window.scrollY + 10) + 'px';
+            } else {
+              textToolbar.style.top = (rect.top + window.scrollY - 60) + 'px';
+            }
+            
             textToolbar.style.left = Math.max(10, rect.left + window.scrollX) + 'px';
           });
         });
@@ -277,7 +264,12 @@ const getPreviewHtml = (baseHtml: string | null) => {
             currentImgTarget = el;
             const rect = el.getBoundingClientRect();
             imgToolbar.style.display = 'flex';
-            imgToolbar.style.top = (rect.top + window.scrollY + 10) + 'px';
+            
+            // Proteção para imagens muito no topo
+            let topPos = rect.top + window.scrollY + 10;
+            if (rect.top < 10) { topPos = rect.bottom + window.scrollY - 50; }
+            imgToolbar.style.top = topPos + 'px';
+            
             imgToolbar.style.left = (rect.left + window.scrollX + 10) + 'px';
           });
         });
@@ -366,7 +358,7 @@ const extractCustomImages = (html: string | null) => {
   return images;
 };
 
-// DADOS DOS PLANOS PARA O MODAL
+// DADOS DOS PLANOS
 const PLAN_DETAILS = {
   free: {
     title: "Plano Teste Grátis",
@@ -420,7 +412,6 @@ const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
   const [aiContent, setAiContent] = useState<any>(null);
   
-  // MODAIS E ESTADOS DE TERMOS
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedPlanModal, setSelectedPlanModal] = useState<'free' | 'monthly' | 'annual' | null>(null);
   const [checkoutTermsAccepted, setCheckoutTermsAccepted] = useState(false);
@@ -443,7 +434,8 @@ const App: React.FC = () => {
   const [formData, setFormData] = useState({
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
-    showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', logoBase64: ''
+    showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', 
+    logoBase64: '', logoSize: 40 // 👇 NOVA VARIÁVEL DE TAMANHO DA LOGO
   });
 
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
@@ -477,7 +469,7 @@ const App: React.FC = () => {
         return renderTemplate(aiContent, formData, extractedImages);
       });
     }
-  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.linkedin, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.showFloatingContact, formData.showMap, formData.address, formData.phone, formData.email, formData.region]);
+  }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.logoSize, formData.whatsapp, formData.instagram, formData.facebook, formData.linkedin, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.showFloatingContact, formData.showMap, formData.address, formData.phone, formData.email, formData.region]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => setLoggedUserEmail(user?.email || null));
@@ -519,11 +511,15 @@ const App: React.FC = () => {
 
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
+    // 👇 INJEÇÃO DA LOGO E CSS INLINE DE ACORDO COM O SLIDER
+    const logoHeight = data.logoSize || 40;
     if (data.logoBase64) {
       headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 md:h-12 w-auto object-contain transition-transform hover:scale-105" alt="Logo" />`);
+      // Injeta também uma regra global pro Header Glass do arquivo de templates respeitar o slider
+      headInjection += `<style>.glass-logo-premium img { max-height: ${logoHeight}px !important; }</style>`;
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" style="max-height: ${logoHeight}px; width: auto; display: block; object-fit: contain; transition: transform 0.2s ease;" alt="Logo" />`);
     } else {
-      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span style="font-weight: 900; font-size: 1.2rem; text-transform: uppercase;">${companyNameUpper}</span>`);
     }
 
     replaceAll('[[WHATSAPP_BTN]]', ''); replaceAll('[[INSTAGRAM_BTN]]', ''); replaceAll('[[FACEBOOK_BTN]]', '');
@@ -699,7 +695,7 @@ const App: React.FC = () => {
       alert("Site excluído com sucesso.");
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
-        setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', logoBase64: '' });
+        setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', logoBase64: '', logoSize: 40 });
       }
       fetchProjects();
     } catch (error) { alert("Erro ao excluir o site."); }
@@ -778,7 +774,7 @@ const App: React.FC = () => {
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* FUNDO QUENTE (FAFAF9) - VIBE CARIBE */}
+      {/* FUNDO QUENTE (FAFAF9) */}
       <div className="w-full h-screen bg-[#FAFAF9] overflow-hidden font-sans text-stone-900 flex flex-col md:flex-row">
         
         {/* Área Principal (Iframe) */}
@@ -816,7 +812,7 @@ const App: React.FC = () => {
           <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} brandLogo={BRAND_LOGO} />
         </Suspense>
 
-        {/* Modal de Cancelamento (COM TERMOS) */}
+        {/* Modal de Cancelamento */}
         <AnimatePresence>
           {cancelModalProject && (
             <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -853,7 +849,7 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Modal de Detalhes do Plano (COM CHECKBOX PARA CHECKOUT) */}
+        {/* Modal de Detalhes do Plano */}
         <AnimatePresence>
           {selectedPlanModal && (
             <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -889,7 +885,6 @@ const App: React.FC = () => {
                   ))}
                 </ul>
 
-                {/* Bloco de Termos caso o usuário queira assinar antes do fim do trial */}
                 {selectedPlanModal !== 'free' && (
                   <div className="mb-6 bg-stone-50 p-4 rounded-xl border border-stone-200 relative z-10">
                     <label className="flex items-start gap-3 cursor-pointer">
@@ -925,7 +920,7 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Modal de Sucesso na Publicação (INFORMATIVO SITE NO AR) */}
+        {/* Modal de Sucesso na Publicação */}
         <AnimatePresence>
           {publishModalUrl && (
             <div className="fixed inset-0 z-[100] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -942,7 +937,6 @@ const App: React.FC = () => {
                   <p className="text-stone-500 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio oficial, pode demorar algumas horas para propagar.</p>
                 </div>
 
-                {/* Informativo Legal de 7 Dias sem Checkbox */}
                 <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl text-left relative z-10 shadow-sm">
                    <h4 className="text-orange-600 font-bold text-[11px] uppercase tracking-wider mb-2">Aproveite seus 7 dias gratuitos</h4>
                    <p className="text-[10px] text-stone-600 leading-relaxed font-medium">
@@ -1102,11 +1096,21 @@ const App: React.FC = () => {
                           </div>
 
                           <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-stone-500 uppercase flex justify-between items-center"><span>Sua Logomarca (Favicon)</span>{formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-500 hover:text-red-600 text-[10px] font-bold">X Remover</button>}</label>
+                            <label className="text-xs font-bold text-stone-500 uppercase flex justify-between items-center"><span>Sua Logomarca (Favicon)</span>{formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '', logoSize: 40 })); setHasUnsavedChanges(true); }} className="text-red-500 hover:text-red-600 text-[10px] font-bold">X Remover</button>}</label>
                             {!formData.logoBase64 ? (
                               <div className="space-y-2"><label className="cursor-pointer w-full border border-dashed border-stone-300 hover:border-teal-400 rounded-xl p-4 flex justify-center items-center gap-2 text-xs text-stone-500 transition-colors bg-stone-50"><Upload size={14} /> Fazer Upload da Marca<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label></div>
                             ) : (
-                              <div className="h-14 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-center overflow-hidden p-2"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
+                              <div className="space-y-3 bg-stone-50 border border-stone-200 rounded-xl p-4">
+                                <div className="h-16 flex items-center justify-center overflow-hidden bg-white rounded-lg border border-stone-200 relative">
+                                  {/* Padrão Xadrez (Transparency grid) para ver melhor logos brancas */}
+                                  <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)', backgroundSize: '10px 10px', backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px' }}></div>
+                                  <img src={formData.logoBase64} style={{ maxHeight: `${formData.logoSize || 40}px` }} className="w-auto object-contain relative z-10 transition-all" alt="Logo" />
+                                </div>
+                                <div className="space-y-1 mt-2">
+                                  <label className="flex justify-between text-[10px] font-bold text-stone-500 uppercase"><span>Tamanho da Logo</span><span>{formData.logoSize || 40}px</span></label>
+                                  <input type="range" min="20" max="100" value={formData.logoSize || 40} onChange={e => {setFormData({ ...formData, logoSize: parseInt(e.target.value) }); setHasUnsavedChanges(true)}} className="w-full accent-teal-500" />
+                                </div>
+                              </div>
                             )}
                           </div>
 
@@ -1164,7 +1168,12 @@ const App: React.FC = () => {
 
                   {activeTab === 'assinatura' && currentProjectSlug && (() => {
                     const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
+                    
+                    const expirationDate = currentProject?.expiresAt ? (currentProject.expiresAt._seconds ? currentProject.expiresAt._seconds * 1000 : currentProject.expiresAt.seconds * 1000) : null;
+                    const daysLeft = expirationDate ? Math.ceil((new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
+                    
                     const isPaid = currentProject?.paymentStatus === 'paid';
+                    const isCanceled = currentProject?.cancelAtPeriodEnd === true || currentProject?.subscriptionStatus === 'canceled';
                     
                     return (
                       <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -1173,10 +1182,38 @@ const App: React.FC = () => {
                           <h3 className="text-lg font-black text-stone-950 mb-1 flex items-center gap-2"><CreditCard size={18} className="text-orange-500" /> Assinatura</h3>
                           <p className="text-xs text-stone-500 mb-6">Gerencie o plano do projeto <span className="text-orange-500 font-mono">{currentProjectSlug}</span></p>
 
+                          {/* 👇 NOVO QUADRO DE RESUMO DE STATUS DA ASSINATURA 👇 */}
+                          <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 mb-6 relative z-10 shadow-inner">
+                              <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Resumo da Conta</h4>
+                              <div className="space-y-4">
+                                  <div className="flex justify-between items-center border-b border-stone-200 pb-3">
+                                      <span className="text-xs text-stone-500 font-medium">Status do Site</span>
+                                      <span className={`text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md ${daysLeft > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                        {daysLeft > 0 ? 'Online (Ativo)' : 'Offline (Congelado)'}
+                                      </span>
+                                  </div>
+                                  <div className="flex justify-between items-center border-b border-stone-200 pb-3">
+                                      <span className="text-xs text-stone-500 font-medium">Situação do Plano</span>
+                                      <span className="text-xs font-bold text-stone-800">
+                                          {isPaid ? (isCanceled ? 'Cancelada' : 'Assinatura Ativa') : 'Teste Gratuito (Trial)'}
+                                      </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                      <span className="text-xs text-stone-500 font-medium">Tempo / Vencimento</span>
+                                      <span className="text-xs font-bold text-stone-800 text-right">
+                                          {!isPaid && daysLeft > 0 && `Faltam ${daysLeft} dias para acabar`}
+                                          {!isPaid && daysLeft <= 0 && `Teste encerrado`}
+                                          {isPaid && !isCanceled && expirationDate && `Próxima renovação em ${new Date(expirationDate).toLocaleDateString('pt-BR')}`}
+                                          {isPaid && isCanceled && expirationDate && `No ar até ${new Date(expirationDate).toLocaleDateString('pt-BR')}`}
+                                      </span>
+                                  </div>
+                              </div>
+                          </div>
+
                           {!isPaid ? (
                             <div className="space-y-6">
                               <div className="grid grid-cols-1 gap-4">
-                                <div className="bg-stone-50 p-5 rounded-xl border border-stone-200 flex flex-col h-full relative overflow-hidden">
+                                <div className="bg-white p-5 rounded-xl border border-teal-200 flex flex-col h-full relative overflow-hidden shadow-sm">
                                   <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
                                   <div className="absolute top-0 right-0 bg-teal-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Assinado</div>
                                   <h4 className="text-teal-600 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
@@ -1204,16 +1241,16 @@ const App: React.FC = () => {
                               </div>
                             </div>
                           ) : (
-                            <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4">
-                              <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">Plano Ativo</h4>
-                              <p className="text-xs text-emerald-600/70">Seu site está operando com potência máxima.</p>
+                            <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4 relative z-10">
+                              <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">Plano Operacional</h4>
+                              <p className="text-xs text-emerald-600/70">Seu ambiente está operando com potência máxima e sem restrições.</p>
                             </div>
                           )}
                           
                           {/* Botão de Cancelar Assinatura Sempre Visível */}
-                          <div className="mt-8 pt-6 border-t border-stone-100">
-                             <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Gerenciamento da Conta</h4>
-                             {isPaid ? (
+                          <div className="mt-8 pt-6 border-t border-stone-100 relative z-10">
+                             <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Ações da Conta</h4>
+                             {isPaid && !isCanceled ? (
                                <button 
                                  onClick={() => {setCancelModalProject(currentProjectSlug); setCancelTermsAccepted(false)}} 
                                  className="w-full bg-white border border-red-200 text-red-600 hover:bg-red-50 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
