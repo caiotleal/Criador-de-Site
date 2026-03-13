@@ -246,7 +246,6 @@ const getPreviewHtml = (baseHtml: string | null) => {
             const rect = el.getBoundingClientRect();
             textToolbar.style.display = 'flex';
             
-            // 👇 SOLUÇÃO: Evita que a barra fique escondida no topo
             if (rect.top < 60) {
               textToolbar.style.top = (rect.bottom + window.scrollY + 10) + 'px';
             } else {
@@ -265,7 +264,6 @@ const getPreviewHtml = (baseHtml: string | null) => {
             const rect = el.getBoundingClientRect();
             imgToolbar.style.display = 'flex';
             
-            // Proteção para imagens muito no topo
             let topPos = rect.top + window.scrollY + 10;
             if (rect.top < 10) { topPos = rect.bottom + window.scrollY - 50; }
             imgToolbar.style.top = topPos + 'px';
@@ -435,7 +433,7 @@ const App: React.FC = () => {
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
     showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', 
-    logoBase64: '', logoSize: 40 // 👇 NOVA VARIÁVEL DE TAMANHO DA LOGO
+    logoBase64: '', logoSize: 40
   });
 
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
@@ -511,65 +509,32 @@ const App: React.FC = () => {
 
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
-    // 👇 INJEÇÃO DA LOGO E CSS INLINE DE ACORDO COM O SLIDER
     const logoHeight = data.logoSize || 40;
     if (data.logoBase64) {
       headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
-      // Injeta também uma regra global pro Header Glass do arquivo de templates respeitar o slider
       headInjection += `<style>.glass-logo-premium img { max-height: ${logoHeight}px !important; }</style>`;
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" style="max-height: ${logoHeight}px; width: auto; display: block; object-fit: contain; transition: transform 0.2s ease;" alt="Logo" />`);
     } else {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span style="font-weight: 900; font-size: 1.2rem; text-transform: uppercase;">${companyNameUpper}</span>`);
     }
 
-    replaceAll('[[WHATSAPP_BTN]]', ''); replaceAll('[[INSTAGRAM_BTN]]', ''); replaceAll('[[FACEBOOK_BTN]]', '');
-    replaceAll('[[TIKTOK_BTN]]', ''); replaceAll('[[LINKEDIN_BTN]]', ''); replaceAll('[[IFOOD_BTN]]', ''); replaceAll('[[NOVE_NOVE_BTN]]', ''); replaceAll('[[KEETA_BTN]]', '');
-
     let socialHtml = '';
     const addSocialBtn = (href: string, brandColor: string, label: string, innerHtml: string) => {
-      socialHtml += `<a href="${href}" target="_blank" class="social-icon" style="color: ${brandColor};" title="${label}">${innerHtml}</a>`;
+      socialHtml += `<a href="${href}" target="_blank" class="glass-social-link" style="color: ${brandColor};" title="${label}">${innerHtml}</a>`;
     };
 
+    // Ícones que vão aparecer no Header
     if (data.whatsapp) addSocialBtn(`https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, '#25D366', 'WhatsApp', '<i class="fab fa-whatsapp"></i>');
     if (data.instagram) addSocialBtn(`https://instagram.com/${data.instagram.replace('@', '')}`, '#E1306C', 'Instagram', '<i class="fab fa-instagram"></i>');
     if (data.facebook) addSocialBtn(data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, '#1877F2', 'Facebook', '<i class="fab fa-facebook-f"></i>');
     if (data.linkedin) addSocialBtn(data.linkedin.startsWith('http') ? data.linkedin : `https://${data.linkedin}`, '#0A66C2', 'LinkedIn', '<i class="fab fa-linkedin-in"></i>');
-    if (data.tiktok) addSocialBtn(data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, '#fff', 'TikTok', '<i class="fab fa-tiktok"></i>');
-    if (data.ifood) addSocialBtn(data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, '#EA1D2C', 'iFood', '<img src="https://cdn.simpleicons.org/ifood/EA1D2C" alt="iFood" class="float-logo"/>');
+    if (data.tiktok) addSocialBtn(data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, '#000000', 'TikTok', '<i class="fab fa-tiktok"></i>');
+    if (data.ifood) addSocialBtn(data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, '#EA1D2C', 'iFood', '<img src="https://cdn.simpleicons.org/ifood/EA1D2C" alt="iFood" style="width: 20px; height: 20px; object-fit: contain;"/>');
+    if (data.noveNove) addSocialBtn(data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, '#FFC700', '99', '<span style="font-size: 15px; font-weight: 900; line-height: 1;">99</span>');
+    if (data.keeta) addSocialBtn(data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, '#19B84A', 'Keeta', '<span style="font-size: 15px; font-weight: 900; line-height: 1;">Keeta</span>');
 
-    let contactHtml = '';
-    if (data.showFloatingContact) {
-      contactHtml = `<a href="#contato" class="contact-dock-btn"><i class="fas fa-comment-dots text-[18px]"></i> Fale Conosco</a>`;
-    }
-
-    if (socialHtml || contactHtml) {
-      const wrappedSocials = socialHtml ? `<div class="social-dock">${socialHtml}</div>` : '';
-      const floatStyle = `
-      <style>
-        @keyframes gentle-float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
-        .floating-dock { position: fixed; bottom: 32px; right: 32px; display: flex; align-items: center; gap: 16px; z-index: 99990; flex-wrap: wrap; justify-content: flex-end; animation: gentle-float 4s ease-in-out infinite; opacity: 0; pointer-events: none; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .floating-dock.scrolled-active { opacity: 1; pointer-events: auto; transform: translateY(0px); }
-        .social-dock { display: flex; align-items: center; gap: 4px; padding: 6px 16px; border-radius: 100px; background-color: ${colors.c2}cc; border: 1px solid ${colors.c3}; box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .social-icon { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; font-size: 22px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none; }
-        .social-icon:hover { transform: translateY(-4px) scale(1.15); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
-        .social-icon .float-logo { width: 22px; height: 22px; object-fit: contain; }
-        .contact-dock-btn { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 100px; background-color: ${colors.c4}; color: ${colors.c1}; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none; border: 1px solid ${colors.c3}40; pointer-events: auto; }
-        .contact-dock-btn:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-        .floating-dock:hover { animation-play-state: paused; }
-        @media (max-width: 640px) { .floating-dock { bottom: 20px; right: 20px; left: 20px; flex-direction: column-reverse; align-items: flex-end; } }
-      </style>
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const dock = document.querySelector('.floating-dock');
-          if (!dock) return;
-          const handleScroll = () => { dock.classList.toggle('scrolled-active', window.scrollY > document.documentElement.clientHeight * 0.4); };
-          window.addEventListener('scroll', handleScroll, { passive: true });
-          handleScroll();
-        });
-      </script>`;
-      headInjection += floatStyle;
-      html = html.replace('</body>', `<div class="floating-dock">${contactHtml}${wrappedSocials}</div></body>`);
-    }
+    // Substitui a tag criada no templates.ts pelos ícones reais
+    replaceAll('[[SOCIAL_LINKS]]', socialHtml);
 
     const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing.com.br</a></div>`;
     html = html.replace('</body>', `${footerBrand}</body>`);
@@ -1096,13 +1061,12 @@ const App: React.FC = () => {
                           </div>
 
                           <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-stone-500 uppercase flex justify-between items-center"><span>Sua Logomarca (Favicon)</span>{formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '', logoSize: 40 })); setHasUnsavedChanges(true); }} className="text-red-500 hover:text-red-600 text-[10px] font-bold">X Remover</button>}</label>
+                            <label className="text-xs font-bold text-stone-500 uppercase flex justify-between items-center"><span>Sua Logomarca</span>{formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '', logoSize: 40 })); setHasUnsavedChanges(true); }} className="text-red-500 hover:text-red-600 text-[10px] font-bold">X Remover</button>}</label>
                             {!formData.logoBase64 ? (
                               <div className="space-y-2"><label className="cursor-pointer w-full border border-dashed border-stone-300 hover:border-teal-400 rounded-xl p-4 flex justify-center items-center gap-2 text-xs text-stone-500 transition-colors bg-stone-50"><Upload size={14} /> Fazer Upload da Marca<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label></div>
                             ) : (
                               <div className="space-y-3 bg-stone-50 border border-stone-200 rounded-xl p-4">
                                 <div className="h-16 flex items-center justify-center overflow-hidden bg-white rounded-lg border border-stone-200 relative">
-                                  {/* Padrão Xadrez (Transparency grid) para ver melhor logos brancas */}
                                   <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)', backgroundSize: '10px 10px', backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px' }}></div>
                                   <img src={formData.logoBase64} style={{ maxHeight: `${formData.logoSize || 40}px` }} className="w-auto object-contain relative z-10 transition-all" alt="Logo" />
                                 </div>
@@ -1115,12 +1079,16 @@ const App: React.FC = () => {
                           </div>
 
                           <div className="space-y-3 pt-5 border-t border-stone-100">
-                            <label className="text-xs font-bold text-stone-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
+                            <label className="text-xs font-bold text-stone-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais & Delivery</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="LinkedIn (Link)" value={formData.linkedin} onChange={e => {setFormData({ ...formData, linkedin: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="TikTok (Link ou @)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                           </div>
 
@@ -1133,7 +1101,6 @@ const App: React.FC = () => {
                             <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
                             
                             <label className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-600"><span>Exibir Mapa do Google</span><input type="checkbox" checked={formData.showMap} onChange={e => {setFormData({ ...formData, showMap: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-teal-500" /></label>
-                            <label className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-600"><span>Exibir botão Contato flutuante</span><input type="checkbox" checked={formData.showFloatingContact} onChange={e => {setFormData({ ...formData, showFloatingContact: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-teal-500" /></label>
                             <label className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-600"><span>Exibir formulário de contato</span><input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-teal-500" /></label>
                           </div>
                         </div>
@@ -1182,7 +1149,6 @@ const App: React.FC = () => {
                           <h3 className="text-lg font-black text-stone-950 mb-1 flex items-center gap-2"><CreditCard size={18} className="text-orange-500" /> Assinatura</h3>
                           <p className="text-xs text-stone-500 mb-6">Gerencie o plano do projeto <span className="text-orange-500 font-mono">{currentProjectSlug}</span></p>
 
-                          {/* 👇 NOVO QUADRO DE RESUMO DE STATUS DA ASSINATURA 👇 */}
                           <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 mb-6 relative z-10 shadow-inner">
                               <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Resumo da Conta</h4>
                               <div className="space-y-4">
@@ -1247,7 +1213,6 @@ const App: React.FC = () => {
                             </div>
                           )}
                           
-                          {/* Botão de Cancelar Assinatura Sempre Visível */}
                           <div className="mt-8 pt-6 border-t border-stone-100 relative z-10">
                              <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Ações da Conta</h4>
                              {isPaid && !isCanceled ? (
