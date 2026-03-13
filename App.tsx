@@ -422,7 +422,7 @@ const App: React.FC = () => {
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isUpdatePublish, setIsUpdatePublish] = useState(false); // 👇 Controle de atualização de publicação
+  const [isUpdatePublish, setIsUpdatePublish] = useState(false); 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [publishModalUrl, setPublishModalUrl] = useState<string | null>(null);
   const [officialDomain, setOfficialDomain] = useState('');
@@ -537,7 +537,6 @@ const App: React.FC = () => {
 
     replaceAll('[[SOCIAL_LINKS]]', socialHtml);
 
-    // 👇 CONTROLE DO BOTÃO "FALE CONOSCO" NO TOPO DA PÁGINA (Apenas se o Form estiver ativado)
     const headerContactBtn = data.showForm 
       ? `<a href="#contato" class="btn-contact-premium"><span class="desktop-text">Fale Conosco</span><i class="fas fa-comment-dots mobile-icon"></i></a>` 
       : ``;
@@ -651,7 +650,6 @@ const App: React.FC = () => {
     setIsPublishing(true);
     try {
       const project = savedProjects.find(p => p.id === currentProjectSlug);
-      // 👇 Verifica se o projeto já tinha URL publicada ou se estava ativo
       const isAlreadyPublished = Boolean(project?.publishUrl || project?.status === 'active');
       setIsUpdatePublish(isAlreadyPublished);
 
@@ -788,7 +786,6 @@ const App: React.FC = () => {
           <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} brandLogo={BRAND_LOGO} />
         </Suspense>
 
-        {/* Modal de Cancelamento */}
         <AnimatePresence>
           {cancelModalProject && (
             <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -825,45 +822,40 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Modal de Detalhes do Plano */}
         <AnimatePresence>
           {selectedPlanModal && (
-            <div className="flex flex-col sm:flex-row gap-3 relative z-10">
-                  <button onClick={() => setSelectedPlanModal(null)} className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 py-4 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors">
-                    Voltar
-                  </button>
-                  <button 
-                    onClick={() => { 
-                      if (selectedPlanModal === 'free') {
-                        setSelectedPlanModal(null); 
-                        setIsMenuOpen(true); 
-                      } else {
-                        if (currentProjectSlug) {
-                          // Se já tem site gerado, aciona o checkout do Stripe!
-                          handleStripeCheckout(currentProjectSlug, selectedPlanModal === 'monthly' ? 'mensal' : 'anual');
-                        } else {
-                          // Se clicou na página promocional sem ter site, manda abrir o painel para criar primeiro
-                          alert("Para prosseguir com a assinatura, primeiro preencha os dados e gere o visual do seu site!");
-                          setSelectedPlanModal(null);
-                          setIsMenuOpen(true);
-                        }
-                      }
-                    }} 
-                    disabled={(selectedPlanModal !== 'free' && !checkoutTermsAccepted) || checkoutLoading === currentProjectSlug}
-                    className={`flex-1 py-4 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg flex items-center justify-center gap-2 ${selectedPlanModal === 'free' || checkoutTermsAccepted ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20' : 'bg-stone-300 text-stone-500 cursor-not-allowed'}`}
-                  >
-                    {checkoutLoading === currentProjectSlug ? <Loader2 size={16} className="animate-spin" /> : <Rocket size={16} />} 
-                    
-                    {/* Texto inteligente do botão */}
-                    {checkoutLoading === currentProjectSlug 
-                      ? 'Processando...' 
-                      : selectedPlanModal === 'free' 
-                        ? 'Criar Meu Site' 
-                        : currentProjectSlug 
-                          ? 'Ir para Pagamento' 
-                          : 'Criar Site Primeiro'}
-                  </button>
+            <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white border border-stone-200 p-8 rounded-3xl shadow-2xl max-w-lg w-full relative overflow-hidden"
+              >
+                <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-3/4 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
+                
+                <button onClick={() => setSelectedPlanModal(null)} className="absolute top-6 right-6 text-stone-400 hover:text-stone-800 transition-colors bg-stone-100 p-2 rounded-full z-20">
+                  <X size={18} />
+                </button>
+
+                <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 relative z-10 ${PLAN_DETAILS[selectedPlanModal].bgBadge}`}>
+                  {PLAN_DETAILS[selectedPlanModal].badge}
                 </div>
+                
+                <h2 className={`text-3xl font-black mb-1 italic uppercase relative z-10 ${PLAN_DETAILS[selectedPlanModal].color}`}>
+                  {PLAN_DETAILS[selectedPlanModal].title}
+                </h2>
+                
+                <div className="text-4xl font-black mb-1 text-stone-900 mt-2 relative z-10">
+                  {PLAN_DETAILS[selectedPlanModal].price} <span className="text-sm text-stone-500 font-normal">{PLAN_DETAILS[selectedPlanModal].period}</span>
+                </div>
+                <p className="text-xs text-stone-500 font-bold mb-6 pb-4 border-b border-stone-100 relative z-10">Todos os recursos disponíveis em qualquer plano.</p>
+
+                <ul className="space-y-4 text-stone-600 text-sm font-medium mb-6 relative z-10">
+                  {PLAN_DETAILS[selectedPlanModal].rules.map((rule, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <CheckCircle size={18} className={`${PLAN_DETAILS[selectedPlanModal].color} shrink-0 mt-0.5`} />
+                      <span className="leading-relaxed">{rule}</span>
+                    </li>
+                  ))}
+                </ul>
 
                 {selectedPlanModal !== 'free' && (
                   <div className="mb-6 bg-stone-50 p-4 rounded-xl border border-stone-200 relative z-10">
@@ -888,11 +880,31 @@ const App: React.FC = () => {
                     Voltar
                   </button>
                   <button 
-                    onClick={() => { setSelectedPlanModal(null); setIsMenuOpen(true); }} 
-                    disabled={selectedPlanModal !== 'free' && !checkoutTermsAccepted}
+                    onClick={() => { 
+                      if (selectedPlanModal === 'free') {
+                        setSelectedPlanModal(null); 
+                        setIsMenuOpen(true); 
+                      } else {
+                        if (currentProjectSlug) {
+                          handleStripeCheckout(currentProjectSlug, selectedPlanModal === 'monthly' ? 'mensal' : 'anual');
+                        } else {
+                          alert("Para prosseguir com a assinatura, primeiro preencha os dados e gere o visual do seu site!");
+                          setSelectedPlanModal(null);
+                          setIsMenuOpen(true);
+                        }
+                      }
+                    }} 
+                    disabled={(selectedPlanModal !== 'free' && !checkoutTermsAccepted) || checkoutLoading === currentProjectSlug}
                     className={`flex-1 py-4 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg flex items-center justify-center gap-2 ${selectedPlanModal === 'free' || checkoutTermsAccepted ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20' : 'bg-stone-300 text-stone-500 cursor-not-allowed'}`}
                   >
-                    <Rocket size={16} /> {selectedPlanModal === 'free' ? 'Criar Meu Site' : 'Prosseguir'}
+                    {checkoutLoading === currentProjectSlug ? <Loader2 size={16} className="animate-spin" /> : <Rocket size={16} />} 
+                    {checkoutLoading === currentProjectSlug 
+                      ? 'Processando...' 
+                      : selectedPlanModal === 'free' 
+                        ? 'Criar Meu Site' 
+                        : currentProjectSlug 
+                          ? 'Ir para Pagamento' 
+                          : 'Criar Site Primeiro'}
                   </button>
                 </div>
               </motion.div>
@@ -900,7 +912,6 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Modal de Sucesso na Publicação */}
         <AnimatePresence>
           {publishModalUrl && (
             <div className="fixed inset-0 z-[100] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -921,7 +932,6 @@ const App: React.FC = () => {
                   </p>
                 </div>
 
-                {/* 👇 SÓ EXIBE AVISO DE TRIAL SE FOR PRIMEIRA PUBLICAÇÃO E AINDA NÃO FOR PAGO 👇 */}
                 {!isUpdatePublish && savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid' && (
                   <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl text-left relative z-10 shadow-sm">
                      <h4 className="text-orange-600 font-bold text-[11px] uppercase tracking-wider mb-2">Aproveite seus 7 dias gratuitos</h4>
@@ -944,7 +954,6 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Menu Lateral de Configurações (Painel) */}
         <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.div 
@@ -958,7 +967,6 @@ const App: React.FC = () => {
                 initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} transition={{ delay: 0.1 }}
                 className="w-full h-full bg-[#F8FAFC] border border-stone-200 rounded-[2rem] shadow-xl flex flex-col overflow-hidden relative"
               >
-                {/* Cabeçalho do Painel */}
                 <div className="flex justify-between items-center px-6 py-5 border-b border-stone-200 flex-shrink-0 bg-white">
                   <div className="flex items-center gap-3 select-none">
                     <img src={BRAND_LOGO} alt="SiteZing" className="h-10 w-auto object-contain" />
@@ -974,7 +982,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Abas */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   let daysLeft = 0; let isPaid = false;
@@ -1006,7 +1013,6 @@ const App: React.FC = () => {
                   );
                 })()}
 
-                {/* Conteúdo do Menu */}
                 <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6 pb-6 bg-white">
                   {activeTab === 'geral' && (
                     <>
@@ -1275,7 +1281,6 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* 👇 RODAPÉ COM LÓGICA DE ATUALIZAR PUBLICAÇÃO 👇 */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   const isPublished = Boolean(currentProject?.publishUrl || currentProject?.status === 'active');
