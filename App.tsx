@@ -33,6 +33,15 @@ const COLORS = [
   { id: 'mint', name: 'Menta Suave', c1: '#f0fdf4', c2: '#dcfce7', c3: '#bbf7d0', c4: '#047857', c5: '#059669', c6: '#10b981', c7: '#34d399', light: '#022c22', dark: '#ffffff' },
   { id: 'peach', name: 'Pêssego', c1: '#fff7ed', c2: '#ffedd5', c3: '#fed7aa', c4: '#c2410c', c5: '#ea580c', c6: '#f97316', c7: '#fb923c', light: '#431407', dark: '#ffffff' },
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
+  { id: 'terracotta', name: 'Terracota', c1: '#1c0f0a', c2: '#2c1810', c3: '#452516', c4: '#d97743', c5: '#e89564', c6: '#f0b48b', c7: '#f5ceb3', light: '#ffffff', dark: '#1c0f0a' },
+  { id: 'sand', name: 'Areia', c1: '#fdfbf7', c2: '#f4eee4', c3: '#e6dac3', c4: '#a37b45', c5: '#b5905d', c6: '#c9a87a', c7: '#dbc19a', light: '#2c1810', dark: '#ffffff' },
+  { id: 'rust', name: 'Ferrugem', c1: '#1a0f0a', c2: '#2b1710', c3: '#422216', c4: '#b84a23', c5: '#d4633b', c6: '#e38866', c7: '#f0b097', light: '#ffffff', dark: '#1a0f0a' },
+  { id: 'moss', name: 'Musgo', c1: '#f9faf6', c2: '#edf1e6', c3: '#dce4ce', c4: '#5e6b4b', c5: '#76855f', c6: '#91a179', c7: '#adbc95', light: '#1f2617', dark: '#ffffff' },
+  { id: 'mocha', name: 'Café', c1: '#1a1614', c2: '#26201e', c3: '#38302c', c4: '#a67c52', c5: '#c0976e', c6: '#d5b38f', c7: '#e6ceb1', light: '#ffffff', dark: '#1a1614' },
+  
+  // 👇 NOVAS PALETAS SITEZING PARA CLIENTES 👇
+  { id: 'celeste', name: 'Celeste Premium', c1: '#F0F9FF', c2: '#E0F2FE', c3: '#BAE6FD', c4: '#0284C7', c5: '#0369A1', c6: '#075985', c7: '#EAB308', light: '#0F172A', dark: '#F0F9FF' },
+  { id: 'marinha', name: 'Marinha Premium', c1: '#0A192F', c2: '#112240', c3: '#233554', c4: '#2DD4BF', c5: '#14B8A6', c6: '#0D9488', c7: '#FDE047', light: '#F8FAFC', dark: '#0A192F' },
 ];
 
 const PROMO_HTML = `
@@ -44,9 +53,10 @@ const PROMO_HTML = `
   <title>SiteZing - Criação Inteligente em Segundos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #FFFFFF; color: #1E293B; font-family: sans-serif; overflow-x: hidden; }
+    /* FUNDO GELO (ICE) SOLICITADO */
+    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #F1F5F9; color: #1E293B; font-family: sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { display: none; }
-    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); transition: all 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); cursor: pointer; }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); transition: all 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); cursor: pointer; }
     .glass-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 40px -10px rgba(249, 115, 22, 0.15); border-color: rgba(249, 115, 22, 0.3); }
     
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -60,17 +70,18 @@ const PROMO_HTML = `
 <body class="antialiased selection:bg-orange-500 selection:text-white">
   <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
     
-    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/50 blur-[150px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-100/40 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/40 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
 
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
       <div class="mb-12 flex justify-center md:justify-start">
          <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-24 md:h-28 w-auto drop-shadow-md animate-floating" />
       </div>
 
-      <div class="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-xs font-bold tracking-widest text-blue-600 mb-6 uppercase">A revolução da web</div>
+      <div class="inline-block px-4 py-1.5 rounded-full bg-white border border-blue-100 text-xs font-bold tracking-widest text-blue-600 mb-6 uppercase shadow-sm">A revolução da web</div>
+      
       <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-slate-900">
-        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Zing!!!</span>
+        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500 pr-2 inline-block">ZING!!!</span>
       </h1>
       <p class="text-lg md:text-2xl text-slate-500 font-light leading-relaxed">
         Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
@@ -107,7 +118,7 @@ const PROMO_HTML = `
         <div class="mt-6 text-[10px] text-slate-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para ver regras</div>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-300 bg-orange-50/30 shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'annual' }, '*')">
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-300 bg-white shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'annual' }, '*')">
         <img src="${BRAND_LOGO}" class="plan-bg-logo" style="opacity: 0.06;" />
         <div class="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase flex gap-1.5 items-center justify-center shadow-lg">
           <svg class="h-3 w-3 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -374,7 +385,7 @@ const extractCustomImages = (html: string | null) => {
   return images;
 };
 
-// DADOS DOS PLANOS PARA O MODAL
+// DADOS DOS PLANOS PARA O MODAL (Sem gerente de conta)
 const PLAN_DETAILS = {
   free: {
     title: "Plano Teste Grátis",
@@ -417,8 +428,7 @@ const PLAN_DETAILS = {
       "Desconto equivalente a 2 meses grátis em relação ao plano mensal.",
       "Apontamento de domínio premium configurado para você.",
       "Alta velocidade de carregamento para otimização SEO no Google.",
-      "Ciclo de renovação a cada 12 meses, garantindo o menor preço do ano.",
-      "Gerente de conta dedicado para auxiliar na publicação."
+      "Ciclo de renovação a cada 12 meses, garantindo o menor preço do ano."
     ]
   }
 };
@@ -426,32 +436,30 @@ const PLAN_DETAILS = {
 const App: React.FC = () => {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  
+  // 👇 MENU COMEÇA FECHADO POR PADRÃO (false) 👇
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
   const [aiContent, setAiContent] = useState<any>(null);
   const [isCanceling, setIsCanceling] = useState<string | null>(null);
-  
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedPlanModal, setSelectedPlanModal] = useState<'free' | 'monthly' | 'annual' | null>(null);
-  
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
-  
   const [activeTab, setActiveTab] = useState<'geral' | 'dominio' | 'assinatura'>('geral');
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  
   const [publishModalUrl, setPublishModalUrl] = useState<string | null>(null);
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
-
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
-    showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
+    showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'celeste', logoBase64: ''
   });
 
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
@@ -467,7 +475,6 @@ const App: React.FC = () => {
     document.title = "SiteZing - Seu site pronto em um ZING !!!";
   }, []);
 
-  // Escutar cliques nos banners dentro do Iframe (Landing Page)
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data.type === 'OPEN_PLAN_MODAL') {
@@ -586,7 +593,7 @@ const App: React.FC = () => {
       html = html.replace('</body>', `<div class="floating-dock">${contactHtml}${wrappedSocials}</div></body>`);
     }
 
-    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing</a></div>`;
+    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing.com.br</a></div>`;
     html = html.replace('</body>', `${footerBrand}</body>`);
 
     const mapUrl = data.address ? `https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed` : '';
@@ -710,7 +717,7 @@ const App: React.FC = () => {
       alert("Site excluído com sucesso.");
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
-        setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
+        setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'celeste', logoBase64: '' });
       }
       fetchProjects();
     } catch (error) { alert("Erro ao excluir o site."); }
@@ -789,10 +796,11 @@ const App: React.FC = () => {
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="w-full h-screen bg-[#FFFFFF] overflow-hidden font-sans text-slate-900 flex flex-col md:flex-row">
+      {/* 👇 FUNDO GELO SITEZING APLICADO AQUI 👇 */}
+      <div className="w-full h-screen bg-[#F1F5F9] overflow-hidden font-sans text-slate-900 flex flex-col md:flex-row">
         
         {/* Área Principal (Iframe) */}
-        <div className="flex-1 relative h-full overflow-hidden bg-[#FFFFFF]">
+        <div className="flex-1 relative h-full overflow-hidden bg-[#F1F5F9]">
           <iframe 
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
             className="w-full h-full border-none bg-transparent" 
@@ -801,7 +809,6 @@ const App: React.FC = () => {
 
           <AnimatePresence>
             {!isMenuOpen && (
-              // 👇 BOTÃO RADAR LARANJA E FOGUETE NO TOPO DIREITO 👇
               <div 
                 className="absolute top-6 right-6 z-[90] flex items-center cursor-pointer group" 
                 onClick={() => setIsMenuOpen(true)}
@@ -827,7 +834,7 @@ const App: React.FC = () => {
           <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} brandLogo={BRAND_LOGO} />
         </Suspense>
 
-        {/* 👇 NOVO MODAL DE DETALHES DO PLANO (UX/React) 👇 */}
+        {/* Modal de Detalhes do Plano */}
         <AnimatePresence>
           {selectedPlanModal && (
             <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -913,7 +920,7 @@ const App: React.FC = () => {
               animate={{ width: window.innerWidth < 768 ? '100%' : 420, paddingLeft: 16, paddingRight: 16 }} 
               exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-              className="flex-shrink-0 h-full flex flex-col justify-center overflow-hidden relative z-50 bg-[#FFFFFF] w-full md:w-[420px] py-4"
+              className="flex-shrink-0 h-full flex flex-col justify-center overflow-hidden relative z-50 bg-[#F1F5F9] w-full md:w-[420px] py-4"
             >
               <motion.div 
                 initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} transition={{ delay: 0.1 }}
@@ -1074,7 +1081,6 @@ const App: React.FC = () => {
                         {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
                           <div className="space-y-6">
                             <div className="grid grid-cols-1 gap-4">
-                              {/* Plano Mensal */}
                               <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col h-full relative overflow-hidden">
                                 <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
                                 <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Assinado</div>
@@ -1088,7 +1094,6 @@ const App: React.FC = () => {
                                 </button>
                               </div>
 
-                              {/* Plano Anual */}
                               <div className="bg-white p-5 rounded-xl border border-orange-200 flex flex-col h-full relative overflow-hidden shadow-md">
                                 <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
                                 <div className="absolute top-0 right-0 bg-orange-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Econômico</div>
@@ -1115,7 +1120,7 @@ const App: React.FC = () => {
                   
                   {loggedUserEmail && (
                     <div className="mt-8 border-t border-slate-200 pt-6 space-y-4">
-                      <div className="flex items-center justify-between"><p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p><button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase bg-red-50 px-2.5 py-1 rounded-lg">Sair</button></div>
+                      <div className="flex items-center justify-between"><p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-600"/>Meus Projetos</p><button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase bg-red-50 px-2.5 py-1 rounded-lg">Sair</button></div>
                       <div className="max-h-52 overflow-y-auto space-y-2">
                         {savedProjects.length === 0 ? <p className="text-xs text-slate-400 italic text-center py-4">Nenhum projeto ainda.</p> : (
                           savedProjects.map((p: any) => (
@@ -1130,7 +1135,7 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* Rodapé do Menu (Botões Ocupando Espaço Justo no Mobile) */}
+                {/* Rodapé do Menu */}
                 {generatedHtml && (
                   <div className="p-4 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
                     <button onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)} className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}>
