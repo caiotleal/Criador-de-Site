@@ -38,8 +38,6 @@ const COLORS = [
   { id: 'rust', name: 'Ferrugem', c1: '#1a0f0a', c2: '#2b1710', c3: '#422216', c4: '#b84a23', c5: '#d4633b', c6: '#e38866', c7: '#f0b097', light: '#ffffff', dark: '#1a0f0a' },
   { id: 'moss', name: 'Musgo', c1: '#f9faf6', c2: '#edf1e6', c3: '#dce4ce', c4: '#5e6b4b', c5: '#76855f', c6: '#91a179', c7: '#adbc95', light: '#1f2617', dark: '#ffffff' },
   { id: 'mocha', name: 'Café', c1: '#1a1614', c2: '#26201e', c3: '#38302c', c4: '#a67c52', c5: '#c0976e', c6: '#d5b38f', c7: '#e6ceb1', light: '#ffffff', dark: '#1a1614' },
-  
-  // 👇 NOVAS PALETAS SITEZING PARA CLIENTES 👇
   { id: 'celeste', name: 'Celeste Premium', c1: '#F0F9FF', c2: '#E0F2FE', c3: '#BAE6FD', c4: '#0284C7', c5: '#0369A1', c6: '#075985', c7: '#EAB308', light: '#0F172A', dark: '#F0F9FF' },
   { id: 'marinha', name: 'Marinha Premium', c1: '#0A192F', c2: '#112240', c3: '#233554', c4: '#2DD4BF', c5: '#14B8A6', c6: '#0D9488', c7: '#FDE047', light: '#F8FAFC', dark: '#0A192F' },
 ];
@@ -53,7 +51,6 @@ const PROMO_HTML = `
   <title>SiteZing - Criação Inteligente em Segundos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* FUNDO GELO (ICE) SOLICITADO */
     html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #F1F5F9; color: #1E293B; font-family: sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { display: none; }
     .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); transition: all 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); cursor: pointer; }
@@ -62,22 +59,24 @@ const PROMO_HTML = `
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
     
-    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-    .animate-floating { animation: float 6s ease-in-out infinite; }
     .plan-bg-logo { position: absolute; bottom: -15%; right: -10%; width: 70%; height: auto; opacity: 0.03; pointer-events: none; filter: grayscale(100%); }
   </style>
 </head>
 <body class="antialiased selection:bg-orange-500 selection:text-white">
-  <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
+  
+  <header class="fixed top-0 left-0 w-full z-[80] bg-[#F1F5F9]/80 backdrop-blur-md border-b border-slate-200/60 h-24 flex items-center px-6 md:px-12 transition-all">
+    <div class="max-w-7xl mx-auto w-full flex items-center">
+       <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-10 md:h-12 w-auto drop-shadow-sm" />
+    </div>
+  </header>
+
+  <main class="pt-36 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
     
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/40 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
 
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
-      <div class="mb-12 flex justify-center md:justify-start">
-         <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-24 md:h-28 w-auto drop-shadow-md animate-floating" />
-      </div>
-
+      
       <div class="inline-block px-4 py-1.5 rounded-full bg-white border border-blue-100 text-xs font-bold tracking-widest text-blue-600 mb-6 uppercase shadow-sm">A revolução da web</div>
       
       <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-slate-900">
@@ -118,7 +117,7 @@ const PROMO_HTML = `
         <div class="mt-6 text-[10px] text-slate-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para ver regras</div>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-300 bg-white shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'annual' }, '*')">
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-300 bg-orange-50/30 shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'annual' }, '*')">
         <img src="${BRAND_LOGO}" class="plan-bg-logo" style="opacity: 0.06;" />
         <div class="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase flex gap-1.5 items-center justify-center shadow-lg">
           <svg class="h-3 w-3 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -385,7 +384,7 @@ const extractCustomImages = (html: string | null) => {
   return images;
 };
 
-// DADOS DOS PLANOS PARA O MODAL (Sem gerente de conta)
+// DADOS DOS PLANOS PARA O MODAL
 const PLAN_DETAILS = {
   free: {
     title: "Plano Teste Grátis",
@@ -436,10 +435,7 @@ const PLAN_DETAILS = {
 const App: React.FC = () => {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  // 👇 MENU COMEÇA FECHADO POR PADRÃO (false) 👇
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
   const [aiContent, setAiContent] = useState<any>(null);
   const [isCanceling, setIsCanceling] = useState<string | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -796,7 +792,6 @@ const App: React.FC = () => {
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* 👇 FUNDO GELO SITEZING APLICADO AQUI 👇 */}
       <div className="w-full h-screen bg-[#F1F5F9] overflow-hidden font-sans text-slate-900 flex flex-col md:flex-row">
         
         {/* Área Principal (Iframe) */}
