@@ -1014,13 +1014,49 @@ const App: React.FC = () => {
                           <div className="space-y-2.5"><label className="text-xs font-bold text-slate-500 uppercase">Estilo do Site</label><select className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>{LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}</select></div>
                           <div className="space-y-2.5">
                             <label className="text-xs font-bold text-slate-500 uppercase">Temas (Cores)</label>
-                            <div className="grid grid-cols-5 gap-3">
-                              {COLORS.map(c => (
-                                <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-white`} title={c.name}><div className="absolute inset-0" style={{ backgroundColor: c.c1 }} /><div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} /></button>
-                              ))}
+<div className="space-y-4">
+                            <label className="text-xs font-bold text-slate-500 uppercase block border-b border-slate-100 pb-2">Temas (Cores)</label>
+                            
+                            {/* Categoria 1: Essenciais (As originais) */}
+                            <div className="space-y-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">1. Essenciais da Marca</span>
+                              <div className="grid grid-cols-5 gap-3">
+                                {COLORS.filter(c => !c.id.includes('_')).map(c => (
+                                  <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden shadow-sm ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'opacity-60 hover:opacity-100 hover:scale-105'} ring-offset-white`} title={c.name}><div className="absolute inset-0" style={{ backgroundColor: c.c1 }} /><div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} /></button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Categoria 2: Paleta Celeste */}
+                            <div className="space-y-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">2. Paleta Celeste (Ar/Céu)</span>
+                              <div className="grid grid-cols-5 gap-3">
+                                {COLORS.filter(c => c.id.startsWith('celeste_')).map(c => (
+                                  <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden shadow-sm ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'opacity-60 hover:opacity-100 hover:scale-105'} ring-offset-white`} title={c.name}><div className="absolute inset-0" style={{ backgroundColor: c.c1 }} /><div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} /></button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Categoria 3: Paleta Marinha */}
+                            <div className="space-y-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">3. Paleta Marinha (Oceano/Noite)</span>
+                              <div className="grid grid-cols-5 gap-3">
+                                {COLORS.filter(c => c.id.startsWith('marinha_')).map(c => (
+                                  <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden shadow-sm ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'opacity-60 hover:opacity-100 hover:scale-105'} ring-offset-white`} title={c.name}><div className="absolute inset-0" style={{ backgroundColor: c.c1 }} /><div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} /></button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Categoria 4: Paleta Mediterrânea */}
+                            <div className="space-y-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">4. Mediterrânea (Terra/Areia)</span>
+                              <div className="grid grid-cols-5 gap-3">
+                                {COLORS.filter(c => c.id.startsWith('med_')).map(c => (
+                                  <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden shadow-sm ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'opacity-60 hover:opacity-100 hover:scale-105'} ring-offset-white`} title={c.name}><div className="absolute inset-0" style={{ backgroundColor: c.c1 }} /><div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} /></button>
+                                ))}
+                              </div>
                             </div>
                           </div>
-
                           <div className="space-y-2.5">
                             <label className="text-xs font-bold text-slate-500 uppercase flex justify-between items-center"><span>Sua Logomarca (Favicon)</span>{formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-500 hover:text-red-600 text-[10px] font-bold">X Remover</button>}</label>
                             {!formData.logoBase64 ? (
@@ -1167,4 +1203,5 @@ const App: React.FC = () => {
 };
 
 export default App;
+
 
