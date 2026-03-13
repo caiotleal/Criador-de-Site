@@ -366,7 +366,7 @@ const extractCustomImages = (html: string | null) => {
   return images;
 };
 
-// DADOS DOS PLANOS PARA O MODAL (Ajustado para 7 dias)
+// DADOS DOS PLANOS PARA O MODAL
 const PLAN_DETAILS = {
   free: {
     title: "Plano Teste Grátis",
@@ -463,7 +463,7 @@ const App: React.FC = () => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data.type === 'OPEN_PLAN_MODAL') {
         setSelectedPlanModal(e.data.plan);
-        setCheckoutTermsAccepted(false); // Reseta o aceite ao abrir
+        setCheckoutTermsAccepted(false); 
       }
     };
     window.addEventListener('message', handleMessage);
@@ -519,7 +519,6 @@ const App: React.FC = () => {
 
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
-    // Configurando Logo e Favicon
     if (data.logoBase64) {
       headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 md:h-12 w-auto object-contain transition-transform hover:scale-105" alt="Logo" />`);
@@ -531,10 +530,8 @@ const App: React.FC = () => {
     replaceAll('[[TIKTOK_BTN]]', ''); replaceAll('[[LINKEDIN_BTN]]', ''); replaceAll('[[IFOOD_BTN]]', ''); replaceAll('[[NOVE_NOVE_BTN]]', ''); replaceAll('[[KEETA_BTN]]', '');
 
     let socialHtml = '';
-    let glassSocials = ''; // Redes sociais para o header glass
     const addSocialBtn = (href: string, brandColor: string, label: string, innerHtml: string) => {
       socialHtml += `<a href="${href}" target="_blank" class="social-icon" style="color: ${brandColor};" title="${label}">${innerHtml}</a>`;
-      glassSocials += `<a href="${href}" target="_blank" class="glass-social-link" title="${label}">${innerHtml}</a>`;
     };
 
     if (data.whatsapp) addSocialBtn(`https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, '#25D366', 'WhatsApp', '<i class="fab fa-whatsapp"></i>');
@@ -549,7 +546,6 @@ const App: React.FC = () => {
       contactHtml = `<a href="#contato" class="contact-dock-btn"><i class="fas fa-comment-dots text-[18px]"></i> Fale Conosco</a>`;
     }
 
-    // Dock Flutuante (Existente)
     if (socialHtml || contactHtml) {
       const wrappedSocials = socialHtml ? `<div class="social-dock">${socialHtml}</div>` : '';
       const floatStyle = `
@@ -578,57 +574,6 @@ const App: React.FC = () => {
       headInjection += floatStyle;
       html = html.replace('</body>', `<div class="floating-dock">${contactHtml}${wrappedSocials}</div></body>`);
     }
-
-    // ==========================================
-    // INJEÇÃO DO HEADER GLASS NOS TEMPLATES
-    // ==========================================
-    const glassLogoContent = data.logoBase64 ? `<img src="${data.logoBase64}" alt="Logo" />` : `<span>${companyNameUpper}</span>`;
-    const glassHtml = `
-    <header class="glass-header-premium" id="glassHeaderPremium">
-        <div class="glass-container-premium">
-            <a href="#" class="glass-logo-premium">${glassLogoContent}</a>
-            <div class="glass-actions-premium">
-                <div class="glass-social-links-premium">${glassSocials}</div>
-                <a href="#contato" class="btn-contact-premium" style="background-color: ${colors.c4}; color: ${colors.c1};">Fale Conosco</a>
-            </div>
-        </div>
-    </header>
-    `;
-
-    const glassStyleAndScript = `
-    <style>
-        .glass-header-premium { position: fixed; top: -100px; left: 0; width: 100%; z-index: 9998; transition: top 0.4s ease-in-out; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); }
-        .glass-header-premium.scrolled { top: 0; }
-        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 15px 20px; }
-        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: ${colors.c4}; }
-        .glass-logo-premium img { max-height: 40px; width: auto; display: block; }
-        .glass-logo-premium span { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; }
-        .glass-actions-premium { display: flex; align-items: center; gap: 20px; }
-        .glass-social-links-premium { display: flex; gap: 15px; }
-        .glass-social-link { color: ${colors.c4}; text-decoration: none; font-size: 1.2rem; transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center; }
-        .glass-social-link:hover { transform: scale(1.15); opacity: 0.8; }
-        .glass-social-link img { width: 20px; height: 20px; object-fit: contain; }
-        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.95rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-contact-premium:hover { transform: scale(1.05); }
-        @media (max-width: 768px) { .glass-social-links-premium { display: none; } .glass-container-premium { padding: 12px 15px; } .btn-contact-premium { padding: 8px 18px; font-size: 0.85rem; } }
-    </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const header = document.getElementById("glassHeaderPremium");
-            if(header) {
-                window.addEventListener("scroll", () => {
-                    if (window.scrollY > 150) { header.classList.add("scrolled"); }
-                    else { header.classList.remove("scrolled"); }
-                });
-            }
-        });
-    </script>
-    `;
-
-    headInjection += glassStyleAndScript;
-    html = html.replace(/<body[^>]*>/i, `$&${glassHtml}`);
-    // ==========================================
-
 
     const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing.com.br</a></div>`;
     html = html.replace('</body>', `${footerBrand}</body>`);
@@ -772,7 +717,6 @@ const App: React.FC = () => {
     finally { setCheckoutLoading(null); }
   };
   
-  // Função atualizada para abrir o novo modal de cancelamento
   const handleConfirmCancel = async (projectId: string) => {
     setIsCanceling(true);
     try {
@@ -1266,7 +1210,7 @@ const App: React.FC = () => {
                             </div>
                           )}
                           
-                          {/* Botão de Cancelar Assinatura Sempre Visível, porém inativo se não tiver como cancelar */}
+                          {/* Botão de Cancelar Assinatura Sempre Visível */}
                           <div className="mt-8 pt-6 border-t border-stone-100">
                              <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Gerenciamento da Conta</h4>
                              {isPaid ? (
