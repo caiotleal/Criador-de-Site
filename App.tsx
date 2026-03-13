@@ -1253,24 +1253,32 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* Rodapé do Menu */}
-                {generatedHtml && (
-                  <div className="p-4 border-t border-stone-200 bg-white flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
-                    <button onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)} className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md' : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}>
-                      {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />} {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
-                    </button>
-                    <button onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20' : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}>
-                      {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={14} />} Publicar Site
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
-  );
-};
+   {/* Rodapé do Menu */}
+                {generatedHtml && (() => {
+                  const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
+                  const isPaid = currentProject?.paymentStatus === 'paid';
+
+                  return (
+                    <div className="p-4 border-t border-stone-200 bg-white flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+                      <button 
+                        onClick={handleSaveOrUpdateSite} 
+                        disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)} 
+                        className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md' : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}
+                      >
+                        {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />} 
+                        {currentProjectSlug ? 'Salvar Alterações' : 'Salvar Projeto'}
+                      </button>
+                      
+                      <button 
+                        onClick={handlePublishSite} 
+                        disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} 
+                        className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? (isPaid ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20') : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}
+                      >
+                        {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : (isPaid ? <RefreshCw size={14} /> : <Globe size={14} />)} 
+                        {isPaid ? 'Atualizar Publicação' : 'Publicar Site'}
+                      </button>
+                    </div>
+                  );
+                })()};
 
 export default App;
