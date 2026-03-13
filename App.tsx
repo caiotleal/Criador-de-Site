@@ -11,7 +11,7 @@ const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
 import { useIframeEditor } from './components/useIframeEditor'; 
 
-// 👇 PUXANDO A IMAGEM DO ARQUIVO EXTERNO 👇
+// 👇 PUXANDO A IMAGEM DO ARQUIVO EXTERNO (src/components/brand.ts) 👇
 import { BRAND_LOGO } from './components/brand';
 
 const LAYOUT_STYLES = [
@@ -49,79 +49,74 @@ const PROMO_HTML = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SiteZing - Criação Inteligente</title>
+  <title>SiteZing.com.br - Criação Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #F8FAFC; color: #1E293B; font-family: sans-serif; overflow-x: hidden; }
+    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { display: none; }
-    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
-    .glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
+    .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    .plan-bg-logo { position: absolute; bottom: -10%; right: -10%; width: 60%; height: auto; opacity: 0.05; pointer-events: none; }
   </style>
 </head>
-<body class="antialiased selection:bg-blue-500 selection:text-white">
+<body class="antialiased selection:bg-indigo-500 selection:text-white">
   <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
-    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/10 blur-[150px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400/10 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none"></div>
 
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
       
       <div class="mb-8 flex justify-center md:justify-start">
-         <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-16 md:h-20 w-auto drop-shadow-md" />
+         <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-20 w-auto drop-shadow-[0_0_20px_rgba(76,29,149,0.4)]" />
       </div>
 
-      <div class="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-xs font-bold tracking-widest text-blue-600 mb-6 uppercase">A revolução da web</div>
-      
-      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-slate-900">
-        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Zing!</span>
+      <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-indigo-400 mb-6 uppercase">A revolução da web</div>
+      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
+        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">segundos.</span>
       </h1>
-      <p class="text-lg md:text-2xl text-slate-500 font-light leading-relaxed">
+      <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
         Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
       </p>
     </div>
 
     <div class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
       <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Teste Grátis</h3>
-        <p class="text-slate-500 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
-        <div class="text-4xl font-black mb-1 text-blue-600">R$ 0 <span class="text-sm text-slate-400 font-normal">/ 5 dias</span></div>
-        <p class="text-[11px] text-blue-500 font-bold mb-6">Após 5 dias, o site é congelado.</p>
-        <ul class="space-y-3 text-slate-600 text-sm font-medium">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Geração por IA</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
+        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-white">Teste Grátis</h3>
+        <p class="text-white/50 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
+        <div class="text-4xl font-black mb-1 text-white">R$ 0 <span class="text-sm text-white/40 font-normal">/ 5 dias</span></div>
+        <p class="text-[11px] text-indigo-400 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
+        <ul class="space-y-3 text-white/70 text-sm">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Geração por IA</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
         </ul>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Mensal</h3>
-        <p class="text-slate-500 mb-6 text-sm">Ideal para validar seu negócio.</p>
-        <div class="text-4xl font-black mb-1 text-slate-900">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-slate-400 font-normal">/ mês</span></div>
-        <p class="text-[11px] text-slate-500 font-bold mb-6">Cancele quando quiser.</p>
-        <ul class="space-y-3 text-slate-600 text-sm font-medium">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Site online 24/7</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-emerald-500/30 bg-emerald-950/20 shadow-[0_0_30px_rgba(16,185,129,0.15)] transform md:-translate-y-4">
+        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
+        <div class="absolute top-0 right-0 bg-emerald-600 text-white text-[10px] font-black tracking-widest px-4 py-1.5 rounded-bl-2xl uppercase">Mais Vendido</div>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-emerald-400">Mensal</h3>
+        <p class="text-white/50 mb-6 text-sm">Ideal para validar seu negócio.</p>
+        <div class="text-4xl font-black mb-1 text-white">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-white/40 font-normal">/ mês</span></div>
+        <p class="text-[11px] text-emerald-300/70 font-medium mb-6">Todos os recursos disponíveis em qualquer plano.</p>
+        <ul class="space-y-3 text-white/70 text-sm">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px]">★</span> Site online 24/7</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px]">★</span> Domínio próprio (.com.br)</li>
         </ul>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-200 bg-white shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] transform md:-translate-y-4">
-        
-        <div class="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase flex gap-1.5 items-center justify-center shadow-lg">
-          <svg class="h-3 w-3 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C9.5 2 7 4 6 6C4 8 3 11 3 14C3 17.5 5.5 20.5 9 21L12 22L15 21C18.5 20.5 21 17.5 21 14C21 11 20 8 18 6C17 4 14.5 2 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="0.5" />
-            <path d="M10 16L12.5 18.5L16.5 14.5" stroke="#4C1D95" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <span class="leading-none">Mais Econômico</span>
-        </div>
-
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-500">Anual</h3>
-        <p class="text-slate-500 mb-6 text-sm">A solução definitiva e econômica.</p>
-        <div class="text-4xl font-black mb-1 text-slate-900">R$ 499 <span class="text-sm text-slate-400 font-normal">/ 1º ano</span></div>
-        <p class="text-[11px] text-orange-500 font-bold mb-6">Equivale a R$ 41,58 por mês.</p>
-        <ul class="space-y-3 text-slate-600 text-sm font-medium">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> 2 meses grátis</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Apontamento de Domínio</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Alta velocidade Google</li>
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-500/30 group">
+        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
+        <div class="absolute top-0 right-0 bg-orange-600 text-white text-[10px] font-black tracking-widest px-4 py-1.5 rounded-bl-2xl uppercase">Mais Econômico</div>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-400">Anual</h3>
+        <p class="text-white/50 mb-6 text-sm">A solução definitiva e econômica.</p>
+        <div class="text-4xl font-black mb-1 text-white">R$ 499 <span class="text-sm text-white/40 font-normal">/ 1º ano</span></div>
+        <p class="text-[11px] text-orange-300/70 font-medium mb-6">Todos os recursos disponíveis em qualquer plano.</p>
+        <ul class="space-y-3 text-white/70 text-sm">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 text-[10px]">✔</span> 2 meses grátis</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 text-[10px]">✔</span> Alta velocidade</li>
         </ul>
       </div>
     </div>
@@ -130,7 +125,7 @@ const PROMO_HTML = `
 </html>
 `;
 
-// Função utilitária para limpar o HTML antes de publicar
+// Função utilitária para limpar o HTML antes de publicar (Removendo toolbar, scripts, etc.)
 const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false) => {
   if (!rawHtml) return '';
   if (!rawHtml.includes('editor-toolbar')) return rawHtml;
@@ -167,7 +162,7 @@ const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false
   return doc.documentElement.outerHTML;
 };
 
-// Função para gerar o HTML de pré-visualização
+// Função para gerar o HTML de pré-visualização (Injetando toolbar e scripts do editor)
 const getPreviewHtml = (baseHtml: string | null) => {
   if (!baseHtml) return '';
   const clean = cleanHtmlForPublishing(baseHtml, true);
@@ -359,6 +354,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
   return clean.replace(/<\/body>/i, `${editorScript}</body>`);
 };
 
+// Função para extrair imagens customizadas (base64) já enviadas para o iframe
 const extractCustomImages = (html: string | null) => {
   if (!html) return {};
   const parser = new DOMParser();
@@ -395,17 +391,20 @@ const App: React.FC = () => {
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
 
+  // Estados para gerenciar checkout e cancelamento
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
+  // Dados do formulário
   const [formData, setFormData] = useState({
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
     showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
   });
 
+  // Hook customizado para lidar com a edição no iframe
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
 
-  // INJEÇÃO AUTOMÁTICA DO FAVICON NO NAVEGADOR
+  // Efeito para injetar o Favicon dinâmico
   useEffect(() => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -414,41 +413,56 @@ const App: React.FC = () => {
       document.getElementsByTagName('head')[0].appendChild(link);
     }
     link.href = BRAND_LOGO;
-    document.title = "SiteZing - Criação Inteligente";
+    document.title = "SiteZing.com.br - Criação Inteligente";
   }, []);
 
+  // Re-renderizar o template quando dados do formulário mudam (e já existe conteúdo da IA)
   useEffect(() => {
     if (aiContent) {
       setGeneratedHtml(prevHtml => {
-        const extractedImages = extractCustomImages(prevHtml);
+        const extractedImages = extractCustomImages(prevHtml); // Preservar imagens enviadas
         return renderTemplate(aiContent, formData, extractedImages);
       });
     }
   }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.linkedin, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.showFloatingContact, formData.showMap, formData.address, formData.phone, formData.email, formData.region]);
 
+  // Efeito para verificar autenticação
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => setLoggedUserEmail(user?.email || null));
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setLoggedUserEmail(user?.email || null);
+    });
     return () => unsub();
   }, []);
 
+  // Função para buscar projetos salvos do usuário
   const fetchProjects = async () => {
     if (!auth.currentUser) return setSavedProjects([]);
     try {
       const listFn = httpsCallable(functions, 'listUserProjects');
       const listRes: any = await listFn({});
       setSavedProjects(listRes.data?.projects || []);
-    } catch { setSavedProjects([]); }
+    } catch (error) {
+      setSavedProjects([]);
+    }
   };
 
-  useEffect(() => { fetchProjects(); }, [loggedUserEmail]);
+  // Buscar projetos ao carregar ou mudar usuário
+  useEffect(() => {
+    fetchProjects();
+  }, [loggedUserEmail]);
 
+  // Função principal de renderização do template
   const renderTemplate = (content: any, data: typeof formData, customImages: Record<string, string> = {}) => {
     let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_modern_center'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
-    const replaceAll = (token: string, value: string) => { html = html.split(token).join(value); };
+    const replaceAll = (token: string, value: string) => {
+      html = html.split(token).join(value);
+    };
+
     const companyNameUpper = (data.businessName || 'Sua Empresa').toUpperCase();
 
+    // Substituições básicas de conteúdo
     replaceAll('{{BUSINESS_NAME}}', companyNameUpper);
     replaceAll('{{HERO_TITLE}}', content.heroTitle || `Bem-vindo à ${data.businessName}`);
     replaceAll('{{HERO_SUBTITLE}}', content.heroSubtitle || 'Presença digital profissional.');
@@ -456,16 +470,26 @@ const App: React.FC = () => {
     replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
     replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
     
-    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
-    replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
-    replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
+    // Substituições de cores
+    replaceAll('{{COLOR_1}}', colors.c1);
+    replaceAll('{{COLOR_2}}', colors.c2);
+    replaceAll('{{COLOR_3}}', colors.c3);
+    replaceAll('{{COLOR_4}}', colors.c4);
+    replaceAll('{{COLOR_5}}', colors.c5);
+    replaceAll('{{COLOR_6}}', colors.c6);
+    replaceAll('{{COLOR_7}}', colors.c7);
+    replaceAll('{{COLOR_LIGHT}}', colors.light);
+    replaceAll('{{COLOR_DARK}}', colors.dark);
     
-    replaceAll('{{ADDRESS}}', data.region ? `${data.address || 'Endereço não informado'} - ${data.region}` : (data.address || 'Endereço não informado'));
+    // Contatos e Localização
+    replaceAll('{{ADDRESS}}', data.region ? `${data.address || 'Endereço não informado'} - ${data.region}` : (data.address || 'Endereço not informado'));
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
+    // Preparar injeções no HEAD
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
+    // Injetar Logo ou Título
     if (data.logoBase64) {
       headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 md:h-12 w-auto object-contain transition-transform hover:scale-105" alt="Logo" />`);
@@ -473,9 +497,11 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
+    // Limpar placeholders de botões sociais antes de reinserir
     replaceAll('[[WHATSAPP_BTN]]', ''); replaceAll('[[INSTAGRAM_BTN]]', ''); replaceAll('[[FACEBOOK_BTN]]', '');
     replaceAll('[[TIKTOK_BTN]]', ''); replaceAll('[[LINKEDIN_BTN]]', ''); replaceAll('[[IFOOD_BTN]]', ''); replaceAll('[[NOVE_NOVE_BTN]]', ''); replaceAll('[[KEETA_BTN]]', '');
 
+    // Gerar HTML de Redes Sociais e Botões de Ação Flutuantes
     let socialHtml = '';
     const addSocialBtn = (href: string, brandColor: string, label: string, innerHtml: string) => {
       socialHtml += `<a href="${href}" target="_blank" class="social-icon" style="color: ${brandColor};" title="${label}">${innerHtml}</a>`;
@@ -537,16 +563,16 @@ const App: React.FC = () => {
       html = html.replace('</body>', `<div class="floating-dock">${contactHtml}${wrappedSocials}</div></body>`);
     }
 
-    // =========================================================================
-    // INJEÇÃO DA MARCA D'ÁGUA NO RODAPÉ DO SITE DO CLIENTE
-    // =========================================================================
-    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing</a></div>`;
+    // Injetar marca d'água no rodapé do site gerado
+    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing.com.br</a></div>`;
     html = html.replace('</body>', `${footerBrand}</body>`);
 
-    const mapUrl = data.address ? `https://www.google.com/maps?q=${encodeURIComponent(data.address)}&output=embed` : '';
+    // Injetar Mapa e Formulário se ativados
+    const mapUrl = data.address ? `https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&output=embed` : '';
     const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
+    // Configurar Formsubmit.co para o formulário AJAX
     const formAction = data.email ? `action="https://formsubmit.co/ajax/${data.email}"` : '';
     
     const hiddenInputs = data.email ? `
@@ -557,7 +583,7 @@ const App: React.FC = () => {
     ` : '';
 
     const formCode = data.showForm ? `
-    <form id="sitezing-contact-form" ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem] relative">
+    <form id="sitecraft-contact-form" ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem] relative">
       ${hiddenInputs}
       <input name="Nome" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu nome" />
       <input name="Email" type="email" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu email" />
@@ -567,7 +593,7 @@ const App: React.FC = () => {
     
     <script id="contact-form-script">
       document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('sitezing-contact-form');
+        const form = document.getElementById('sitecraft-contact-form');
         if (form && form.hasAttribute('action')) {
           form.addEventListener('submit', function(e) {
             e.preventDefault(); 
@@ -607,6 +633,8 @@ const App: React.FC = () => {
     </script>` : '';
 
     replaceAll('[[CONTACT_FORM]]', formCode);
+
+    // Injetar placeholders de imagens editáveis
     const imgPlaceholder = (id: string, label: string) => {
       if (customImages[id]) {
          return `
@@ -627,9 +655,11 @@ const App: React.FC = () => {
     replaceAll('[[HERO_IMAGE]]', imgPlaceholder('hero-img', 'Destaque (Topo)'));
     replaceAll('[[ABOUT_IMAGE]]', imgPlaceholder('about-img', 'Quem Somos'));
 
+    // Finalizar HEAD injection
     return html.replace('</head>', `${headInjection}</head>`);
   };
 
+  // Funções de ação (Gerar, Salvar, Publicar)
   const handleGenerate = async () => {
     if (!formData.businessName || !formData.description) return alert('Preencha Nome e Ideia!');
     setIsGenerating(true);
@@ -651,6 +681,7 @@ const App: React.FC = () => {
     finally { setIsGenerating(false); }
   };
 
+  // Lógica para upload de logo do usuário (base64)
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -780,19 +811,6 @@ const App: React.FC = () => {
     setIsLoginOpen(false);
   };
 
-  const handleDownloadZip = async () => {
-    if (!generatedHtml) return;
-    const [{ default: JSZip }, { saveAs }] = await Promise.all([
-      import('jszip'),
-      import('file-saver'),
-    ]);
-
-    const zip = new JSZip();
-    zip.file('index.html', cleanHtmlForPublishing(generatedHtml)); 
-    const content = await zip.generateAsync({ type: 'blob' });
-    saveAs(content, `${formData.businessName || 'site'}.zip`);
-  };
-
   const getStatusBadge = (project: any) => {
     if (!project) return null;
     if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">CONGELADO</span>;
@@ -817,10 +835,13 @@ const App: React.FC = () => {
       <style>{`
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .animate-blink { animation: blink 1s infinite; }
       `}</style>
 
-      <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex">
+      <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex flex-col md:flex-row">
         
+        {/* Área Principal (Iframe Preview) */}
         <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
           <iframe 
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
@@ -830,21 +851,31 @@ const App: React.FC = () => {
 
           <AnimatePresence>
             {!isMenuOpen && (
-              <motion.div 
-                initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                onClick={() => setIsMenuOpen(true)} 
-                className="absolute bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
-              >
-                <Settings className="text-white" size={26} />
-              </motion.div>
+              <>
+                {/* Seta Piscando para Guia de Criação */}
+                <div className="absolute bottom-28 right-6 z-[90] flex items-center gap-2 text-sm font-bold text-emerald-400">
+                  <span>Crie seu Site</span>
+                  <span className="animate-blink text-lg">➡</span>
+                </div>
+                {/* Botão para reabrir o menu */}
+                <motion.div 
+                  initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                  onClick={() => setIsMenuOpen(true)} 
+                  className="absolute bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
+                >
+                  <Settings className="text-white" size={26} />
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
         </div>
 
+        {/* Modal de Login (Lazy Loaded) */}
         <Suspense fallback={null}>
           <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} brandLogo={BRAND_LOGO} />
         </Suspense>
 
+        {/* Modal de Sucesso na Publicação */}
         <AnimatePresence>
           {publishModalUrl && (
             <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -860,11 +891,11 @@ const App: React.FC = () => {
                   <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br / DNS, pode demorar algumas horas para propagar.</p>
                 </div>
                 <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
-                  <code className="text-blue-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+                  <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"><Copy size={18} /> Copiar Link</button>
-                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-500/20"><ExternalLink size={18} /> Abrir Site</button>
+                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"><ExternalLink size={18} /> Abrir Site</button>
                 </div>
                 <button onClick={() => setPublishModalUrl(null)} className="text-zinc-500 hover:text-zinc-300 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
               </motion.div>
@@ -872,14 +903,15 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
+        {/* Menu Lateral de Configurações (Painel de Controle) */}
         <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.div 
               initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
-              animate={{ width: 420, paddingLeft: 16, paddingRight: 24 }} 
+              animate={{ width: window.innerWidth < 768 ? '100%' : 420, paddingLeft: 16, paddingRight: 16 }} 
               exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-              className="flex-shrink-0 h-screen flex flex-col justify-center overflow-hidden relative z-50 bg-[#050505]"
+              className="flex-shrink-0 h-full flex flex-col justify-center overflow-hidden relative z-50 bg-[#050505] w-full md:w-[420px]"
             >
               <motion.div 
                 initial={{ x: 20, opacity: 0 }}
@@ -889,10 +921,10 @@ const App: React.FC = () => {
                 className="w-full h-[95vh] bg-[#0c0c0e] border border-zinc-800 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative"
               >
                 
-                {/* LOGO INJETADO NO CABEÇALHO DO PAINEL */}
+                {/* Cabeçalho do Menu */}
                 <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-800/50 flex-shrink-0">
                   <div className="flex items-center gap-3 select-none">
-                    <img src={BRAND_LOGO} alt="SiteZing" className="h-8 w-auto object-contain drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
+                    <img src={BRAND_LOGO} alt="SiteZing" className="h-8 w-auto object-contain drop-shadow-[0_0_10px_rgba(76,29,149,0.3)]" />
                   </div>
                   <div className="flex items-center gap-4">
                     {loggedUserEmail ? (
@@ -911,6 +943,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Abas de Navegação (se site gerado) */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   let daysLeft = 0; let isPaid = false;
@@ -927,7 +960,7 @@ const App: React.FC = () => {
                         Visual & Dados
                       </button>
                       
-                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
                         Domínio
                         {(!officialDomain || officialDomain === 'Pendente' || registerLater) && (
                           <span className="absolute top-3 right-4 flex h-2 w-2" title="Domínio não configurado">
@@ -938,7 +971,7 @@ const App: React.FC = () => {
                       </button>
 
                       {currentProjectSlug && (
-                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-orange-400 border-b-2 border-orange-400 bg-orange-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
                           Pagamento
                           {!isPaid && (
                             <span className="absolute top-3 right-2 flex h-2 w-2" title={daysLeft > 0 ? "Período de Teste" : "Vencido"}>
@@ -952,6 +985,7 @@ const App: React.FC = () => {
                   );
                 })()}
 
+                {/* Conteúdo do Menu (com scroll) */}
                 <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6">
                   {activeTab === 'geral' && (
                     <>
@@ -989,6 +1023,7 @@ const App: React.FC = () => {
 
                       {generatedHtml && (
                         <div className="pt-6 border-t border-zinc-800/50 space-y-6">
+                          {/* Configurações de Estilo e Cor */}
                           <div className="space-y-2.5">
                             <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
                             <select className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
@@ -1007,6 +1042,7 @@ const App: React.FC = () => {
                             </div>
                           </div>
 
+                          {/* Upload de Logo */}
                           <div className="space-y-2.5">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between items-center">
                               <span>Sua Logomarca (Favicon)</span>
@@ -1030,9 +1066,10 @@ const App: React.FC = () => {
                             )}
                           </div>
 
+                          {/* Redes Sociais */}
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
@@ -1041,18 +1078,10 @@ const App: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="space-y-3 pt-2">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Zap size={14} /> Delivery (Opcional)</label>
-                            <div className="grid grid-cols-2 gap-3">
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="col-span-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
-                            </div>
-                          </div>
-
+                          {/* Contato e Localização */}
                           <div className="space-y-3 pt-5 border-t border-zinc-800/50">
                             <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
                               <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
@@ -1072,23 +1101,13 @@ const App: React.FC = () => {
                               <span>Exibir formulário de contato no site</span>
                               <input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
                             </label>
-                            
-                            {formData.showForm && (
-                              <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl flex gap-3 items-start mt-2">
-                                <Info size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
-                                <div className="text-[10px] text-blue-200/80 leading-relaxed">
-                                  <strong className="text-blue-300 block mb-1 text-xs">Ativação de Segurança Obrigatória</strong>
-                                  Para proteger seu e-mail <span className="font-mono bg-black/30 px-1 py-0.5 rounded text-blue-300">{formData.email || 'informado acima'}</span> contra spam, o sistema exige uma ativação inicial. 
-                                  Após publicar, acesse seu novo site e <strong>envie uma mensagem de teste</strong> pelo formulário. Você receberá um e-mail pedindo para "Ativar o Formulário". Clique em confirmar apenas uma vez e tudo estará pronto!
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </div>
                       )}
                     </>
                   )}
 
+                  {/* Aba de Domínio (Verificar e Exibir Apontamento) */}
                   {activeTab === 'dominio' && generatedHtml && (
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                       {!currentProjectSlug ? (
@@ -1120,12 +1139,12 @@ const App: React.FC = () => {
                               </div>
                             </div>
                           </div>
-                          <button onClick={handleDownloadZip} className="w-full border border-zinc-800 hover:bg-zinc-800 text-zinc-300 py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors mt-4"><Download size={16} /> Baixar Código do Site</button>
                         </div>
                       )}
                     </div>
                   )}
 
+                  {/* Aba de Assinatura (Planos e Gestão) */}
                   {activeTab === 'assinatura' && currentProjectSlug && (
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                       
@@ -1145,12 +1164,14 @@ const App: React.FC = () => {
                           </div>
                         </div>
 
+                        {/* Exibir planos para assinatura se não pago */}
                         {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
                           <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* Plano Mensal */}
-                              <div className="bg-zinc-800/30 p-5 rounded-xl border border-zinc-700 hover:border-orange-500/50 transition-colors flex flex-col h-full">
-                                <h4 className="text-zinc-300 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
+                              <div className="bg-emerald-950/20 p-5 rounded-xl border border-emerald-500/30 hover:border-emerald-500/50 transition-colors flex flex-col h-full relative overflow-hidden">
+                                <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vendido</div>
+                                <h4 className="text-emerald-300 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
                                 <div className="flex items-end gap-1 mb-4">
                                   <span className="text-3xl font-black text-white">R$ 49,99</span>
                                   <span className="text-xs text-zinc-500 font-medium pb-1">/mês</span>
@@ -1158,12 +1179,12 @@ const App: React.FC = () => {
                                 <ul className="space-y-2 text-xs text-zinc-400 mb-6 flex-1">
                                   <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Domínio próprio liberado</li>
                                   <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Site blindado no Google</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Hospedagem rápida garantida</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Suporte prioritário</li>
                                 </ul>
                                 <button 
                                   onClick={() => handleStripeCheckout(currentProjectSlug, 'mensal')}
                                   disabled={checkoutLoading === currentProjectSlug}
-                                  className="w-full bg-zinc-700 hover:bg-zinc-600 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors"
+                                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors"
                                 >
                                   {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Mensal'}
                                 </button>
@@ -1171,7 +1192,7 @@ const App: React.FC = () => {
 
                               {/* Plano Anual */}
                               <div className="bg-gradient-to-br from-orange-500/10 to-orange-900/10 p-5 rounded-xl border border-orange-500/30 shadow-lg relative flex flex-col h-full">
-                                <div className="absolute top-0 right-0 bg-orange-500 text-orange-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vantajoso</div>
+                                <div className="absolute top-0 right-0 bg-orange-500 text-orange-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Econômico</div>
                                 <h4 className="text-orange-400 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
                                 <div className="flex items-end gap-1 mb-4">
                                   <span className="text-3xl font-black text-orange-400">R$ 499</span>
@@ -1180,7 +1201,7 @@ const App: React.FC = () => {
                                 <ul className="space-y-2 text-xs text-orange-200/60 mb-6 flex-1">
                                   <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
                                   <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> Domínio premium configurado</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> Maior prioridade de suporte</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> Gerente de conta dedicado</li>
                                 </ul>
                                 <button 
                                   onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
@@ -1199,6 +1220,7 @@ const App: React.FC = () => {
                             <p className="text-[9px] text-center text-zinc-600 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamentos 100% seguros operados globalmente pela Stripe.</p>
                           </div>
                         ) : (
+                          // Exibir gestão se já pago
                           <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-xl text-center space-y-4 shadow-lg relative overflow-hidden">
                             <div className="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                               <Star size={28} />
@@ -1221,19 +1243,20 @@ const App: React.FC = () => {
                                 </div>
                               </div>
                             ) : (
+                              // Botão de upgrade/downgrade ou cancelamento
                               <>
                                 {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'mensal' ? (
                                   <div className="pt-4 mt-2 border-t border-emerald-500/20 text-left">
-                                    <div className="bg-gradient-to-r from-orange-500/10 to-orange-900/10 border border-orange-500/30 p-5 rounded-xl relative shadow-lg">
-                                      <div className="absolute top-0 right-0 bg-orange-500 text-orange-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
-                                      <h5 className="text-orange-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
-                                      <p className="text-[10px] text-orange-200/70 mb-4 leading-relaxed">
+                                    <div className="bg-gradient-to-r from-amber-500/10 to-amber-900/10 border border-amber-500/30 p-5 rounded-xl relative shadow-lg">
+                                      <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
+                                      <h5 className="text-amber-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
+                                      <p className="text-[10px] text-amber-200/70 mb-4 leading-relaxed">
                                         Faça o upgrade agora por R$ 499,00. Seu plano atual será substituído imediatamente e você iniciará um novo ciclo ininterrupto de 12 meses.
                                       </p>
                                       <button 
                                         onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
                                         disabled={checkoutLoading === currentProjectSlug}
-                                        className="w-full bg-orange-500 hover:bg-orange-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-orange-500/20 flex justify-center items-center gap-2"
+                                        className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-amber-500/20 flex justify-center items-center gap-2"
                                       >
                                         {checkoutLoading === currentProjectSlug ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
                                         Fazer Upgrade e Pagar R$ 499
@@ -1253,7 +1276,7 @@ const App: React.FC = () => {
                                 ) : (
                                   <div className="pt-4 mt-2 border-t border-emerald-500/20">
                                     <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl text-left flex gap-3 items-start">
-                                      <Info size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
+                                      <Info size={18} className="text-indigo-400 flex-shrink-0 mt-0.5" />
                                       <div>
                                         <h5 className="text-zinc-300 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
                                         <p className="text-[10px] text-zinc-500 leading-relaxed">
@@ -1272,6 +1295,7 @@ const App: React.FC = () => {
                     </div>
                   )}
                   
+                  {/* Seção de Projetos Salvos (Lista) */}
                   {loggedUserEmail && (
                     <div className="mt-8 border-t border-zinc-800/50 pt-6 space-y-4">
                       <div className="flex items-center justify-between">
@@ -1305,11 +1329,12 @@ const App: React.FC = () => {
                   )}
                 </div>
 
+                {/* Rodapé do Menu (Botões de Ação Principais) */}
                 {generatedHtml && (
-                  <div className="p-4 border-t border-zinc-800/50 bg-[#0c0c0e] flex items-center gap-3 flex-shrink-0">
+                  <div className="p-4 border-t border-zinc-800/50 bg-[#0c0c0e] flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
                     <button 
                       onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
-                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+                      className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
                     >
                       {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />}
                       {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
@@ -1317,7 +1342,7 @@ const App: React.FC = () => {
 
                     <button 
                       onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+                      className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
                     >
                       {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={14} />} 
                       Publicar Site
