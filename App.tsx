@@ -1253,7 +1253,7 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-   {/* Rodapé do Menu */}
+{/* Rodapé do Menu */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   const isPaid = currentProject?.paymentStatus === 'paid';
@@ -1279,6 +1279,14 @@ const App: React.FC = () => {
                       </button>
                     </div>
                   );
-                })()};
+                })()}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
+  );
+};
 
 export default App;
