@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndP
 import { auth, functions } from './firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Download, Loader2, Minimize2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info
+  Rocket, Settings, Upload, Loader2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
@@ -23,24 +23,16 @@ const LAYOUT_STYLES = [
 ];
 
 const COLORS = [
-  // DARK MODE
   { id: 'obsidian', name: 'Obsidiana', c1: '#000000', c2: '#0a0a0a', c3: '#171717', c4: '#ffffff', c5: '#d4d4d8', c6: '#a1a1aa', c7: '#71717a', light: '#ffffff', dark: '#000000' },
   { id: 'slate', name: 'Ardósia', c1: '#020617', c2: '#0f172a', c3: '#1e293b', c4: '#3b82f6', c5: '#60a5fa', c6: '#93c5fd', c7: '#bfdbfe', light: '#f8fafc', dark: '#020617' },
   { id: 'forest', name: 'Floresta', c1: '#022c22', c2: '#064e3b', c3: '#065f46', c4: '#10b981', c5: '#34d399', c6: '#6ee7b7', c7: '#a7f3d0', light: '#ecfdf5', dark: '#022c22' },
   { id: 'wine', name: 'Vinho', c1: '#2a0510', c2: '#4c0519', c3: '#881337', c4: '#e11d48', c5: '#f43f5e', c6: '#fb7185', c7: '#fda4af', light: '#fff1f2', dark: '#2a0510' },
   { id: 'amethyst', name: 'Ametista', c1: '#170326', c2: '#2e1045', c3: '#4a1d6e', c4: '#9333ea', c5: '#a855f7', c6: '#c084fc', c7: '#d8b4fe', light: '#faf5ff', dark: '#170326' },
-  // LIGHT MODE
   { id: 'snow', name: 'Neve', c1: '#ffffff', c2: '#f4f4f5', c3: '#e4e4e7', c4: '#09090b', c5: '#27272a', c6: '#3f3f46', c7: '#52525b', light: '#09090b', dark: '#ffffff' },
   { id: 'sky', name: 'Céu Pálido', c1: '#f8fafc', c2: '#f1f5f9', c3: '#e2e8f0', c4: '#1d4ed8', c5: '#2563eb', c6: '#3b82f6', c7: '#60a5fa', light: '#020617', dark: '#ffffff' },
   { id: 'mint', name: 'Menta Suave', c1: '#f0fdf4', c2: '#dcfce7', c3: '#bbf7d0', c4: '#047857', c5: '#059669', c6: '#10b981', c7: '#34d399', light: '#022c22', dark: '#ffffff' },
   { id: 'peach', name: 'Pêssego', c1: '#fff7ed', c2: '#ffedd5', c3: '#fed7aa', c4: '#c2410c', c5: '#ea580c', c6: '#f97316', c7: '#fb923c', light: '#431407', dark: '#ffffff' },
   { id: 'lavender', name: 'Lavanda', c1: '#faf5ff', c2: '#f3e8ff', c3: '#e9d5ff', c4: '#6b21a8', c5: '#7e22ce', c6: '#9333ea', c7: '#a855f7', light: '#2e1045', dark: '#ffffff' },
-  // TONS TERROSOS
-  { id: 'terracotta', name: 'Terracota', c1: '#1c0f0a', c2: '#2c1810', c3: '#452516', c4: '#d97743', c5: '#e89564', c6: '#f0b48b', c7: '#f5ceb3', light: '#ffffff', dark: '#1c0f0a' },
-  { id: 'sand', name: 'Areia', c1: '#fdfbf7', c2: '#f4eee4', c3: '#e6dac3', c4: '#a37b45', c5: '#b5905d', c6: '#c9a87a', c7: '#dbc19a', light: '#2c1810', dark: '#ffffff' },
-  { id: 'rust', name: 'Ferrugem', c1: '#1a0f0a', c2: '#2b1710', c3: '#422216', c4: '#b84a23', c5: '#d4633b', c6: '#e38866', c7: '#f0b097', light: '#ffffff', dark: '#1a0f0a' },
-  { id: 'moss', name: 'Musgo', c1: '#f9faf6', c2: '#edf1e6', c3: '#dce4ce', c4: '#5e6b4b', c5: '#76855f', c6: '#91a179', c7: '#adbc95', light: '#1f2617', dark: '#ffffff' },
-  { id: 'mocha', name: 'Café', c1: '#1a1614', c2: '#26201e', c3: '#38302c', c4: '#a67c52', c5: '#c0976e', c6: '#d5b38f', c7: '#e6ceb1', light: '#ffffff', dark: '#1a1614' },
 ];
 
 const PROMO_HTML = `
@@ -52,36 +44,33 @@ const PROMO_HTML = `
   <title>SiteZing - Criação Inteligente em Segundos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* NOVO TEMA CLARO SITEZING */
     html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #FFFFFF; color: #1E293B; font-family: sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { display: none; }
-    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
-    .glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); }
+    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); transition: all 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); cursor: pointer; }
+    .glass-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 40px -10px rgba(249, 115, 22, 0.15); border-color: rgba(249, 115, 22, 0.3); }
     
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
     
-    /* UX: Efeito de Flutuação Suave para o Logo */
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
     .animate-floating { animation: float 6s ease-in-out infinite; }
+    .plan-bg-logo { position: absolute; bottom: -15%; right: -10%; width: 70%; height: auto; opacity: 0.03; pointer-events: none; filter: grayscale(100%); }
   </style>
 </head>
-<body class="antialiased selection:bg-blue-500 selection:text-white">
+<body class="antialiased selection:bg-orange-500 selection:text-white">
   <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
     
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/50 blur-[150px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-100/50 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-100/40 blur-[150px] rounded-full pointer-events-none"></div>
 
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
-      
       <div class="mb-12 flex justify-center md:justify-start">
          <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-24 md:h-28 w-auto drop-shadow-md animate-floating" />
       </div>
 
       <div class="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-xs font-bold tracking-widest text-blue-600 mb-6 uppercase">A revolução da web</div>
-      
       <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-slate-900">
-        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Zing!</span>
+        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Zing!!!</span>
       </h1>
       <p class="text-lg md:text-2xl text-slate-500 font-light leading-relaxed">
         Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
@@ -89,43 +78,55 @@ const PROMO_HTML = `
     </div>
 
     <div class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Teste Grátis</h3>
+      
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'free' }, '*')">
+        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
+        <div class="absolute top-0 right-0 bg-slate-200 text-slate-700 text-[9px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase">Sem pagamento antecipado</div>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800 mt-2">Teste Grátis</h3>
         <p class="text-slate-500 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
         <div class="text-4xl font-black mb-1 text-blue-600">R$ 0 <span class="text-sm text-slate-400 font-normal">/ 5 dias</span></div>
-        <p class="text-[11px] text-blue-500 font-bold mb-6">Após 5 dias, o site é congelado.</p>
+        <p class="text-[11px] text-blue-500 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
         <ul class="space-y-3 text-slate-600 text-sm font-medium">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Geração por IA</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
         </ul>
+        <div class="mt-6 text-[10px] text-slate-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para ver regras</div>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Mensal</h3>
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group border-blue-200" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'monthly' }, '*')">
+        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
+        <div class="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase shadow-md">Mais Assinado</div>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-blue-600 mt-2">Mensal</h3>
         <p class="text-slate-500 mb-6 text-sm">Ideal para validar seu negócio.</p>
         <div class="text-4xl font-black mb-1 text-slate-900">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-slate-400 font-normal">/ mês</span></div>
-        <p class="text-[11px] text-slate-500 font-bold mb-6">Cancele quando quiser.</p>
+        <p class="text-[11px] text-slate-500 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
         <ul class="space-y-3 text-slate-600 text-sm font-medium">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Site online 24/7</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px]">✔</span> Site online 24/7</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
         </ul>
+        <div class="mt-6 text-[10px] text-slate-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para ver regras</div>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-200 bg-white shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] transform md:-translate-y-4">
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-300 bg-orange-50/30 shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'annual' }, '*')">
+        <img src="${BRAND_LOGO}" class="plan-bg-logo" style="opacity: 0.06;" />
         <div class="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase flex gap-1.5 items-center justify-center shadow-lg">
-          <Star size={12} className="text-white" />
-          <span class="leading-none">Mais Assinado</span>
+          <svg class="h-3 w-3 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C9.5 2 7 4 6 6C4 8 3 11 3 14C3 17.5 5.5 20.5 9 21L12 22L15 21C18.5 20.5 21 17.5 21 14C21 11 20 8 18 6C17 4 14.5 2 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="0.5" />
+            <path d="M10 16L12.5 18.5L16.5 14.5" stroke="#4C1D95" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span class="leading-none">Mais Econômico</span>
         </div>
 
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-500">Anual</h3>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-500 mt-2">Anual</h3>
         <p class="text-slate-500 mb-6 text-sm">A solução definitiva e econômica.</p>
         <div class="text-4xl font-black mb-1 text-slate-900">R$ 499 <span class="text-sm text-slate-400 font-normal">/ 1º ano</span></div>
-        <p class="text-[11px] text-orange-500 font-bold mb-6">Equivale a R$ 41,58 por mês.</p>
+        <p class="text-[11px] text-orange-500 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
         <ul class="space-y-3 text-slate-600 text-sm font-medium">
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> 2 meses grátis</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Apontamento de Domínio</li>
           <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Alta velocidade Google</li>
         </ul>
+        <div class="mt-6 text-[10px] text-orange-400/80 text-center uppercase tracking-widest font-bold group-hover:text-orange-600 transition-colors">Clique para ver regras</div>
       </div>
     </div>
   </main>
@@ -133,7 +134,6 @@ const PROMO_HTML = `
 </html>
 `;
 
-// Função utilitária para limpar o HTML antes de publicar (Removendo toolbar, scripts, etc.)
 const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false) => {
   if (!rawHtml) return '';
   if (!rawHtml.includes('editor-toolbar')) return rawHtml;
@@ -170,7 +170,6 @@ const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false
   return doc.documentElement.outerHTML;
 };
 
-// Função para gerar o HTML de pré-visualização (Injetando toolbar e scripts do editor)
 const getPreviewHtml = (baseHtml: string | null) => {
   if (!baseHtml) return '';
   const clean = cleanHtmlForPublishing(baseHtml, true);
@@ -179,8 +178,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
     <style id="editor-style">
       html, body { -ms-overflow-style: none; scrollbar-width: none; }
       ::-webkit-scrollbar { display: none; }
-      
-      .custom-editor-toolbar { position: absolute; display: none; background: #18181b; padding: 8px; border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25 rgba(0,0,0,0.8); z-index: 99999; gap: 8px; align-items: center; font-family: sans-serif; }
+      .custom-editor-toolbar { position: absolute; display: none; background: #18181b; padding: 8px; border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 99999; gap: 8px; align-items: center; font-family: sans-serif; }
       .color-picker-group { display: flex; align-items: center; gap: 4px; background: #27272a; padding: 2px 6px 2px 8px; border-radius: 6px; border: 1px solid #3f3f46; }
       .color-picker-label { color: #a1a1aa; font-size: 10px; font-weight: bold; }
       .custom-editor-toolbar input[type="color"] { width: 22px; height: 22px; border: none; cursor: pointer; background: transparent; padding: 0; }
@@ -190,7 +188,6 @@ const getPreviewHtml = (baseHtml: string | null) => {
       .editable-element { transition: all 0.2s; outline: 2px dashed transparent; outline-offset: 2px; }
       .editable-element:hover { outline-color: rgba(160, 160, 160, 0.5); cursor: pointer; }
       .editable-element:focus { outline-color: #ffffff; }
-
       .editable-image { position: relative; transition: all 0.2s; overflow: hidden; }
       .editable-image:hover { background: transparent; }
     </style>
@@ -362,7 +359,6 @@ const getPreviewHtml = (baseHtml: string | null) => {
   return clean.replace(/<\/body>/i, `${editorScript}</body>`);
 };
 
-// Função para extrair imagens customizadas (base64) já enviadas para o iframe
 const extractCustomImages = (html: string | null) => {
   if (!html) return {};
   const parser = new DOMParser();
@@ -378,6 +374,55 @@ const extractCustomImages = (html: string | null) => {
   return images;
 };
 
+// DADOS DOS PLANOS PARA O MODAL
+const PLAN_DETAILS = {
+  free: {
+    title: "Plano Teste Grátis",
+    price: "R$ 0,00",
+    period: "por 5 dias",
+    color: "text-slate-800",
+    bgBadge: "bg-slate-200 text-slate-700",
+    badge: "Sem pagamento antecipado",
+    rules: [
+      "Acesso completo à Inteligência Artificial da plataforma.",
+      "Geração, edição e publicação de site grátis.",
+      "Hospedagem segura com subdomínio (.web.app).",
+      "Após 5 dias, o site é congelado automaticamente caso não haja assinatura.",
+      "Sem necessidade de cadastrar cartão de crédito para testar."
+    ]
+  },
+  monthly: {
+    title: "Plano Mensal",
+    price: "R$ 49,90",
+    period: "/ mês",
+    color: "text-blue-600",
+    bgBadge: "bg-blue-600 text-white",
+    badge: "Mais Assinado",
+    rules: [
+      "Site online 24/7 com alta estabilidade (Google Cloud).",
+      "Conexão liberada para domínio próprio profissional (ex: .com.br).",
+      "Cobrança recorrente mensal no cartão de crédito.",
+      "Cancele quando quiser diretamente pelo painel, sem multas ou fidelidade.",
+      "Suporte prioritário e blindagem de segurança no Google."
+    ]
+  },
+  annual: {
+    title: "Plano Anual",
+    price: "R$ 499,00",
+    period: "/ 1º ano",
+    color: "text-orange-500",
+    bgBadge: "bg-gradient-to-r from-orange-500 to-orange-400 text-white",
+    badge: "Mais Econômico",
+    rules: [
+      "Desconto equivalente a 2 meses grátis em relação ao plano mensal.",
+      "Apontamento de domínio premium configurado para você.",
+      "Alta velocidade de carregamento para otimização SEO no Google.",
+      "Ciclo de renovação a cada 12 meses, garantindo o menor preço do ano.",
+      "Gerente de conta dedicado para auxiliar na publicação."
+    ]
+  }
+};
+
 const App: React.FC = () => {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -386,6 +431,8 @@ const App: React.FC = () => {
   const [isCanceling, setIsCanceling] = useState<string | null>(null);
   
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [selectedPlanModal, setSelectedPlanModal] = useState<'free' | 'monthly' | 'annual' | null>(null);
+  
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
   
@@ -399,20 +446,16 @@ const App: React.FC = () => {
   const [officialDomain, setOfficialDomain] = useState('');
   const [registerLater, setRegisterLater] = useState(false);
 
-  // Estados para gerenciar checkout e cancelamento
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
-  // Dados do formulário
   const [formData, setFormData] = useState({
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
     showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: ''
   });
 
-  // Hook customizado para lidar com a edição no iframe
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
 
-  // Efeito para injetar o Favicon dinâmico e Título
   useEffect(() => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -424,53 +467,49 @@ const App: React.FC = () => {
     document.title = "SiteZing - Seu site pronto em um ZING !!!";
   }, []);
 
-  // Re-renderizar o template quando dados do formulário mudam (e já existe conteúdo da IA)
+  // Escutar cliques nos banners dentro do Iframe (Landing Page)
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data.type === 'OPEN_PLAN_MODAL') {
+        setSelectedPlanModal(e.data.plan);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   useEffect(() => {
     if (aiContent) {
       setGeneratedHtml(prevHtml => {
-        const extractedImages = extractCustomImages(prevHtml); // Preservar imagens enviadas
+        const extractedImages = extractCustomImages(prevHtml);
         return renderTemplate(aiContent, formData, extractedImages);
       });
     }
   }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.whatsapp, formData.instagram, formData.facebook, formData.linkedin, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.showFloatingContact, formData.showMap, formData.address, formData.phone, formData.email, formData.region]);
 
-  // Efeito para verificar autenticação
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      setLoggedUserEmail(user?.email || null);
-    });
+    const unsub = onAuthStateChanged(auth, (user) => setLoggedUserEmail(user?.email || null));
     return () => unsub();
   }, []);
 
-  // Função para buscar projetos salvos do usuário
   const fetchProjects = async () => {
     if (!auth.currentUser) return setSavedProjects([]);
     try {
       const listFn = httpsCallable(functions, 'listUserProjects');
       const listRes: any = await listFn({});
       setSavedProjects(listRes.data?.projects || []);
-    } catch (error) {
-      setSavedProjects([]);
-    }
+    } catch { setSavedProjects([]); }
   };
 
-  // Buscar projetos ao carregar ou mudar usuário
-  useEffect(() => {
-    fetchProjects();
-  }, [loggedUserEmail]);
+  useEffect(() => { fetchProjects(); }, [loggedUserEmail]);
 
-  // Função principal de renderização do template
   const renderTemplate = (content: any, data: typeof formData, customImages: Record<string, string> = {}) => {
     let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_modern_center'];
     const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
 
-    const replaceAll = (token: string, value: string) => {
-      html = html.split(token).join(value);
-    };
-
+    const replaceAll = (token: string, value: string) => { html = html.split(token).join(value); };
     const companyNameUpper = (data.businessName || 'Sua Empresa').toUpperCase();
 
-    // Substituições básicas de conteúdo
     replaceAll('{{BUSINESS_NAME}}', companyNameUpper);
     replaceAll('{{HERO_TITLE}}', content.heroTitle || `Bem-vindo à ${data.businessName}`);
     replaceAll('{{HERO_SUBTITLE}}', content.heroSubtitle || 'Presença digital profissional.');
@@ -478,26 +517,16 @@ const App: React.FC = () => {
     replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
     replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
     
-    // Substituições de cores
-    replaceAll('{{COLOR_1}}', colors.c1);
-    replaceAll('{{COLOR_2}}', colors.c2);
-    replaceAll('{{COLOR_3}}', colors.c3);
-    replaceAll('{{COLOR_4}}', colors.c4);
-    replaceAll('{{COLOR_5}}', colors.c5);
-    replaceAll('{{COLOR_6}}', colors.c6);
-    replaceAll('{{COLOR_7}}', colors.c7);
-    replaceAll('{{COLOR_LIGHT}}', colors.light);
-    replaceAll('{{COLOR_DARK}}', colors.dark);
+    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
+    replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
+    replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
     
-    // Contatos e Localização
     replaceAll('{{ADDRESS}}', data.region ? `${data.address || 'Endereço não informado'} - ${data.region}` : (data.address || 'Endereço não informado'));
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
-    // Preparar injeções no HEAD
     let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
     
-    // Injetar Logo ou Título
     if (data.logoBase64) {
       headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" class="h-10 md:h-12 w-auto object-contain transition-transform hover:scale-105" alt="Logo" />`);
@@ -505,11 +534,9 @@ const App: React.FC = () => {
       html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span class="font-black tracking-tighter text-xl uppercase">${companyNameUpper}</span>`);
     }
 
-    // Limpar placeholders de botões sociais antes de reinserir
     replaceAll('[[WHATSAPP_BTN]]', ''); replaceAll('[[INSTAGRAM_BTN]]', ''); replaceAll('[[FACEBOOK_BTN]]', '');
     replaceAll('[[TIKTOK_BTN]]', ''); replaceAll('[[LINKEDIN_BTN]]', ''); replaceAll('[[IFOOD_BTN]]', ''); replaceAll('[[NOVE_NOVE_BTN]]', ''); replaceAll('[[KEETA_BTN]]', '');
 
-    // Gerar HTML de Redes Sociais e Botões de Ação Flutuantes
     let socialHtml = '';
     const addSocialBtn = (href: string, brandColor: string, label: string, innerHtml: string) => {
       socialHtml += `<a href="${href}" target="_blank" class="social-icon" style="color: ${brandColor};" title="${label}">${innerHtml}</a>`;
@@ -533,11 +560,7 @@ const App: React.FC = () => {
       const wrappedSocials = socialHtml ? `<div class="social-dock">${socialHtml}</div>` : '';
       const floatStyle = `
       <style>
-        @keyframes gentle-float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-          100% { transform: translateY(0px); }
-        }
+        @keyframes gentle-float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
         .floating-dock { position: fixed; bottom: 32px; right: 32px; display: flex; align-items: center; gap: 16px; z-index: 99999; flex-wrap: wrap; justify-content: flex-end; animation: gentle-float 4s ease-in-out infinite; opacity: 0; pointer-events: none; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .floating-dock.scrolled-active { opacity: 1; pointer-events: auto; transform: translateY(0px); }
         .social-dock { display: flex; align-items: center; gap: 4px; padding: 6px 16px; border-radius: 100px; background-color: ${colors.c2}cc; border: 1px solid ${colors.c3}; box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
@@ -548,21 +571,13 @@ const App: React.FC = () => {
         .contact-dock-btn { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 100px; background-color: ${colors.c4}; color: ${colors.c1}; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none; border: 1px solid ${colors.c3}40; pointer-events: auto; }
         .contact-dock-btn:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
         .floating-dock:hover { animation-play-state: paused; }
-        @media (max-width: 640px) {
-           .floating-dock { bottom: 20px; right: 20px; left: 20px; flex-direction: column-reverse; align-items: flex-end; }
-        }
+        @media (max-width: 640px) { .floating-dock { bottom: 20px; right: 20px; left: 20px; flex-direction: column-reverse; align-items: flex-end; } }
       </style>
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           const dock = document.querySelector('.floating-dock');
           if (!dock) return;
-          const handleScroll = () => {
-             if (window.scrollY > document.documentElement.clientHeight * 0.4) {
-                dock.classList.add('scrolled-active');
-             } else {
-                dock.classList.remove('scrolled-active');
-             }
-          };
+          const handleScroll = () => { dock.classList.toggle('scrolled-active', window.scrollY > document.documentElement.clientHeight * 0.4); };
           window.addEventListener('scroll', handleScroll, { passive: true });
           handleScroll();
         });
@@ -571,24 +586,15 @@ const App: React.FC = () => {
       html = html.replace('</body>', `<div class="floating-dock">${contactHtml}${wrappedSocials}</div></body>`);
     }
 
-    // Injetar marca d'água no rodapé do site gerado
     const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing</a></div>`;
     html = html.replace('</body>', `${footerBrand}</body>`);
 
-    // Injetar Mapa e Formulário se ativados
-    const mapUrl = data.address ? `https://https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&output=embed` : '';
+    const mapUrl = data.address ? `https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed` : '';
     const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
-    // Configurar Formsubmit.co para o formulário AJAX
     const formAction = data.email ? `action="https://formsubmit.co/ajax/${data.email}"` : '';
-    
-    const hiddenInputs = data.email ? `
-      <input type="hidden" name="_subject" value="[Contato do seu Site] Nova mensagem de um cliente">
-      <input type="hidden" name="_language" value="pt-BR">
-      <input type="hidden" name="_template" value="box">
-      <input type="hidden" name="_captcha" value="false">
-    ` : '';
+    const hiddenInputs = data.email ? `<input type="hidden" name="_subject" value="[Contato do seu Site] Nova mensagem de um cliente"><input type="hidden" name="_language" value="pt-BR"><input type="hidden" name="_template" value="box"><input type="hidden" name="_captcha" value="false">` : '';
 
     const formCode = data.showForm ? `
     <form id="sitecraft-contact-form" ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem] relative">
@@ -598,43 +604,18 @@ const App: React.FC = () => {
       <textarea name="Mensagem" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" rows="4" placeholder="Sua mensagem"></textarea>
       <button type="${data.email ? 'submit' : 'button'}" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button>
     </form>
-    
     <script id="contact-form-script">
       document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('sitecraft-contact-form');
         if (form && form.hasAttribute('action')) {
           form.addEventListener('submit', function(e) {
             e.preventDefault(); 
-            
             const btn = form.querySelector('button[type="submit"]');
-            if(btn) { 
-              btn.innerText = 'Enviando...'; 
-              btn.style.opacity = '0.7';
-              btn.disabled = true; 
-            }
-            
-            const formData = new FormData(form);
-            const dataObj = Object.fromEntries(formData.entries());
-
-            fetch(form.action, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify(dataObj)
-            })
+            if(btn) { btn.innerText = 'Enviando...'; btn.style.opacity = '0.7'; btn.disabled = true; }
+            fetch(form.action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) })
             .then(response => response.json())
-            .then(data => {
-              form.innerHTML = '<div style="text-align:center; padding: 20px; animation: fadeUp 0.5s ease;"><div style="width: 64px; height: 64px; background: rgba(16,185,129,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;"><i class="fas fa-check" style="font-size: 30px; color: #10b981;"></i></div><h3 style="font-size: 24px; font-weight: 900; color: ${colors.c4}; margin-bottom: 8px;">Enviado com sucesso!</h3><p style="font-size: 14px; color: ${colors.c6};">Agradecemos o seu contato. Retornaremos o mais breve possível.</p></div>';
-            })
-            .catch(error => {
-              if(btn) { 
-                btn.innerText = 'Erro ao enviar. Tente novamente.'; 
-                btn.style.opacity = '1';
-                btn.disabled = false; 
-              }
-            });
+            .then(data => { form.innerHTML = '<div style="text-align:center; padding: 20px; animation: fadeUp 0.5s ease;"><div style="width: 64px; height: 64px; background: rgba(16,185,129,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;"><i class="fas fa-check" style="font-size: 30px; color: #10b981;"></i></div><h3 style="font-size: 24px; font-weight: 900; color: ${colors.c4}; margin-bottom: 8px;">Enviado com sucesso!</h3><p style="font-size: 14px; color: ${colors.c6};">Agradecemos o seu contato. Retornaremos o mais breve possível.</p></div>'; })
+            .catch(error => { if(btn) { btn.innerText = 'Erro ao enviar. Tente novamente.'; btn.style.opacity = '1'; btn.disabled = false; } });
           });
         }
       });
@@ -642,32 +623,17 @@ const App: React.FC = () => {
 
     replaceAll('[[CONTACT_FORM]]', formCode);
 
-    // Injetar placeholders de imagens editáveis
     const imgPlaceholder = (id: string, label: string) => {
-      if (customImages[id]) {
-         return `
-      <div class="editable-image-wrapper w-full py-4">
-        <div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}">
-          <img src="${customImages[id]}" class="w-full h-full block object-contain" style="border-radius: inherit; margin: 0; box-shadow: none;" />
-        </div>
-      </div>`;
-      }
-      return `
-      <div class="editable-image-wrapper w-full py-4">
-        <div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}">
-          <i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem - ${label}</span>
-        </div>
-      </div>`;
+      if (customImages[id]) return `<div class="editable-image-wrapper w-full py-4"><div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}"><img src="${customImages[id]}" class="w-full h-full block object-contain" style="border-radius: inherit; margin: 0; box-shadow: none;" /></div></div>`;
+      return `<div class="editable-image-wrapper w-full py-4"><div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}"><i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem - ${label}</span></div></div>`;
     };
 
     replaceAll('[[HERO_IMAGE]]', imgPlaceholder('hero-img', 'Destaque (Topo)'));
     replaceAll('[[ABOUT_IMAGE]]', imgPlaceholder('about-img', 'Quem Somos'));
 
-    // Finalizar HEAD injection
     return html.replace('</head>', `${headInjection}</head>`);
   };
 
-  // Funções de ação (Gerar, Salvar, Publicar)
   const handleGenerate = async () => {
     if (!formData.businessName || !formData.description) return alert('Preencha Nome e Ideia!');
     setIsGenerating(true);
@@ -689,15 +655,11 @@ const App: React.FC = () => {
     finally { setIsGenerating(false); }
   };
 
-  // Lógica para upload de logo do usuário (base64)
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData(p => ({ ...p, logoBase64: reader.result as string }));
-      setHasUnsavedChanges(true);
-    };
+    reader.onloadend = () => { setFormData(p => ({ ...p, logoBase64: reader.result as string })); setHasUnsavedChanges(true); };
     reader.readAsDataURL(file);
   };
 
@@ -705,9 +667,8 @@ const App: React.FC = () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
     if (!currentProjectSlug && !registerLater && !officialDomain) {
       setActiveTab('dominio');
-      return alert("Por favor, configure seu domínio ou marque a opção 'Configurar depois' na aba de Domínio Oficial.");
+      return alert("Por favor, configure seu domínio ou marque a opção 'Configurar depois'.");
     }
-    
     setIsSavingProject(true);
     try {
       const htmlToSave = cleanHtmlForPublishing(generatedHtml);
@@ -718,10 +679,7 @@ const App: React.FC = () => {
         const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
         const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
         const saveFn = httpsCallable(functions, 'saveSiteProject');
-        const res: any = await saveFn({
-          businessName: formData.businessName, officialDomain: registerLater ? "Pendente" : officialDomain,
-          internalDomain, generatedHtml: htmlToSave, formData, aiContent,
-        });
+        const res: any = await saveFn({ businessName: formData.businessName, officialDomain: registerLater ? "Pendente" : officialDomain, internalDomain, generatedHtml: htmlToSave, formData, aiContent });
         if (res.data?.projectSlug) setCurrentProjectSlug(res.data.projectSlug);
       }
       setHasUnsavedChanges(false);
@@ -737,12 +695,9 @@ const App: React.FC = () => {
     try {
       const publishFn = httpsCallable(functions, 'publishUserProject');
       const res: any = await publishFn({ targetId: currentProjectSlug });
-      
       let publicUrl = res.data?.publishUrl || `https://${currentProjectSlug}.web.app`;
       if (!publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
-      
-      fetchProjects();
-      setPublishModalUrl(publicUrl);
+      fetchProjects(); setPublishModalUrl(publicUrl);
     } catch (err: any) { alert('Erro ao publicar: ' + err.message); } 
     finally { setIsPublishing(false); }
   };
@@ -753,7 +708,6 @@ const App: React.FC = () => {
       const deleteFn = httpsCallable(functions, 'deleteUserProject');
       await deleteFn({ targetId: projectId });
       alert("Site excluído com sucesso.");
-      
       if (projectId === currentProjectSlug) {
         setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
         setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'obsidian', logoBase64: '' });
@@ -768,32 +722,22 @@ const App: React.FC = () => {
     try {
       const createCheckoutFn = httpsCallable(functions, 'createStripeCheckoutSession');
       const res: any = await createCheckoutFn({ projectId, origin: window.location.origin, planType });
-      if (res.data?.url) {
-        window.location.href = res.data.url;
-        return;
-      }
+      if (res.data?.url) { window.location.href = res.data.url; return; }
       throw new Error('URL de checkout inválida.');
-    } catch (error: any) {
-      alert('Erro ao iniciar pagamento: ' + error.message);
-    } finally {
-      setCheckoutLoading(null);
-    }
+    } catch (error: any) { alert('Erro ao iniciar pagamento: ' + error.message); } 
+    finally { setCheckoutLoading(null); }
   };
   
   const handleCancelSubscription = async (projectId: string) => {
-    if (!window.confirm("Tem certeza que deseja cancelar sua assinatura?\n\nSeu site continuará no ar até o final do período que já foi pago. Após essa data, ele será congelado e você não será mais cobrado.")) return;
-    
+    if (!window.confirm("Tem certeza que deseja cancelar sua assinatura?\n\nSeu site continuará no ar até o final do período que já foi pago. Após essa data, ele será suspenso.")) return;
     setIsCanceling(projectId);
     try {
       const cancelFn = httpsCallable(functions, 'cancelStripeSubscription');
       await cancelFn({ projectId });
-      alert("Assinatura cancelada com sucesso! O site permanecerá ativo até o fim do ciclo vigente.");
+      alert("Assinatura cancelada com sucesso!");
       fetchProjects(); 
-    } catch (error: any) {
-      alert("Erro ao cancelar: " + error.message);
-    } finally {
-      setIsCanceling(null);
-    }
+    } catch (error: any) { alert("Erro ao cancelar: " + error.message); } 
+    finally { setIsCanceling(null); }
   };
   
   const handleLoadProject = (project: any) => {
@@ -819,24 +763,23 @@ const App: React.FC = () => {
     setIsLoginOpen(false);
   };
 
-  // Funções utilitárias de Badges e Títulos
   const getStatusBadge = (project: any) => {
     if (!project) return null;
-    if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">CONGELADO</span>;
+    if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-600 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">CONGELADO</span>;
     
     if (project.expiresAt) {
       const expirationDate = project.expiresAt._seconds ? project.expiresAt._seconds * 1000 : project.expiresAt.seconds * 1000;
       const daysLeft = Math.ceil((new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
       
-      if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">VENCIDO</span>;
+      if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-600 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">VENCIDO</span>;
       
       if (project.paymentStatus === 'paid') {
-        return <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-emerald-500/30" title="Plano Anual Ativo">ATIVO ({daysLeft} dias restantes)</span>;
+        return <span className="text-[9px] bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-bold ml-2 border border-emerald-200" title="Plano Ativo">ATIVO ({daysLeft} dias restantes)</span>;
       } else {
-        return <span className="text-[9px] bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold ml-2 border border-yellow-500/30 animate-pulse" title="Período de Teste">TRIAL ({daysLeft} dias restantes)</span>;
+        return <span className="text-[9px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-bold ml-2 border border-orange-200 animate-pulse" title="Período de Teste">TRIAL ({daysLeft} dias restantes)</span>;
       }
     }
-    return <span className="text-[9px] bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full font-bold ml-2">RASCUNHO</span>;
+    return <span className="text-[9px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-bold ml-2">RASCUNHO</span>;
   };
 
   return (
@@ -846,10 +789,9 @@ const App: React.FC = () => {
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* 👇 NOVO TEMA CLARO SITEZING 👇 */}
-      <div className="w-full h-screen bg-[#FFFFFF] overflow-hidden font-sans text-slate-900 flex">
+      <div className="w-full h-screen bg-[#FFFFFF] overflow-hidden font-sans text-slate-900 flex flex-col md:flex-row">
         
-        {/* Área Principal (Preview do Site) */}
+        {/* Área Principal (Iframe) */}
         <div className="flex-1 relative h-full overflow-hidden bg-[#FFFFFF]">
           <iframe 
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
@@ -859,148 +801,165 @@ const App: React.FC = () => {
 
           <AnimatePresence>
             {!isMenuOpen && (
-              <>
-                {/* 👇 UX: SETA PULSANTE (RADAR PULSE) PARA ENGRENAGEM 👇 */}
-                <div className="absolute bottom-24 right-6 z-[90] flex items-center gap-4 text-emerald-600">
+              // 👇 BOTÃO RADAR LARANJA E FOGUETE NO TOPO DIREITO 👇
+              <div 
+                className="absolute top-6 right-6 z-[90] flex items-center cursor-pointer group" 
+                onClick={() => setIsMenuOpen(true)}
+              >
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="relative flex items-center justify-center">
                   <motion.div 
-                    initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                    className="relative flex items-center justify-center"
-                  >
-                    {/* Animação do Pulso (Radar) */}
-                    <motion.div
-                      animate={{ scale: [1, 2], opacity: [0.6, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
-                      className="absolute w-12 h-12 bg-emerald-400 rounded-full"
-                    />
-                    {/* Ícone e Texto Fixo */}
-                    <div className="relative flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 shadow-sm">
-                      <Settings size={14} className="animate-spin-slow" />
-                      <span className="text-sm font-bold uppercase tracking-wider">Crie seu Site</span>
-                    </div>
-                  </motion.div>
-                </div>
-                
-                {/* Botão flutuante para reabrir o menu */}
-                <motion.div 
-                  initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                  onClick={() => setIsMenuOpen(true)} 
-                  className="absolute bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
-                >
-                  <Settings className="text-white" size={26} />
+                    animate={{ scale: [1, 2], opacity: [0.6, 0] }} 
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }} 
+                    className="absolute w-12 h-12 bg-orange-400 rounded-full" 
+                  />
+                  <div className="relative flex items-center gap-2 bg-white px-5 py-3 rounded-full border border-orange-200 shadow-lg group-hover:shadow-orange-500/20 transition-all group-hover:border-orange-400">
+                    <Rocket size={18} className="text-orange-500" />
+                    <span className="text-sm font-black uppercase tracking-widest text-orange-600">Crie seu Site</span>
+                  </div>
                 </motion.div>
-              </>
+              </div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Modal de Login (Lazy Loaded) */}
+        {/* Modal de Login */}
         <Suspense fallback={null}>
           <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} brandLogo={BRAND_LOGO} />
         </Suspense>
 
-        {/* Modal de Sucesso na Publicação */}
+        {/* 👇 NOVO MODAL DE DETALHES DO PLANO (UX/React) 👇 */}
         <AnimatePresence>
-          {publishModalUrl && (
-            <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          {selectedPlanModal && (
+            <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
               <motion.div 
-                initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-white border border-slate-200 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white border border-slate-200 p-8 rounded-3xl shadow-2xl max-w-lg w-full relative overflow-hidden"
               >
-                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-200">
-                  <CheckCircle size={40} />
+                <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-3/4 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
+                
+                <button onClick={() => setSelectedPlanModal(null)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-800 transition-colors bg-slate-100 p-2 rounded-full">
+                  <X size={18} />
+                </button>
+
+                <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 ${PLAN_DETAILS[selectedPlanModal].bgBadge}`}>
+                  {PLAN_DETAILS[selectedPlanModal].badge}
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-950 mb-2">Site Publicado com Sucesso!</h2>
-                  <p className="text-slate-500 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br / DNS, pode demorar algumas horas para propagar.</p>
+                
+                <h2 className={`text-3xl font-black mb-1 italic uppercase ${PLAN_DETAILS[selectedPlanModal].color}`}>
+                  {PLAN_DETAILS[selectedPlanModal].title}
+                </h2>
+                
+                <div className="text-4xl font-black mb-1 text-slate-900 mt-2">
+                  {PLAN_DETAILS[selectedPlanModal].price} <span className="text-sm text-slate-500 font-normal">{PLAN_DETAILS[selectedPlanModal].period}</span>
                 </div>
-                <div className="bg-slate-100 p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3 overflow-hidden">
-                  <code className="text-blue-600 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+                <p className="text-xs text-slate-500 font-bold mb-8 pb-4 border-b border-slate-100">Todos os recursos disponíveis em qualquer plano.</p>
+
+                <ul className="space-y-4 text-slate-600 text-sm font-medium mb-8 relative z-10">
+                  {PLAN_DETAILS[selectedPlanModal].rules.map((rule, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <CheckCircle size={18} className={`${PLAN_DETAILS[selectedPlanModal].color} shrink-0 mt-0.5`} />
+                      <span className="leading-relaxed">{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+                  <button onClick={() => setSelectedPlanModal(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors">
+                    Voltar
+                  </button>
+                  <button onClick={() => { setSelectedPlanModal(null); setIsMenuOpen(true); }} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
+                    <Rocket size={16} /> Criar Meu Site
+                  </button>
                 </div>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-slate-300"><Copy size={18} /> Copiar Link</button>
-                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-500/20"><ExternalLink size={18} /> Abrir Site</button>
-                </div>
-                <button onClick={() => setPublishModalUrl(null)} className="text-slate-500 hover:text-slate-800 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
               </motion.div>
             </div>
           )}
         </AnimatePresence>
 
-        {/* Painel de Controle (Sidebar) Clarinha com Glassmorphism */}
+        {/* Modal de Sucesso na Publicação */}
+        <AnimatePresence>
+          {publishModalUrl && (
+            <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="bg-white border border-slate-200 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6 relative overflow-hidden"
+              >
+                <img src={BRAND_LOGO} className="absolute bottom-[-10%] left-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
+                <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-100 relative z-10">
+                  <CheckCircle size={40} />
+                </div>
+                <div className="relative z-10">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Site Publicado com Sucesso!</h2>
+                  <p className="text-slate-500 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio oficial, pode demorar algumas horas para propagar.</p>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3 overflow-hidden relative z-10">
+                  <code className="text-blue-600 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+                </div>
+                <div className="flex gap-3 pt-2 relative z-10">
+                  <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-white hover:bg-slate-50 text-slate-700 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-slate-200 shadow-sm"><Copy size={18} /> Copiar Link</button>
+                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-500/20"><ExternalLink size={18} /> Abrir Site</button>
+                </div>
+                <button onClick={() => setPublishModalUrl(null)} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[10px] mt-4 block w-full transition-colors relative z-10">Fechar janela</button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Menu Lateral de Configurações (Painel) */}
         <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.div 
               initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
-              animate={{ width: 420, paddingLeft: 16, paddingRight: 24 }} 
+              animate={{ width: window.innerWidth < 768 ? '100%' : 420, paddingLeft: 16, paddingRight: 16 }} 
               exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-              className="flex-shrink-0 h-screen flex flex-col justify-center overflow-hidden relative z-50 bg-[#FFFFFF]"
+              className="flex-shrink-0 h-full flex flex-col justify-center overflow-hidden relative z-50 bg-[#FFFFFF] w-full md:w-[420px] py-4"
             >
               <motion.div 
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: 20, opacity: 0 }}
-                transition={{ delay: 0.1 }}
-                className="w-full h-[95vh] bg-[#F8FAFC] border border-slate-200 rounded-[2rem] shadow-lg flex flex-col overflow-hidden relative glass-container-light"
+                initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} transition={{ delay: 0.1 }}
+                className="w-full h-full bg-[#F8FAFC] border border-slate-200 rounded-[2rem] shadow-xl flex flex-col overflow-hidden relative"
               >
-                
-                {/* Cabeçalho do Menu */}
-                <div className="flex justify-between items-center px-6 py-5 border-b border-slate-200 flex-shrink-0">
+                {/* Cabeçalho do Painel */}
+                <div className="flex justify-between items-center px-6 py-5 border-b border-slate-200 flex-shrink-0 bg-white">
                   <div className="flex items-center gap-3 select-none">
-                    <img src={BRAND_LOGO} alt="SiteZing" className="h-8 w-auto object-contain drop-shadow-sm" />
+                    <img src={BRAND_LOGO} alt="SiteZing" className="h-7 w-auto object-contain" />
                   </div>
                   <div className="flex items-center gap-4">
                     {loggedUserEmail ? (
-                      <button className="text-slate-400 hover:text-emerald-600 transition-colors" title={`Logado como: ${loggedUserEmail}`}>
-                        <User size={18} />
-                      </button>
+                      <button className="text-slate-400 hover:text-emerald-500 transition-colors" title={`Logado como: ${loggedUserEmail}`}><User size={18} /></button>
                     ) : (
-                      <button onClick={() => setIsLoginOpen(true)} className="text-xs font-bold text-emerald-600 hover:text-emerald-500 transition-colors flex items-center gap-1.5">
-                        <LogIn size={16} /> Login
-                      </button>
+                      <button onClick={() => setIsLoginOpen(true)} className="text-xs font-bold text-emerald-600 hover:text-emerald-500 transition-colors flex items-center gap-1.5"><LogIn size={16} /> Login</button>
                     )}
                     <div className="w-px h-4 bg-slate-200"></div>
-                    <button onClick={() => setIsMenuOpen(false)} className="text-slate-500 hover:text-slate-900 transition-colors" title="Esconder Painel">
-                      <X size={18} />
-                    </button>
+                    <button onClick={() => setIsMenuOpen(false)} className="text-slate-400 hover:text-slate-800 transition-colors" title="Esconder Painel"><X size={18} /></button>
                   </div>
                 </div>
 
-                {/* Abas de Navegação */}
+                {/* Abas */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   let daysLeft = 0; let isPaid = false;
-                  
                   if (currentProject?.expiresAt) {
                     const expirationDate = currentProject.expiresAt._seconds ? currentProject.expiresAt._seconds * 1000 : currentProject.expiresAt.seconds * 1000;
                     daysLeft = Math.ceil((new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
                     isPaid = currentProject.paymentStatus === 'paid';
                   }
-
                   return (
-                    <div className="flex border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider flex-shrink-0 bg-white">
-                      <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
-                        Visual & Dados
+                    <div className="flex border-b border-slate-200 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex-shrink-0 bg-white">
+                      <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3 sm:py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
+                        Visual
                       </button>
-                      
-                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
+                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3 sm:py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
                         Domínio
                         {(!officialDomain || officialDomain === 'Pendente' || registerLater) && (
-                          <span className="absolute top-3 right-4 flex h-2 w-2" title="Domínio não configurado">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                          </span>
+                          <span className="absolute top-3 right-4 flex h-2 w-2" title="Domínio não configurado"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span>
                         )}
                       </button>
-
                       {currentProjectSlug && (
-                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
+                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3 sm:py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
                           Pagamento
                           {!isPaid && (
-                            <span className="absolute top-3 right-2 flex h-2 w-2" title={daysLeft > 0 ? "Período de Teste" : "Vencido"}>
-                              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${daysLeft > 0 ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
-                              <span className={`relative inline-flex rounded-full h-2 w-2 ${daysLeft > 0 ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
-                            </span>
+                            <span className="absolute top-3 right-2 flex h-2 w-2"><span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${daysLeft > 0 ? 'bg-yellow-400' : 'bg-red-400'}`}></span><span className={`relative inline-flex rounded-full h-2 w-2 ${daysLeft > 0 ? 'bg-yellow-500' : 'bg-red-500'}`}></span></span>
                           )}
                         </button>
                       )}
@@ -1009,7 +968,7 @@ const App: React.FC = () => {
                 })()}
 
                 {/* Conteúdo do Menu */}
-                <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6 bg-white">
+                <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6 pb-6 bg-white">
                   {activeTab === 'geral' && (
                     <>
                       {currentProjectSlug && (
@@ -1019,111 +978,61 @@ const App: React.FC = () => {
                             <span className="text-xs text-slate-600 font-bold uppercase tracking-wider">Status do Site</span>
                           </div>
                           {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
-                          <div className="absolute hidden group-hover:block top-full left-0 mt-2 w-full bg-white border border-slate-200 text-slate-700 text-xs p-3.5 rounded-xl shadow-lg z-50 text-center leading-relaxed">
-                            Esta informação mostra se o seu site está no período de teste, ativo ou vencido. Projetos vencidos ficam invisíveis para o público.
-                          </div>
                         </div>
                       )}
 
                       <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
-                          <input className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><MapPin size={12} /> Região de atuação</label>
-                          <input className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Zona Sul de São Paulo - SP" value={formData.region} onChange={e => {setFormData({ ...formData, region: e.target.value }); setHasUnsavedChanges(true)}} />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label>
-                          <textarea className="w-full h-20 bg-white border border-slate-200 rounded-xl p-3.5 text-sm resize-none focus:border-emerald-500 outline-none transition-colors" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
-                        </div>
+                        <div><label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label><input className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} /></div>
+                        <div><label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><MapPin size={12} /> Região de atuação</label><input className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Zona Sul - SP" value={formData.region} onChange={e => {setFormData({ ...formData, region: e.target.value }); setHasUnsavedChanges(true)}} /></div>
+                        <div><label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label><textarea className="w-full h-20 bg-white border border-slate-200 rounded-xl p-3.5 text-sm resize-none focus:border-emerald-500 outline-none transition-colors" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} /></div>
                       </div>
 
-                      <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-700 transition-colors shadow-sm">
+                      <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-700 transition-colors shadow-md">
                         {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                       </button>
 
                       {generatedHtml && (
-                        <div className="pt-6 border-t border-slate-200 space-y-6">
-                          {/* Configurações de Estilo e Cor */}
-                          <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-slate-500 uppercase">Estilo do Site</label>
-                            <select className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
-                              {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                            </select>
-                          </div>
+                        <div className="pt-6 border-t border-slate-100 space-y-6">
+                          <div className="space-y-2.5"><label className="text-xs font-bold text-slate-500 uppercase">Estilo do Site</label><select className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>{LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}</select></div>
                           <div className="space-y-2.5">
                             <label className="text-xs font-bold text-slate-500 uppercase">Temas (Cores)</label>
                             <div className="grid grid-cols-5 gap-3">
                               {COLORS.map(c => (
-                                <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-emerald-400 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-white`} title={c.name}>
-                                  <div className="absolute inset-0" style={{ backgroundColor: c.c1 }} />
-                                  <div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
-                                </button>
+                                <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-white`} title={c.name}><div className="absolute inset-0" style={{ backgroundColor: c.c1 }} /><div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} /></button>
                               ))}
                             </div>
                           </div>
 
-                          {/* Upload de Logo */}
                           <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-slate-500 uppercase flex justify-between items-center">
-                              <span>Sua Logomarca (Favicon)</span>
-                              {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-600 hover:text-red-500 text-[10px] font-bold">X Remover</button>}
-                            </label>
-                            
+                            <label className="text-xs font-bold text-slate-500 uppercase flex justify-between items-center"><span>Sua Logomarca (Favicon)</span>{formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-500 hover:text-red-600 text-[10px] font-bold">X Remover</button>}</label>
                             {!formData.logoBase64 ? (
-                              <div className="space-y-2">
-                                <label className="cursor-pointer w-full border border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-4 flex justify-center items-center gap-2 text-xs text-slate-500 hover:text-emerald-600 transition-colors bg-slate-50">
-                                  <Upload size={14} /> Fazer Upload da Marca
-                                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                                </label>
-                                <p className="text-[10px] text-slate-400 text-center">
-                                  Não tem um logo? <a href="https://www.canva.com/pt_br/criar/logotipo/" target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">Crie de graça no Canva</a>
-                                </p>
-                              </div>
+                              <div className="space-y-2"><label className="cursor-pointer w-full border border-dashed border-slate-300 hover:border-blue-400 rounded-xl p-4 flex justify-center items-center gap-2 text-xs text-slate-500 transition-colors bg-slate-50"><Upload size={14} /> Fazer Upload da Marca<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" /></label></div>
                             ) : (
-                              <div className="h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center overflow-hidden p-2">
-                                <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
-                              </div>
+                              <div className="h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center overflow-hidden p-2"><img src={formData.logoBase64} className="h-full object-contain" alt="Logo" /></div>
                             )}
                           </div>
 
-                          {/* Redes Sociais */}
-                          <div className="space-y-3 pt-5 border-t border-slate-200">
+                          <div className="space-y-3 pt-5 border-t border-slate-100">
                             <label className="text-xs font-bold text-slate-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
-                            <div className="grid grid-cols-2 gap-3">
-                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="LinkedIn (Link)" value={formData.linkedin} onChange={e => {setFormData({ ...formData, linkedin: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-blue-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-blue-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-blue-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-blue-500 outline-none" placeholder="LinkedIn (Link)" value={formData.linkedin} onChange={e => {setFormData({ ...formData, linkedin: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                           </div>
 
-                          {/* Contato e Localização */}
-                          <div className="space-y-3 pt-5 border-t border-slate-200">
+                          <div className="space-y-3 pt-5 border-t border-slate-100">
                             <label className="text-xs font-bold text-slate-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
-                            <div className="grid grid-cols-2 gap-3">
-                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-blue-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-blue-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
-                            <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-blue-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
                             
-                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
-                              <span>Exibir Mapa do Google no site</span>
-                              <input type="checkbox" checked={formData.showMap} onChange={e => {setFormData({ ...formData, showMap: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
-                            </label>
-
-                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
-                              <span>Exibir botão Contato flutuante na tela</span>
-                              <input type="checkbox" checked={formData.showFloatingContact} onChange={e => {setFormData({ ...formData, showFloatingContact: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
-                            </label>
-
-                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
-                              <span>Exibir formulário de contato no site</span>
-                              <input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
-                            </label>
+                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600"><span>Exibir Mapa do Google</span><input type="checkbox" checked={formData.showMap} onChange={e => {setFormData({ ...formData, showMap: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-blue-500" /></label>
+                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600"><span>Exibir botão Contato flutuante</span><input type="checkbox" checked={formData.showFloatingContact} onChange={e => {setFormData({ ...formData, showFloatingContact: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-blue-500" /></label>
+                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600"><span>Exibir formulário de contato</span><input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-blue-500" /></label>
                           </div>
                         </div>
                       )}
@@ -1136,29 +1045,18 @@ const App: React.FC = () => {
                         <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100">
                           <h4 className="text-sm font-bold text-blue-700 flex items-center gap-2"><Globe size={16}/> Qual será o endereço?</h4>
                           <p className="text-xs text-blue-600/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Ex: Registro.br).</p>
-                          <Suspense fallback={null}>
-                            <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
-                          </Suspense>
+                          <Suspense fallback={null}><DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} /></Suspense>
                         </div>
                       ) : (
                         <div className="space-y-4">
                           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3 mb-5">
                               <div className="bg-blue-100 p-2.5 rounded-xl"><Globe className="text-blue-600 w-5 h-5" /></div>
-                              <div>
-                                <h3 className="font-bold text-slate-950 text-sm">Apontamento DNS</h3>
-                                <p className="text-[10px] text-slate-500">Configure no seu provedor de domínio</p>
-                              </div>
+                              <div><h3 className="font-bold text-slate-950 text-sm">Apontamento DNS</h3><p className="text-[10px] text-slate-500">Configure no seu provedor de domínio</p></div>
                             </div>
                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                              <div>
-                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">TIPO A</span></div>
-                                <div className="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center"><code className="text-emerald-600 text-xs font-bold select-all">199.36.158.100</code></div>
-                              </div>
-                              <div>
-                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">TIPO TXT</span></div>
-                                <div className="bg-white p-3 rounded-xl border border-slate-200"><code className="text-blue-700 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
-                              </div>
+                              <div><div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">TIPO A</span></div><div className="bg-white p-3 rounded-xl border border-slate-200"><code className="text-emerald-600 text-xs font-bold select-all">199.36.158.100</code></div></div>
+                              <div><div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">TIPO TXT</span></div><div className="bg-white p-3 rounded-xl border border-slate-200"><code className="text-blue-700 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div></div>
                             </div>
                           </div>
                         </div>
@@ -1168,181 +1066,62 @@ const App: React.FC = () => {
 
                   {activeTab === 'assinatura' && currentProjectSlug && (
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-                      
                       <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 blur-[50px] rounded-full pointer-events-none"></div>
-                        
-                        <h3 className="text-lg font-black text-slate-950 mb-1 flex items-center gap-2"><CreditCard size={18} className="text-orange-500" /> Painel de Assinatura</h3>
-                        <p className="text-xs text-slate-500 mb-6">Gerencie o plano do seu projeto <span className="text-orange-500 font-mono">{currentProjectSlug}</span></p>
+                        <h3 className="text-lg font-black text-slate-950 mb-1 flex items-center gap-2"><CreditCard size={18} className="text-orange-500" /> Assinatura</h3>
+                        <p className="text-xs text-slate-500 mb-6">Gerencie o plano do projeto <span className="text-orange-500 font-mono">{currentProjectSlug}</span></p>
 
-                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 mb-6">
-                          <div className="flex justify-between items-center mb-3">
-                            <span className="text-xs font-bold text-slate-500 uppercase">Status Atual</span>
-                            {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
-                          </div>
-                          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-orange-400 h-full rounded-full" style={{ width: '100%' }}></div>
-                          </div>
-                        </div>
-
-                        {/* Exibir planos para assinatura se não pago */}
                         {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
                           <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {/* Plano Mensal Clarinho */}
-                              <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 hover:border-blue-300 transition-colors flex flex-col h-full relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vendido</div>
-                                <h4 className="text-blue-700 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
-                                <div className="flex items-end gap-1 mb-4">
-                                  <span className="text-3xl font-black text-slate-950">R$ 49,99</span>
-                                  <span className="text-xs text-slate-500 font-medium pb-1">/mês</span>
-                                </div>
-                                <ul className="space-y-2 text-xs text-slate-600 mb-6 flex-1">
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Domínio próprio</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Site blindado no Google</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Suporte prioritário</li>
+                            <div className="grid grid-cols-1 gap-4">
+                              {/* Plano Mensal */}
+                              <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col h-full relative overflow-hidden">
+                                <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
+                                <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Assinado</div>
+                                <h4 className="text-blue-600 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
+                                <div className="flex items-end gap-1 mb-4"><span className="text-3xl font-black text-slate-950">R$ 49,99</span><span className="text-xs text-slate-500 font-medium pb-1">/mês</span></div>
+                                <ul className="space-y-2 text-xs text-slate-600 mb-6 flex-1 relative z-10">
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5"/> Domínio próprio & Suporte</li>
                                 </ul>
-                                <button 
-                                  onClick={() => handleStripeCheckout(currentProjectSlug, 'mensal')}
-                                  disabled={checkoutLoading === currentProjectSlug}
-                                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors"
-                                >
+                                <button onClick={() => handleStripeCheckout(currentProjectSlug, 'mensal')} disabled={checkoutLoading === currentProjectSlug} className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors relative z-10">
                                   {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Mensal'}
                                 </button>
                               </div>
 
-                              {/* Plano Anual Clarinho */}
-                              <div className="bg-white p-5 rounded-xl border border-orange-200 group-hover:border-orange-300 transition-colors flex flex-col h-full relative overflow-hidden shadow-sm">
+                              {/* Plano Anual */}
+                              <div className="bg-white p-5 rounded-xl border border-orange-200 flex flex-col h-full relative overflow-hidden shadow-md">
+                                <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
                                 <div className="absolute top-0 right-0 bg-orange-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Econômico</div>
-                                <h4 className="text-orange-600 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
-                                <div className="flex items-end gap-1 mb-4">
-                                  <span className="text-3xl font-black text-slate-950">R$ 499</span>
-                                  <span className="text-xs text-slate-500 font-medium pb-1">/ano</span>
-                                </div>
-                                <ul className="space-y-2 text-xs text-slate-600 mb-6 flex-1">
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> 2 meses grátis</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Domínio premium</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Gerente dedicado</li>
+                                <h4 className="text-orange-500 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
+                                <div className="flex items-end gap-1 mb-4"><span className="text-3xl font-black text-slate-950">R$ 499</span><span className="text-xs text-slate-500 font-medium pb-1">/ano</span></div>
+                                <ul className="space-y-2 text-xs text-slate-600 mb-6 flex-1 relative z-10">
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
                                 </ul>
-                                <button 
-                                  onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
-                                  disabled={checkoutLoading === currentProjectSlug}
-                                  className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20"
-                                >
+                                <button onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')} disabled={checkoutLoading === currentProjectSlug} className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20 relative z-10">
                                   {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Anual'}
                                 </button>
                               </div>
                             </div>
-                            
-                            <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 text-[10px] text-slate-500 leading-relaxed font-mono">
-                              <strong className="text-slate-700 block mb-1">TERMOS DE RENOVAÇÃO E CICLO DE VIDA:</strong>
-                              O site conta com um <span className="text-orange-600 font-bold">período gratuito de 30 dias iniciais</span>. Vencido qualquer plano ou o período gratuito, o site será suspenso ("congelado") após 5 dias de atraso. O sistema exclui permanentemente todos os dados e o site do ar se não houver regularização no prazo de 60 dias após o vencimento, cancelando automaticamente associações na operadora de cartão. 
-                            </div>
-                            <p className="text-[9px] text-center text-slate-500 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamentos 100% seguros operados globalmente pela Stripe.</p>
                           </div>
                         ) : (
-                          // Exibir gestão se já pago
-                          <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4 shadow-sm relative overflow-hidden">
-                            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                              <Star size={28} />
-                            </div>
-                            <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">
-                              Plano {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'anual' ? 'Anual' : 'Mensal'} Ativo
-                            </h4>
-                            <p className="text-xs text-emerald-600/70 leading-relaxed max-w-sm mx-auto">
-                              Seu site está operando com potência máxima e todos os recursos premium estão liberados.
-                            </p>
-                            
-                            {savedProjects.find(p => p.id === currentProjectSlug)?.cancelAtPeriodEnd ? (
-                              <div className="mt-4 bg-yellow-50 border border-yellow-100 p-4 rounded-xl text-left flex gap-3 items-start">
-                                <AlertCircle size={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
-                                <div>
-                                  <h5 className="text-yellow-700 font-bold text-xs mb-1 uppercase tracking-wide">Assinatura Cancelada</h5>
-                                  <p className="text-[10px] text-yellow-600/70 leading-relaxed">
-                                    Não haverá novas cobranças. O seu site continuará 100% ativo até o fim do período que já foi pago. Após o vencimento, ele será suspenso automaticamente.
-                                  </p>
-                                </div>
-                              </div>
-                            ) : (
-                              // Botão de upgrade ou cancelamento
-                              <>
-                                {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'mensal' ? (
-                                  <div className="pt-4 mt-2 border-t border-emerald-100 text-left">
-                                    <div className="bg-white border border-orange-200 p-5 rounded-xl relative shadow-sm">
-                                      <div className="absolute top-0 right-0 bg-orange-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Upgrade Exclusivo</div>
-                                      <h5 className="text-orange-600 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
-                                      <p className="text-[10px] text-slate-500 mb-4 leading-relaxed">
-                                        Faça o upgrade agora por R$ 499,00. Seu plano atual será substituído imediatamente e você iniciará um novo ciclo ininterrupto de 12 meses.
-                                      </p>
-                                      <button 
-                                        onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
-                                        disabled={checkoutLoading === currentProjectSlug}
-                                        className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-orange-500/20 flex justify-center items-center gap-2"
-                                      >
-                                        {checkoutLoading === currentProjectSlug ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
-                                        Fazer Upgrade e Pagar R$ 499
-                                      </button>
-                                    </div>
-                                    
-                                    <div className="text-center mt-5">
-                                      <button 
-                                        onClick={() => handleCancelSubscription(currentProjectSlug)}
-                                        disabled={isCanceling === currentProjectSlug}
-                                        className="text-[10px] font-bold text-red-600/60 hover:text-red-500 transition-colors uppercase tracking-widest"
-                                      >
-                                        {isCanceling === currentProjectSlug ? 'Processando...' : 'Cancelar Assinatura Mensal'}
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  // Informação do Plano Anual
-                                  <div className="pt-4 mt-2 border-t border-emerald-100">
-                                    <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl text-left flex gap-3 items-start">
-                                      <Info size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                                      <div>
-                                        <h5 className="text-slate-800 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
-                                        <p className="text-[10px] text-slate-500 leading-relaxed">
-                                          Você está no plano Anual. A alteração para o plano mensal (downgrade) só estará disponível nesta tela após a expiração do seu ciclo atual de 12 meses.
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            )}
+                          <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4">
+                            <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">Plano Ativo</h4>
+                            <p className="text-xs text-emerald-600/70">Seu site está operando com potência máxima.</p>
                           </div>
                         )}
                       </div>
-
                     </div>
                   )}
                   
-                  {/* Seção de Projetos Salvos (Lista) */}
                   {loggedUserEmail && (
                     <div className="mt-8 border-t border-slate-200 pt-6 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-600"/>Meus Projetos</p>
-                        <button onClick={handleLogout} className="text-[10px] font-bold text-red-600 hover:text-red-500 transition-colors uppercase bg-red-50 px-2.5 py-1 rounded-lg">Sair</button>
-                      </div>
-                      
+                      <div className="flex items-center justify-between"><p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p><button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase bg-red-50 px-2.5 py-1 rounded-lg">Sair</button></div>
                       <div className="max-h-52 overflow-y-auto space-y-2">
-                        {savedProjects.length === 0 ? (
-                          <p className="text-xs text-slate-500 italic bg-slate-50 p-4 rounded-xl text-center border border-slate-100">Nenhum projeto ainda.</p>
-                        ) : (
+                        {savedProjects.length === 0 ? <p className="text-xs text-slate-400 italic text-center py-4">Nenhum projeto ainda.</p> : (
                           savedProjects.map((p: any) => (
-                            <div key={p.id} className="flex flex-col gap-1.5 bg-white border border-slate-100 rounded-xl p-2.5 shadow-sm">
-                              <div className="flex items-stretch gap-2 group">
-                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-slate-50 hover:bg-slate-100 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-300' : ''}`}>
-                                  <div className="flex flex-col truncate pr-2">
-                                    <span className="font-bold text-slate-900 truncate flex items-center gap-2">
-                                      {p.businessName || 'Sem Nome'} 
-                                      {getStatusBadge(p)}
-                                    </span>
-                                    <span className="text-[9px] text-slate-400 font-mono mt-1">{p.id}.web.app</span>
-                                  </div>
-                                </button>
-                                <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-slate-50 hover:bg-red-100 hover:text-red-600 text-slate-400 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
-                              </div>
+                            <div key={p.id} className="flex gap-1.5 bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-slate-50 hover:bg-slate-100 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-blue-400' : ''}`}><div className="flex flex-col truncate pr-2"><span className="font-bold text-slate-800 truncate flex items-center gap-2">{p.businessName || 'Sem Nome'} {getStatusBadge(p)}</span><span className="text-[9px] text-slate-400 font-mono mt-1">{p.id}.web.app</span></div></button>
+                                <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0"><Trash2 size={14} /></button>
                             </div>
                           ))
                         )}
@@ -1351,24 +1130,14 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* Rodapé do Menu (Botões de Ação) */}
+                {/* Rodapé do Menu (Botões Ocupando Espaço Justo no Mobile) */}
                 {generatedHtml && (
-                  <div className="p-4 border-t border-slate-200 bg-[#FFFFFF] flex items-center gap-3 flex-shrink-0">
-                    <button 
-                      onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
-                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
-                    >
-                      {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />}
-                      {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
+                  <div className="p-4 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+                    <button onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)} className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}>
+                      {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />} {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
                     </button>
-
-                    <button 
- 
-                      onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
-                    >
-                      {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={14} />} 
-                      Publicar Site
+                    <button onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}>
+                      {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={14} />} Publicar Site
                     </button>
                   </div>
                 )}
