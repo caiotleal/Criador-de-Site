@@ -11,7 +11,7 @@ const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
 import { useIframeEditor } from './components/useIframeEditor'; 
 
-// 👇 PUXANDO A IMAGEM DO ARQUIVO EXTERNO (src/components/brand.ts) 👇
+// 👇 PUXANDO A IMAGEM DO ARQUIVO EXTERNO 👇
 import { BRAND_LOGO } from './components/brand';
 
 const LAYOUT_STYLES = [
@@ -49,74 +49,82 @@ const PROMO_HTML = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SiteZing.com.br - Criação Inteligente</title>
+  <title>SiteZing - Criação Inteligente em Segundos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
+    /* NOVO TEMA CLARO SITEZING */
+    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #FFFFFF; color: #1E293B; font-family: sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { display: none; }
-    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
-    .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
+    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
+    .glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); }
+    
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-    .plan-bg-logo { position: absolute; bottom: -10%; right: -10%; width: 60%; height: auto; opacity: 0.05; pointer-events: none; }
+    
+    /* UX: Efeito de Flutuação Suave para o Logo */
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    .animate-floating { animation: float 6s ease-in-out infinite; }
   </style>
 </head>
-<body class="antialiased selection:bg-indigo-500 selection:text-white">
+<body class="antialiased selection:bg-blue-500 selection:text-white">
   <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
-    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none"></div>
+    
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/50 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-100/50 blur-[150px] rounded-full pointer-events-none"></div>
 
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
       
-      <div class="mb-8 flex justify-center md:justify-start">
-         <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-20 w-auto drop-shadow-[0_0_20px_rgba(76,29,149,0.4)]" />
+      <div class="mb-12 flex justify-center md:justify-start">
+         <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-24 md:h-28 w-auto drop-shadow-md animate-floating" />
       </div>
 
-      <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-indigo-400 mb-6 uppercase">A revolução da web</div>
-      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
-        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">segundos.</span>
+      <div class="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-xs font-bold tracking-widest text-blue-600 mb-6 uppercase">A revolução da web</div>
+      
+      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-slate-900">
+        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Zing!</span>
       </h1>
-      <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
+      <p class="text-lg md:text-2xl text-slate-500 font-light leading-relaxed">
         Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
       </p>
     </div>
 
     <div class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
       <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
-        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-white">Teste Grátis</h3>
-        <p class="text-white/50 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
-        <div class="text-4xl font-black mb-1 text-white">R$ 0 <span class="text-sm text-white/40 font-normal">/ 5 dias</span></div>
-        <p class="text-[11px] text-indigo-400 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
-        <ul class="space-y-3 text-white/70 text-sm">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Geração por IA</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Teste Grátis</h3>
+        <p class="text-slate-500 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
+        <div class="text-4xl font-black mb-1 text-blue-600">R$ 0 <span class="text-sm text-slate-400 font-normal">/ 5 dias</span></div>
+        <p class="text-[11px] text-blue-500 font-bold mb-6">Após 5 dias, o site é congelado.</p>
+        <ul class="space-y-3 text-slate-600 text-sm font-medium">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Geração por IA</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
         </ul>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-emerald-500/30 bg-emerald-950/20 shadow-[0_0_30px_rgba(16,185,129,0.15)] transform md:-translate-y-4">
-        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
-        <div class="absolute top-0 right-0 bg-emerald-600 text-white text-[10px] font-black tracking-widest px-4 py-1.5 rounded-bl-2xl uppercase">Mais Vendido</div>
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-emerald-400">Mensal</h3>
-        <p class="text-white/50 mb-6 text-sm">Ideal para validar seu negócio.</p>
-        <div class="text-4xl font-black mb-1 text-white">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-white/40 font-normal">/ mês</span></div>
-        <p class="text-[11px] text-emerald-300/70 font-medium mb-6">Todos os recursos disponíveis em qualquer plano.</p>
-        <ul class="space-y-3 text-white/70 text-sm">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px]">★</span> Site online 24/7</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px]">★</span> Domínio próprio (.com.br)</li>
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Mensal</h3>
+        <p class="text-slate-500 mb-6 text-sm">Ideal para validar seu negócio.</p>
+        <div class="text-4xl font-black mb-1 text-slate-900">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-slate-400 font-normal">/ mês</span></div>
+        <p class="text-[11px] text-slate-500 font-bold mb-6">Cancele quando quiser.</p>
+        <ul class="space-y-3 text-slate-600 text-sm font-medium">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Site online 24/7</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
         </ul>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-500/30 group">
-        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
-        <div class="absolute top-0 right-0 bg-orange-600 text-white text-[10px] font-black tracking-widest px-4 py-1.5 rounded-bl-2xl uppercase">Mais Econômico</div>
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-400">Anual</h3>
-        <p class="text-white/50 mb-6 text-sm">A solução definitiva e econômica.</p>
-        <div class="text-4xl font-black mb-1 text-white">R$ 499 <span class="text-sm text-white/40 font-normal">/ 1º ano</span></div>
-        <p class="text-[11px] text-orange-300/70 font-medium mb-6">Todos os recursos disponíveis em qualquer plano.</p>
-        <ul class="space-y-3 text-white/70 text-sm">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 text-[10px]">✔</span> 2 meses grátis</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 text-[10px]">✔</span> Alta velocidade</li>
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-200 bg-white shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] transform md:-translate-y-4">
+        <div class="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase flex gap-1.5 items-center justify-center shadow-lg">
+          <Star size={12} className="text-white" />
+          <span class="leading-none">Mais Assinado</span>
+        </div>
+
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-500">Anual</h3>
+        <p class="text-slate-500 mb-6 text-sm">A solução definitiva e econômica.</p>
+        <div class="text-4xl font-black mb-1 text-slate-900">R$ 499 <span class="text-sm text-slate-400 font-normal">/ 1º ano</span></div>
+        <p class="text-[11px] text-orange-500 font-bold mb-6">Equivale a R$ 41,58 por mês.</p>
+        <ul class="space-y-3 text-slate-600 text-sm font-medium">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> 2 meses grátis</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Apontamento de Domínio</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Alta velocidade Google</li>
         </ul>
       </div>
     </div>
@@ -172,7 +180,7 @@ const getPreviewHtml = (baseHtml: string | null) => {
       html, body { -ms-overflow-style: none; scrollbar-width: none; }
       ::-webkit-scrollbar { display: none; }
       
-      .custom-editor-toolbar { position: absolute; display: none; background: #18181b; padding: 8px; border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 99999; gap: 8px; align-items: center; font-family: sans-serif; }
+      .custom-editor-toolbar { position: absolute; display: none; background: #18181b; padding: 8px; border-radius: 10px; border: 1px solid #3f3f46; box-shadow: 0 10px 25 rgba(0,0,0,0.8); z-index: 99999; gap: 8px; align-items: center; font-family: sans-serif; }
       .color-picker-group { display: flex; align-items: center; gap: 4px; background: #27272a; padding: 2px 6px 2px 8px; border-radius: 6px; border: 1px solid #3f3f46; }
       .color-picker-label { color: #a1a1aa; font-size: 10px; font-weight: bold; }
       .custom-editor-toolbar input[type="color"] { width: 22px; height: 22px; border: none; cursor: pointer; background: transparent; padding: 0; }
@@ -404,7 +412,7 @@ const App: React.FC = () => {
   // Hook customizado para lidar com a edição no iframe
   useIframeEditor({ setGeneratedHtml, setHasUnsavedChanges });
 
-  // Efeito para injetar o Favicon dinâmico
+  // Efeito para injetar o Favicon dinâmico e Título
   useEffect(() => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -413,7 +421,7 @@ const App: React.FC = () => {
       document.getElementsByTagName('head')[0].appendChild(link);
     }
     link.href = BRAND_LOGO;
-    document.title = "SiteZing.com.br - Criação Inteligente";
+    document.title = "SiteZing - Seu site pronto em um ZING !!!";
   }, []);
 
   // Re-renderizar o template quando dados do formulário mudam (e já existe conteúdo da IA)
@@ -482,7 +490,7 @@ const App: React.FC = () => {
     replaceAll('{{COLOR_DARK}}', colors.dark);
     
     // Contatos e Localização
-    replaceAll('{{ADDRESS}}', data.region ? `${data.address || 'Endereço não informado'} - ${data.region}` : (data.address || 'Endereço not informado'));
+    replaceAll('{{ADDRESS}}', data.region ? `${data.address || 'Endereço não informado'} - ${data.region}` : (data.address || 'Endereço não informado'));
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
 
@@ -564,11 +572,11 @@ const App: React.FC = () => {
     }
 
     // Injetar marca d'água no rodapé do site gerado
-    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing.com.br</a></div>`;
+    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing</a></div>`;
     html = html.replace('</body>', `${footerBrand}</body>`);
 
     // Injetar Mapa e Formulário se ativados
-    const mapUrl = data.address ? `https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&output=embed` : '';
+    const mapUrl = data.address ? `https://https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&output=embed` : '';
     const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
     
@@ -811,6 +819,7 @@ const App: React.FC = () => {
     setIsLoginOpen(false);
   };
 
+  // Funções utilitárias de Badges e Títulos
   const getStatusBadge = (project: any) => {
     if (!project) return null;
     if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">CONGELADO</span>;
@@ -835,14 +844,13 @@ const App: React.FC = () => {
       <style>{`
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .animate-blink { animation: blink 1s infinite; }
       `}</style>
 
-      <div className="w-full h-screen bg-[#050505] overflow-hidden font-sans text-white flex flex-col md:flex-row">
+      {/* 👇 NOVO TEMA CLARO SITEZING 👇 */}
+      <div className="w-full h-screen bg-[#FFFFFF] overflow-hidden font-sans text-slate-900 flex">
         
-        {/* Área Principal (Iframe Preview) */}
-        <div className="flex-1 relative h-full overflow-hidden bg-[#050505]">
+        {/* Área Principal (Preview do Site) */}
+        <div className="flex-1 relative h-full overflow-hidden bg-[#FFFFFF]">
           <iframe 
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : PROMO_HTML} 
             className="w-full h-full border-none bg-transparent" 
@@ -852,16 +860,31 @@ const App: React.FC = () => {
           <AnimatePresence>
             {!isMenuOpen && (
               <>
-                {/* Seta Piscando para Guia de Criação */}
-                <div className="absolute bottom-28 right-6 z-[90] flex items-center gap-2 text-sm font-bold text-emerald-400">
-                  <span>Crie seu Site</span>
-                  <span className="animate-blink text-lg">➡</span>
+                {/* 👇 UX: SETA PULSANTE (RADAR PULSE) PARA ENGRENAGEM 👇 */}
+                <div className="absolute bottom-24 right-6 z-[90] flex items-center gap-4 text-emerald-600">
+                  <motion.div 
+                    initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                    className="relative flex items-center justify-center"
+                  >
+                    {/* Animação do Pulso (Radar) */}
+                    <motion.div
+                      animate={{ scale: [1, 2], opacity: [0.6, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                      className="absolute w-12 h-12 bg-emerald-400 rounded-full"
+                    />
+                    {/* Ícone e Texto Fixo */}
+                    <div className="relative flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 shadow-sm">
+                      <Settings size={14} className="animate-spin-slow" />
+                      <span className="text-sm font-bold uppercase tracking-wider">Crie seu Site</span>
+                    </div>
+                  </motion.div>
                 </div>
-                {/* Botão para reabrir o menu */}
+                
+                {/* Botão flutuante para reabrir o menu */}
                 <motion.div 
                   initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                   onClick={() => setIsMenuOpen(true)} 
-                  className="absolute bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
+                  className="absolute bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
                 >
                   <Settings className="text-white" size={26} />
                 </motion.div>
@@ -881,69 +904,69 @@ const App: React.FC = () => {
             <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-zinc-900 border border-zinc-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6"
+                className="bg-white border border-slate-200 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6"
               >
-                <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-200">
                   <CheckCircle size={40} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Site Publicado com Sucesso!</h2>
-                  <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br / DNS, pode demorar algumas horas para propagar.</p>
+                  <h2 className="text-2xl font-bold text-slate-950 mb-2">Site Publicado com Sucesso!</h2>
+                  <p className="text-slate-500 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br / DNS, pode demorar algumas horas para propagar.</p>
                 </div>
-                <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
-                  <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+                <div className="bg-slate-100 p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3 overflow-hidden">
+                  <code className="text-blue-600 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"><Copy size={18} /> Copiar Link</button>
-                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"><ExternalLink size={18} /> Abrir Site</button>
+                  <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-slate-300"><Copy size={18} /> Copiar Link</button>
+                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-500/20"><ExternalLink size={18} /> Abrir Site</button>
                 </div>
-                <button onClick={() => setPublishModalUrl(null)} className="text-zinc-500 hover:text-zinc-300 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
+                <button onClick={() => setPublishModalUrl(null)} className="text-slate-500 hover:text-slate-800 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
               </motion.div>
             </div>
           )}
         </AnimatePresence>
 
-        {/* Menu Lateral de Configurações (Painel de Controle) */}
+        {/* Painel de Controle (Sidebar) Clarinha com Glassmorphism */}
         <AnimatePresence initial={false}>
           {isMenuOpen && (
             <motion.div 
               initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
-              animate={{ width: window.innerWidth < 768 ? '100%' : 420, paddingLeft: 16, paddingRight: 16 }} 
+              animate={{ width: 420, paddingLeft: 16, paddingRight: 24 }} 
               exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-              className="flex-shrink-0 h-full flex flex-col justify-center overflow-hidden relative z-50 bg-[#050505] w-full md:w-[420px]"
+              className="flex-shrink-0 h-screen flex flex-col justify-center overflow-hidden relative z-50 bg-[#FFFFFF]"
             >
               <motion.div 
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: 20, opacity: 0 }}
                 transition={{ delay: 0.1 }}
-                className="w-full h-[95vh] bg-[#0c0c0e] border border-zinc-800 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative"
+                className="w-full h-[95vh] bg-[#F8FAFC] border border-slate-200 rounded-[2rem] shadow-lg flex flex-col overflow-hidden relative glass-container-light"
               >
                 
                 {/* Cabeçalho do Menu */}
-                <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-800/50 flex-shrink-0">
+                <div className="flex justify-between items-center px-6 py-5 border-b border-slate-200 flex-shrink-0">
                   <div className="flex items-center gap-3 select-none">
-                    <img src={BRAND_LOGO} alt="SiteZing" className="h-8 w-auto object-contain drop-shadow-[0_0_10px_rgba(76,29,149,0.3)]" />
+                    <img src={BRAND_LOGO} alt="SiteZing" className="h-8 w-auto object-contain drop-shadow-sm" />
                   </div>
                   <div className="flex items-center gap-4">
                     {loggedUserEmail ? (
-                      <button className="text-zinc-400 hover:text-emerald-400 transition-colors" title={`Logado como: ${loggedUserEmail}`}>
+                      <button className="text-slate-400 hover:text-emerald-600 transition-colors" title={`Logado como: ${loggedUserEmail}`}>
                         <User size={18} />
                       </button>
                     ) : (
-                      <button onClick={() => setIsLoginOpen(true)} className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                      <button onClick={() => setIsLoginOpen(true)} className="text-xs font-bold text-emerald-600 hover:text-emerald-500 transition-colors flex items-center gap-1.5">
                         <LogIn size={16} /> Login
                       </button>
                     )}
-                    <div className="w-px h-4 bg-zinc-800"></div>
-                    <button onClick={() => setIsMenuOpen(false)} className="text-zinc-500 hover:text-white transition-colors" title="Esconder Painel">
+                    <div className="w-px h-4 bg-slate-200"></div>
+                    <button onClick={() => setIsMenuOpen(false)} className="text-slate-500 hover:text-slate-900 transition-colors" title="Esconder Painel">
                       <X size={18} />
                     </button>
                   </div>
                 </div>
 
-                {/* Abas de Navegação (se site gerado) */}
+                {/* Abas de Navegação */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   let daysLeft = 0; let isPaid = false;
@@ -955,12 +978,12 @@ const App: React.FC = () => {
                   }
 
                   return (
-                    <div className="flex border-b border-zinc-800/50 text-[11px] font-bold uppercase tracking-wider flex-shrink-0">
-                      <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                    <div className="flex border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider flex-shrink-0 bg-white">
+                      <button onClick={() => setActiveTab('geral')} className={`flex-1 py-3.5 text-center transition-colors ${activeTab === 'geral' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
                         Visual & Dados
                       </button>
                       
-                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
                         Domínio
                         {(!officialDomain || officialDomain === 'Pendente' || registerLater) && (
                           <span className="absolute top-3 right-4 flex h-2 w-2" title="Domínio não configurado">
@@ -971,7 +994,7 @@ const App: React.FC = () => {
                       </button>
 
                       {currentProjectSlug && (
-                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
                           Pagamento
                           {!isPaid && (
                             <span className="absolute top-3 right-2 flex h-2 w-2" title={daysLeft > 0 ? "Período de Teste" : "Vencido"}>
@@ -985,18 +1008,18 @@ const App: React.FC = () => {
                   );
                 })()}
 
-                {/* Conteúdo do Menu (com scroll) */}
-                <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6">
+                {/* Conteúdo do Menu */}
+                <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-6 bg-white">
                   {activeTab === 'geral' && (
                     <>
                       {currentProjectSlug && (
-                        <div className="group relative flex items-center justify-between bg-zinc-900 p-3.5 rounded-xl border border-zinc-800/80 -mt-2">
+                        <div className="group relative flex items-center justify-between bg-slate-50 p-3.5 rounded-xl border border-slate-200 -mt-2">
                           <div className="flex items-center gap-2 cursor-help">
-                            <Info size={14} className="text-zinc-500" />
-                            <span className="text-xs text-zinc-300 font-bold uppercase tracking-wider">Status do Site</span>
+                            <Info size={14} className="text-slate-400" />
+                            <span className="text-xs text-slate-600 font-bold uppercase tracking-wider">Status do Site</span>
                           </div>
                           {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
-                          <div className="absolute hidden group-hover:block top-full left-0 mt-2 w-full bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs p-3.5 rounded-xl shadow-xl z-50 text-center leading-relaxed">
+                          <div className="absolute hidden group-hover:block top-full left-0 mt-2 w-full bg-white border border-slate-200 text-slate-700 text-xs p-3.5 rounded-xl shadow-lg z-50 text-center leading-relaxed">
                             Esta informação mostra se o seu site está no período de teste, ativo ou vencido. Projetos vencidos ficam invisíveis para o público.
                           </div>
                         </div>
@@ -1004,37 +1027,37 @@ const App: React.FC = () => {
 
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
-                          <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
+                          <input className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} />
                         </div>
                         <div>
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><MapPin size={12} /> Região de atuação</label>
-                          <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Zona Sul de São Paulo - SP" value={formData.region} onChange={e => {setFormData({ ...formData, region: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><MapPin size={12} /> Região de atuação</label>
+                          <input className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm focus:border-emerald-500 outline-none transition-colors" placeholder="Ex: Zona Sul de São Paulo - SP" value={formData.region} onChange={e => {setFormData({ ...formData, region: e.target.value }); setHasUnsavedChanges(true)}} />
                         </div>
                         <div>
-                          <label className="text-xs font-bold text-zinc-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label>
-                          <textarea className="w-full h-20 bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 text-sm resize-none focus:border-emerald-500 outline-none transition-colors" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <label className="text-xs font-bold text-slate-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label>
+                          <textarea className="w-full h-20 bg-white border border-slate-200 rounded-xl p-3.5 text-sm resize-none focus:border-emerald-500 outline-none transition-colors" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} />
                         </div>
                       </div>
 
-                      <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-zinc-700 transition-colors shadow-sm">
+                      <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-700 transition-colors shadow-sm">
                         {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                       </button>
 
                       {generatedHtml && (
-                        <div className="pt-6 border-t border-zinc-800/50 space-y-6">
+                        <div className="pt-6 border-t border-slate-200 space-y-6">
                           {/* Configurações de Estilo e Cor */}
                           <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-zinc-500 uppercase">Estilo do Site</label>
-                            <select className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
+                            <label className="text-xs font-bold text-slate-500 uppercase">Estilo do Site</label>
+                            <select className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>
                               {LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                             </select>
                           </div>
                           <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-zinc-500 uppercase">Temas (Cores)</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase">Temas (Cores)</label>
                             <div className="grid grid-cols-5 gap-3">
                               {COLORS.map(c => (
-                                <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-zinc-400 scale-110' : 'opacity-50 hover:opacity-100'} ring-offset-[#0c0c0e]`} title={c.name}>
+                                <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-10 h-10 rounded-full transition-all relative overflow-hidden ${formData.colorId === c.id ? 'ring-2 ring-offset-2 ring-emerald-400 scale-110' : 'opacity-60 hover:opacity-100'} ring-offset-white`} title={c.name}>
                                   <div className="absolute inset-0" style={{ backgroundColor: c.c1 }} />
                                   <div className="absolute bottom-0 right-0 w-4 h-4 rounded-tl-full" style={{ backgroundColor: c.c4 }} />
                                 </button>
@@ -1044,60 +1067,60 @@ const App: React.FC = () => {
 
                           {/* Upload de Logo */}
                           <div className="space-y-2.5">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex justify-between items-center">
+                            <label className="text-xs font-bold text-slate-500 uppercase flex justify-between items-center">
                               <span>Sua Logomarca (Favicon)</span>
-                              {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-400 hover:text-red-300 text-[10px] font-bold">X Remover</button>}
+                              {formData.logoBase64 && <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '' })); setHasUnsavedChanges(true); }} className="text-red-600 hover:text-red-500 text-[10px] font-bold">X Remover</button>}
                             </label>
                             
                             {!formData.logoBase64 ? (
                               <div className="space-y-2">
-                                <label className="cursor-pointer w-full border border-dashed border-zinc-700 hover:border-emerald-500 rounded-xl p-4 flex justify-center items-center gap-2 text-xs text-zinc-400 hover:text-emerald-400 transition-colors bg-zinc-900/50">
+                                <label className="cursor-pointer w-full border border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-4 flex justify-center items-center gap-2 text-xs text-slate-500 hover:text-emerald-600 transition-colors bg-slate-50">
                                   <Upload size={14} /> Fazer Upload da Marca
                                   <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                                 </label>
-                                <p className="text-[10px] text-zinc-500 text-center">
-                                  Não tem um logo? <a href="https://www.canva.com/pt_br/criar/logotipo/" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">Crie de graça no Canva</a>
+                                <p className="text-[10px] text-slate-400 text-center">
+                                  Não tem um logo? <a href="https://www.canva.com/pt_br/criar/logotipo/" target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">Crie de graça no Canva</a>
                                 </p>
                               </div>
                             ) : (
-                              <div className="h-14 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center overflow-hidden p-2">
+                              <div className="h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center overflow-hidden p-2">
                                 <img src={formData.logoBase64} className="h-full object-contain" alt="Logo" />
                               </div>
                             )}
                           </div>
 
                           {/* Redes Sociais */}
-                          <div className="space-y-3 pt-5 border-t border-zinc-800/50">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="LinkedIn (Link)" value={formData.linkedin} onChange={e => {setFormData({ ...formData, linkedin: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <div className="space-y-3 pt-5 border-t border-slate-200">
+                            <label className="text-xs font-bold text-slate-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais</label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="LinkedIn (Link)" value={formData.linkedin} onChange={e => {setFormData({ ...formData, linkedin: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="TikTok (Link)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
                           </div>
 
                           {/* Contato e Localização */}
-                          <div className="space-y-3 pt-5 border-t border-zinc-800/50">
-                            <label className="text-xs font-bold text-zinc-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                          <div className="space-y-3 pt-5 border-t border-slate-200">
+                            <label className="text-xs font-bold text-slate-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
                             </div>
-                            <input className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
+                            <input className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:border-emerald-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
                             
-                            <label className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300">
+                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
                               <span>Exibir Mapa do Google no site</span>
                               <input type="checkbox" checked={formData.showMap} onChange={e => {setFormData({ ...formData, showMap: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
                             </label>
 
-                            <label className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300">
+                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
                               <span>Exibir botão Contato flutuante na tela</span>
                               <input type="checkbox" checked={formData.showFloatingContact} onChange={e => {setFormData({ ...formData, showFloatingContact: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
                             </label>
 
-                            <label className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300">
+                            <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
                               <span>Exibir formulário de contato no site</span>
                               <input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
                             </label>
@@ -1107,35 +1130,34 @@ const App: React.FC = () => {
                     </>
                   )}
 
-                  {/* Aba de Domínio (Verificar e Exibir Apontamento) */}
                   {activeTab === 'dominio' && generatedHtml && (
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                       {!currentProjectSlug ? (
-                        <div className="bg-blue-500/10 p-5 rounded-2xl border border-blue-500/30">
-                          <h4 className="text-sm font-bold text-blue-300 flex items-center gap-2"><Globe size={16}/> Qual será o endereço?</h4>
-                          <p className="text-xs text-blue-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Ex: Registro.br).</p>
+                        <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100">
+                          <h4 className="text-sm font-bold text-blue-700 flex items-center gap-2"><Globe size={16}/> Qual será o endereço?</h4>
+                          <p className="text-xs text-blue-600/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Ex: Registro.br).</p>
                           <Suspense fallback={null}>
                             <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
                           </Suspense>
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 shadow-xl">
+                          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3 mb-5">
-                              <div className="bg-blue-500/20 p-2.5 rounded-xl"><Globe className="text-blue-400 w-5 h-5" /></div>
+                              <div className="bg-blue-100 p-2.5 rounded-xl"><Globe className="text-blue-600 w-5 h-5" /></div>
                               <div>
-                                <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
-                                <p className="text-[10px] text-zinc-400">Configure no seu provedor de domínio</p>
+                                <h3 className="font-bold text-slate-950 text-sm">Apontamento DNS</h3>
+                                <p className="text-[10px] text-slate-500">Configure no seu provedor de domínio</p>
                               </div>
                             </div>
-                            <div className="bg-[#050505] p-4 rounded-xl border border-zinc-800/50 space-y-4">
+                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
                               <div>
-                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO A</span></div>
-                                <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><code className="text-emerald-400 text-xs font-bold select-all">199.36.158.100</code></div>
+                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">TIPO A</span></div>
+                                <div className="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center"><code className="text-emerald-600 text-xs font-bold select-all">199.36.158.100</code></div>
                               </div>
                               <div>
-                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
-                                <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-blue-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
+                                <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">TIPO TXT</span></div>
+                                <div className="bg-white p-3 rounded-xl border border-slate-200"><code className="text-blue-700 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
                               </div>
                             </div>
                           </div>
@@ -1144,22 +1166,21 @@ const App: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Aba de Assinatura (Planos e Gestão) */}
                   {activeTab === 'assinatura' && currentProjectSlug && (
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                       
-                      <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+                      <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 blur-[50px] rounded-full pointer-events-none"></div>
                         
-                        <h3 className="text-lg font-black text-white mb-1 flex items-center gap-2"><CreditCard size={18} className="text-orange-400" /> Painel de Assinatura</h3>
-                        <p className="text-xs text-zinc-400 mb-6">Gerencie o plano do seu projeto <span className="text-orange-400 font-mono">{currentProjectSlug}</span></p>
+                        <h3 className="text-lg font-black text-slate-950 mb-1 flex items-center gap-2"><CreditCard size={18} className="text-orange-500" /> Painel de Assinatura</h3>
+                        <p className="text-xs text-slate-500 mb-6">Gerencie o plano do seu projeto <span className="text-orange-500 font-mono">{currentProjectSlug}</span></p>
 
-                        <div className="bg-[#050505] p-5 rounded-xl border border-zinc-800/50 mb-6">
+                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 mb-6">
                           <div className="flex justify-between items-center mb-3">
-                            <span className="text-xs font-bold text-zinc-500 uppercase">Status Atual</span>
+                            <span className="text-xs font-bold text-slate-500 uppercase">Status Atual</span>
                             {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
                           </div>
-                          <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                             <div className="bg-orange-400 h-full rounded-full" style={{ width: '100%' }}></div>
                           </div>
                         </div>
@@ -1168,95 +1189,95 @@ const App: React.FC = () => {
                         {(!savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus || savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid') ? (
                           <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {/* Plano Mensal */}
-                              <div className="bg-emerald-950/20 p-5 rounded-xl border border-emerald-500/30 hover:border-emerald-500/50 transition-colors flex flex-col h-full relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vendido</div>
-                                <h4 className="text-emerald-300 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
+                              {/* Plano Mensal Clarinho */}
+                              <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 hover:border-blue-300 transition-colors flex flex-col h-full relative overflow-hidden">
+                                <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vendido</div>
+                                <h4 className="text-blue-700 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
                                 <div className="flex items-end gap-1 mb-4">
-                                  <span className="text-3xl font-black text-white">R$ 49,99</span>
-                                  <span className="text-xs text-zinc-500 font-medium pb-1">/mês</span>
+                                  <span className="text-3xl font-black text-slate-950">R$ 49,99</span>
+                                  <span className="text-xs text-slate-500 font-medium pb-1">/mês</span>
                                 </div>
-                                <ul className="space-y-2 text-xs text-zinc-400 mb-6 flex-1">
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Domínio próprio liberado</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Site blindado no Google</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5"/> Suporte prioritário</li>
+                                <ul className="space-y-2 text-xs text-slate-600 mb-6 flex-1">
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Domínio próprio</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Site blindado no Google</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Suporte prioritário</li>
                                 </ul>
                                 <button 
                                   onClick={() => handleStripeCheckout(currentProjectSlug, 'mensal')}
                                   disabled={checkoutLoading === currentProjectSlug}
-                                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors"
+                                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors"
                                 >
                                   {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Mensal'}
                                 </button>
                               </div>
 
-                              {/* Plano Anual */}
-                              <div className="bg-gradient-to-br from-orange-500/10 to-orange-900/10 p-5 rounded-xl border border-orange-500/30 shadow-lg relative flex flex-col h-full">
-                                <div className="absolute top-0 right-0 bg-orange-500 text-orange-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Econômico</div>
-                                <h4 className="text-orange-400 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
+                              {/* Plano Anual Clarinho */}
+                              <div className="bg-white p-5 rounded-xl border border-orange-200 group-hover:border-orange-300 transition-colors flex flex-col h-full relative overflow-hidden shadow-sm">
+                                <div className="absolute top-0 right-0 bg-orange-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Econômico</div>
+                                <h4 className="text-orange-600 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
                                 <div className="flex items-end gap-1 mb-4">
-                                  <span className="text-3xl font-black text-orange-400">R$ 499</span>
-                                  <span className="text-xs text-orange-600/60 font-medium pb-1">/ano</span>
+                                  <span className="text-3xl font-black text-slate-950">R$ 499</span>
+                                  <span className="text-xs text-slate-500 font-medium pb-1">/ano</span>
                                 </div>
-                                <ul className="space-y-2 text-xs text-orange-200/60 mb-6 flex-1">
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> Domínio premium configurado</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> Gerente de conta dedicado</li>
+                                <ul className="space-y-2 text-xs text-slate-600 mb-6 flex-1">
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> 2 meses grátis</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Domínio premium</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5"/> Gerente dedicado</li>
                                 </ul>
                                 <button 
                                   onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
                                   disabled={checkoutLoading === currentProjectSlug}
-                                  className="w-full bg-orange-500 hover:bg-orange-400 text-zinc-900 py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20"
+                                  className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20"
                                 >
                                   {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Anual'}
                                 </button>
                               </div>
                             </div>
                             
-                            <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-[10px] text-zinc-500 leading-relaxed font-mono">
-                              <strong className="text-zinc-400 block mb-1">TERMOS DE RENOVAÇÃO E CICLO DE VIDA:</strong>
-                              O site conta com um <span className="text-orange-400 font-bold">período gratuito de 30 dias iniciais</span>. Vencido qualquer plano ou o período gratuito, o site será suspenso ("congelado") após 5 dias de atraso. O sistema exclui permanentemente todos os dados e o site do ar se não houver regularização no prazo de 60 dias após o vencimento, cancelando automaticamente associações na operadora de cartão. 
+                            <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 text-[10px] text-slate-500 leading-relaxed font-mono">
+                              <strong className="text-slate-700 block mb-1">TERMOS DE RENOVAÇÃO E CICLO DE VIDA:</strong>
+                              O site conta com um <span className="text-orange-600 font-bold">período gratuito de 30 dias iniciais</span>. Vencido qualquer plano ou o período gratuito, o site será suspenso ("congelado") após 5 dias de atraso. O sistema exclui permanentemente todos os dados e o site do ar se não houver regularização no prazo de 60 dias após o vencimento, cancelando automaticamente associações na operadora de cartão. 
                             </div>
-                            <p className="text-[9px] text-center text-zinc-600 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamentos 100% seguros operados globalmente pela Stripe.</p>
+                            <p className="text-[9px] text-center text-slate-500 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamentos 100% seguros operados globalmente pela Stripe.</p>
                           </div>
                         ) : (
                           // Exibir gestão se já pago
-                          <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-xl text-center space-y-4 shadow-lg relative overflow-hidden">
-                            <div className="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                          <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4 shadow-sm relative overflow-hidden">
+                            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                               <Star size={28} />
                             </div>
-                            <h4 className="font-black text-emerald-400 text-lg uppercase tracking-wider">
+                            <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">
                               Plano {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'anual' ? 'Anual' : 'Mensal'} Ativo
                             </h4>
-                            <p className="text-xs text-emerald-200/70 leading-relaxed max-w-sm mx-auto">
+                            <p className="text-xs text-emerald-600/70 leading-relaxed max-w-sm mx-auto">
                               Seu site está operando com potência máxima e todos os recursos premium estão liberados.
                             </p>
                             
                             {savedProjects.find(p => p.id === currentProjectSlug)?.cancelAtPeriodEnd ? (
-                              <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl text-left flex gap-3 items-start">
-                                <AlertCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                              <div className="mt-4 bg-yellow-50 border border-yellow-100 p-4 rounded-xl text-left flex gap-3 items-start">
+                                <AlertCircle size={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
                                 <div>
-                                  <h5 className="text-yellow-500 font-bold text-xs mb-1 uppercase tracking-wide">Assinatura Cancelada</h5>
-                                  <p className="text-[10px] text-yellow-200/70 leading-relaxed">
+                                  <h5 className="text-yellow-700 font-bold text-xs mb-1 uppercase tracking-wide">Assinatura Cancelada</h5>
+                                  <p className="text-[10px] text-yellow-600/70 leading-relaxed">
                                     Não haverá novas cobranças. O seu site continuará 100% ativo até o fim do período que já foi pago. Após o vencimento, ele será suspenso automaticamente.
                                   </p>
                                 </div>
                               </div>
                             ) : (
-                              // Botão de upgrade/downgrade ou cancelamento
+                              // Botão de upgrade ou cancelamento
                               <>
                                 {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'mensal' ? (
-                                  <div className="pt-4 mt-2 border-t border-emerald-500/20 text-left">
-                                    <div className="bg-gradient-to-r from-amber-500/10 to-amber-900/10 border border-amber-500/30 p-5 rounded-xl relative shadow-lg">
-                                      <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
-                                      <h5 className="text-amber-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
-                                      <p className="text-[10px] text-amber-200/70 mb-4 leading-relaxed">
+                                  <div className="pt-4 mt-2 border-t border-emerald-100 text-left">
+                                    <div className="bg-white border border-orange-200 p-5 rounded-xl relative shadow-sm">
+                                      <div className="absolute top-0 right-0 bg-orange-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Upgrade Exclusivo</div>
+                                      <h5 className="text-orange-600 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
+                                      <p className="text-[10px] text-slate-500 mb-4 leading-relaxed">
                                         Faça o upgrade agora por R$ 499,00. Seu plano atual será substituído imediatamente e você iniciará um novo ciclo ininterrupto de 12 meses.
                                       </p>
                                       <button 
                                         onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
                                         disabled={checkoutLoading === currentProjectSlug}
-                                        className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-amber-500/20 flex justify-center items-center gap-2"
+                                        className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-orange-500/20 flex justify-center items-center gap-2"
                                       >
                                         {checkoutLoading === currentProjectSlug ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
                                         Fazer Upgrade e Pagar R$ 499
@@ -1267,19 +1288,20 @@ const App: React.FC = () => {
                                       <button 
                                         onClick={() => handleCancelSubscription(currentProjectSlug)}
                                         disabled={isCanceling === currentProjectSlug}
-                                        className="text-[10px] font-bold text-red-500/60 hover:text-red-400 transition-colors uppercase tracking-widest"
+                                        className="text-[10px] font-bold text-red-600/60 hover:text-red-500 transition-colors uppercase tracking-widest"
                                       >
                                         {isCanceling === currentProjectSlug ? 'Processando...' : 'Cancelar Assinatura Mensal'}
                                       </button>
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="pt-4 mt-2 border-t border-emerald-500/20">
-                                    <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl text-left flex gap-3 items-start">
-                                      <Info size={18} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+                                  // Informação do Plano Anual
+                                  <div className="pt-4 mt-2 border-t border-emerald-100">
+                                    <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl text-left flex gap-3 items-start">
+                                      <Info size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
                                       <div>
-                                        <h5 className="text-zinc-300 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
-                                        <p className="text-[10px] text-zinc-500 leading-relaxed">
+                                        <h5 className="text-slate-800 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
+                                        <p className="text-[10px] text-slate-500 leading-relaxed">
                                           Você está no plano Anual. A alteração para o plano mensal (downgrade) só estará disponível nesta tela após a expiração do seu ciclo atual de 12 meses.
                                         </p>
                                       </div>
@@ -1297,29 +1319,29 @@ const App: React.FC = () => {
                   
                   {/* Seção de Projetos Salvos (Lista) */}
                   {loggedUserEmail && (
-                    <div className="mt-8 border-t border-zinc-800/50 pt-6 space-y-4">
+                    <div className="mt-8 border-t border-slate-200 pt-6 space-y-4">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-500"/>Meus Projetos</p>
-                        <button onClick={handleLogout} className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase bg-red-500/10 px-2.5 py-1 rounded-lg">Sair</button>
+                        <p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-600"/>Meus Projetos</p>
+                        <button onClick={handleLogout} className="text-[10px] font-bold text-red-600 hover:text-red-500 transition-colors uppercase bg-red-50 px-2.5 py-1 rounded-lg">Sair</button>
                       </div>
                       
                       <div className="max-h-52 overflow-y-auto space-y-2">
                         {savedProjects.length === 0 ? (
-                          <p className="text-xs text-zinc-500 italic bg-zinc-900/50 p-4 rounded-xl text-center border border-zinc-800/50">Nenhum projeto ainda.</p>
+                          <p className="text-xs text-slate-500 italic bg-slate-50 p-4 rounded-xl text-center border border-slate-100">Nenhum projeto ainda.</p>
                         ) : (
                           savedProjects.map((p: any) => (
-                            <div key={p.id} className="flex flex-col gap-1.5 bg-zinc-900 border border-zinc-800 rounded-xl p-2.5">
+                            <div key={p.id} className="flex flex-col gap-1.5 bg-white border border-slate-100 rounded-xl p-2.5 shadow-sm">
                               <div className="flex items-stretch gap-2 group">
-                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-zinc-800/50 hover:bg-zinc-800 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-500/50' : ''}`}>
+                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-slate-50 hover:bg-slate-100 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-emerald-300' : ''}`}>
                                   <div className="flex flex-col truncate pr-2">
-                                    <span className="font-bold text-zinc-100 truncate flex items-center gap-2">
+                                    <span className="font-bold text-slate-900 truncate flex items-center gap-2">
                                       {p.businessName || 'Sem Nome'} 
                                       {getStatusBadge(p)}
                                     </span>
-                                    <span className="text-[9px] text-zinc-500 font-mono mt-1">{p.id}.web.app</span>
+                                    <span className="text-[9px] text-slate-400 font-mono mt-1">{p.id}.web.app</span>
                                   </div>
                                 </button>
-                                <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-zinc-800/50 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
+                                <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-slate-50 hover:bg-red-100 hover:text-red-600 text-slate-400 rounded-lg flex items-center justify-center transition-all flex-shrink-0" title="Apagar Site"><Trash2 size={14} /></button>
                               </div>
                             </div>
                           ))
@@ -1329,20 +1351,21 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* Rodapé do Menu (Botões de Ação Principais) */}
+                {/* Rodapé do Menu (Botões de Ação) */}
                 {generatedHtml && (
-                  <div className="p-4 border-t border-zinc-800/50 bg-[#0c0c0e] flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+                  <div className="p-4 border-t border-slate-200 bg-[#FFFFFF] flex items-center gap-3 flex-shrink-0">
                     <button 
                       onClick={handleSaveOrUpdateSite} disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
-                      className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${hasUnsavedChanges || !currentProjectSlug ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
                     >
                       {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />}
                       {currentProjectSlug ? 'Atualizar' : 'Salvar Projeto'}
                     </button>
 
                     <button 
+ 
                       onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                      className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
                     >
                       {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={14} />} 
                       Publicar Site
