@@ -13,6 +13,7 @@ import { useIframeEditor } from './components/useIframeEditor';
 
 // 👇 PUXANDO A IMAGEM DO ARQUIVO EXTERNO 👇
 import { BRAND_LOGO } from './components/brand';
+
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
   { id: 'layout_modern_split', label: 'Split Dinâmico', desc: 'Metades divididas com entradas laterais' },
@@ -48,70 +49,79 @@ const PROMO_HTML = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SiteCraft - Criação Inteligente</title>
+  <title>SiteZing - Criação Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #050505; color: #ffffff; font-family: sans-serif; overflow-x: hidden; }
+    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #F8FAFC; color: #1E293B; font-family: sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { display: none; }
-    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.3s ease; }
-    .glass-card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.1); }
+    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
+    .glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
   </style>
 </head>
-<body class="antialiased selection:bg-indigo-500 selection:text-white">
+<body class="antialiased selection:bg-blue-500 selection:text-white">
   <main class="pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
-    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/10 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400/10 blur-[150px] rounded-full pointer-events-none"></div>
 
     <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
       
       <div class="mb-8 flex justify-center md:justify-start">
-         <img src="${BRAND_LOGO}" alt="SiteCraft Logo" class="h-20 w-auto drop-shadow-[0_0_20px_rgba(76,29,149,0.4)]" />
+         <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-16 md:h-20 w-auto drop-shadow-md" />
       </div>
 
-      <div class="inline-block px-4 py-1.5 rounded-full glass-card text-xs font-bold tracking-widest text-indigo-400 mb-6 uppercase">O futuro da web</div>
-      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic">
-        Sua presença digital em <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">segundos.</span>
+      <div class="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-xs font-bold tracking-widest text-blue-600 mb-6 uppercase">A revolução da web</div>
+      
+      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-slate-900">
+        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Zing!</span>
       </h1>
-      <p class="text-lg md:text-2xl text-white/60 font-light leading-relaxed">
+      <p class="text-lg md:text-2xl text-slate-500 font-light leading-relaxed">
         Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
       </p>
     </div>
 
     <div class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
       <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-white">Teste Grátis</h3>
-        <p class="text-white/50 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
-        <div class="text-4xl font-black mb-1">R$ 0 <span class="text-sm text-white/40 font-normal">/ 5 dias</span></div>
-        <p class="text-[11px] text-blue-400 font-bold mb-6">Após 5 dias, o site é congelado.</p>
-        <ul class="space-y-3 text-white/70 text-sm">
-          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Geração por IA</li>
-          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Teste Grátis</h3>
+        <p class="text-slate-500 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
+        <div class="text-4xl font-black mb-1 text-blue-600">R$ 0 <span class="text-sm text-slate-400 font-normal">/ 5 dias</span></div>
+        <p class="text-[11px] text-blue-500 font-bold mb-6">Após 5 dias, o site é congelado.</p>
+        <ul class="space-y-3 text-slate-600 text-sm font-medium">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Geração por IA</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
         </ul>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group border-zinc-500/30">
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-zinc-300">Mensal</h3>
-        <p class="text-white/50 mb-6 text-sm">Ideal para validar seu negócio.</p>
-        <div class="text-4xl font-black mb-1">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-white/40 font-normal">/ mês</span></div>
-        <p class="text-[11px] text-zinc-400 font-bold mb-6">Cancele quando quiser.</p>
-        <ul class="space-y-3 text-white/70 text-sm">
-          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-zinc-500/20 flex items-center justify-center text-zinc-300 text-[10px]">✔</span> Site online 24/7</li>
-          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-zinc-500/20 flex items-center justify-center text-zinc-300 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group">
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-slate-800">Mensal</h3>
+        <p class="text-slate-500 mb-6 text-sm">Ideal para validar seu negócio.</p>
+        <div class="text-4xl font-black mb-1 text-slate-900">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-slate-400 font-normal">/ mês</span></div>
+        <p class="text-[11px] text-slate-500 font-bold mb-6">Cancele quando quiser.</p>
+        <ul class="space-y-3 text-slate-600 text-sm font-medium">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Site online 24/7</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
         </ul>
       </div>
 
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-indigo-500/30 bg-indigo-950/20 shadow-[0_0_30px_rgba(99,102,241,0.15)] transform md:-translate-y-4">
-        <div class="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-black tracking-widest px-4 py-1.5 rounded-bl-2xl uppercase">Mais Assinado</div>
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-indigo-400">Anual</h3>
-        <p class="text-white/50 mb-6 text-sm">A solução definitiva e econômica.</p>
-        <div class="text-4xl font-black mb-1">R$ 499 <span class="text-sm text-white/40 font-normal">/ 1º ano</span></div>
-        <p class="text-[11px] text-indigo-300/70 font-medium mb-6">Equivale a R$ 41,58 por mês.</p>
-        <ul class="space-y-3 text-white/70 text-sm">
-          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px]">★</span> 2 meses grátis</li>
-          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px]">★</span> Apontamento de Domínio</li>
-          <li class="flex items-center gap-3"><span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px]">★</span> Alta velocidade Google</li>
+      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-200 bg-white shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] transform md:-translate-y-4">
+        
+        <div class="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase flex gap-1.5 items-center justify-center shadow-lg">
+          <svg class="h-3 w-3 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C9.5 2 7 4 6 6C4 8 3 11 3 14C3 17.5 5.5 20.5 9 21L12 22L15 21C18.5 20.5 21 17.5 21 14C21 11 20 8 18 6C17 4 14.5 2 12 2Z" fill="currentColor" stroke="currentColor" stroke-width="0.5" />
+            <path d="M10 16L12.5 18.5L16.5 14.5" stroke="#4C1D95" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span class="leading-none">Mais Econômico</span>
+        </div>
+
+        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-500">Anual</h3>
+        <p class="text-slate-500 mb-6 text-sm">A solução definitiva e econômica.</p>
+        <div class="text-4xl font-black mb-1 text-slate-900">R$ 499 <span class="text-sm text-slate-400 font-normal">/ 1º ano</span></div>
+        <p class="text-[11px] text-orange-500 font-bold mb-6">Equivale a R$ 41,58 por mês.</p>
+        <ul class="space-y-3 text-slate-600 text-sm font-medium">
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> 2 meses grátis</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Apontamento de Domínio</li>
+          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Alta velocidade Google</li>
         </ul>
       </div>
     </div>
@@ -120,6 +130,7 @@ const PROMO_HTML = `
 </html>
 `;
 
+// Função utilitária para limpar o HTML antes de publicar
 const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false) => {
   if (!rawHtml) return '';
   if (!rawHtml.includes('editor-toolbar')) return rawHtml;
@@ -156,6 +167,7 @@ const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false
   return doc.documentElement.outerHTML;
 };
 
+// Função para gerar o HTML de pré-visualização
 const getPreviewHtml = (baseHtml: string | null) => {
   if (!baseHtml) return '';
   const clean = cleanHtmlForPublishing(baseHtml, true);
@@ -402,7 +414,7 @@ const App: React.FC = () => {
       document.getElementsByTagName('head')[0].appendChild(link);
     }
     link.href = BRAND_LOGO;
-    document.title = "SiteCraft - Criação Inteligente";
+    document.title = "SiteZing - Criação Inteligente";
   }, []);
 
   useEffect(() => {
@@ -528,7 +540,7 @@ const App: React.FC = () => {
     // =========================================================================
     // INJEÇÃO DA MARCA D'ÁGUA NO RODAPÉ DO SITE DO CLIENTE
     // =========================================================================
-    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitecraft.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteCraft"/> SiteCraft</a></div>`;
+    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing</a></div>`;
     html = html.replace('</body>', `${footerBrand}</body>`);
 
     const mapUrl = data.address ? `https://www.google.com/maps?q=${encodeURIComponent(data.address)}&output=embed` : '';
@@ -545,7 +557,7 @@ const App: React.FC = () => {
     ` : '';
 
     const formCode = data.showForm ? `
-    <form id="sitecraft-contact-form" ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem] relative">
+    <form id="sitezing-contact-form" ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem] relative">
       ${hiddenInputs}
       <input name="Nome" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu nome" />
       <input name="Email" type="email" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu email" />
@@ -555,7 +567,7 @@ const App: React.FC = () => {
     
     <script id="contact-form-script">
       document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('sitecraft-contact-form');
+        const form = document.getElementById('sitezing-contact-form');
         if (form && form.hasAttribute('action')) {
           form.addEventListener('submit', function(e) {
             e.preventDefault(); 
@@ -821,7 +833,7 @@ const App: React.FC = () => {
               <motion.div 
                 initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                 onClick={() => setIsMenuOpen(true)} 
-                className="absolute bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
+                className="absolute bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full shadow-2xl flex items-center justify-center cursor-pointer ring-4 ring-black/20 transition-transform hover:scale-105 z-[90]"
               >
                 <Settings className="text-white" size={26} />
               </motion.div>
@@ -848,11 +860,11 @@ const App: React.FC = () => {
                   <p className="text-zinc-400 text-sm leading-relaxed">A sua página já está online. Caso tenha configurado um domínio do Registro.br / DNS, pode demorar algumas horas para propagar.</p>
                 </div>
                 <div className="bg-black/50 p-3 rounded-xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden">
-                  <code className="text-indigo-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+                  <code className="text-blue-300 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); alert('Link copiado!'); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-zinc-700"><Copy size={18} /> Copiar Link</button>
-                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"><ExternalLink size={18} /> Abrir Site</button>
+                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-500/20"><ExternalLink size={18} /> Abrir Site</button>
                 </div>
                 <button onClick={() => setPublishModalUrl(null)} className="text-zinc-500 hover:text-zinc-300 font-medium text-sm mt-4 block w-full transition-colors">Fechar janela</button>
               </motion.div>
@@ -880,7 +892,7 @@ const App: React.FC = () => {
                 {/* LOGO INJETADO NO CABEÇALHO DO PAINEL */}
                 <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-800/50 flex-shrink-0">
                   <div className="flex items-center gap-3 select-none">
-                    <img src={BRAND_LOGO} alt="SiteCraft" className="h-8 w-auto object-contain drop-shadow-[0_0_10px_rgba(76,29,149,0.3)]" />
+                    <img src={BRAND_LOGO} alt="SiteZing" className="h-8 w-auto object-contain drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
                   </div>
                   <div className="flex items-center gap-4">
                     {loggedUserEmail ? (
@@ -915,7 +927,7 @@ const App: React.FC = () => {
                         Visual & Dados
                       </button>
                       
-                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                      <button onClick={() => setActiveTab('dominio')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'dominio' ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
                         Domínio
                         {(!officialDomain || officialDomain === 'Pendente' || registerLater) && (
                           <span className="absolute top-3 right-4 flex h-2 w-2" title="Domínio não configurado">
@@ -926,7 +938,7 @@ const App: React.FC = () => {
                       </button>
 
                       {currentProjectSlug && (
-                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-orange-400 border-b-2 border-orange-400 bg-orange-400/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
                           Pagamento
                           {!isPaid && (
                             <span className="absolute top-3 right-2 flex h-2 w-2" title={daysLeft > 0 ? "Período de Teste" : "Vencido"}>
@@ -1060,6 +1072,17 @@ const App: React.FC = () => {
                               <span>Exibir formulário de contato no site</span>
                               <input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
                             </label>
+                            
+                            {formData.showForm && (
+                              <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl flex gap-3 items-start mt-2">
+                                <Info size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div className="text-[10px] text-blue-200/80 leading-relaxed">
+                                  <strong className="text-blue-300 block mb-1 text-xs">Ativação de Segurança Obrigatória</strong>
+                                  Para proteger seu e-mail <span className="font-mono bg-black/30 px-1 py-0.5 rounded text-blue-300">{formData.email || 'informado acima'}</span> contra spam, o sistema exige uma ativação inicial. 
+                                  Após publicar, acesse seu novo site e <strong>envie uma mensagem de teste</strong> pelo formulário. Você receberá um e-mail pedindo para "Ativar o Formulário". Clique em confirmar apenas uma vez e tudo estará pronto!
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -1069,9 +1092,9 @@ const App: React.FC = () => {
                   {activeTab === 'dominio' && generatedHtml && (
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                       {!currentProjectSlug ? (
-                        <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/30">
-                          <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2"><Globe size={16}/> Qual será o endereço?</h4>
-                          <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Ex: Registro.br).</p>
+                        <div className="bg-blue-500/10 p-5 rounded-2xl border border-blue-500/30">
+                          <h4 className="text-sm font-bold text-blue-300 flex items-center gap-2"><Globe size={16}/> Qual será o endereço?</h4>
+                          <p className="text-xs text-blue-200/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Ex: Registro.br).</p>
                           <Suspense fallback={null}>
                             <DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} />
                           </Suspense>
@@ -1080,7 +1103,7 @@ const App: React.FC = () => {
                         <div className="space-y-4">
                           <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 shadow-xl">
                             <div className="flex items-center gap-3 mb-5">
-                              <div className="bg-indigo-500/20 p-2.5 rounded-xl"><Globe className="text-indigo-400 w-5 h-5" /></div>
+                              <div className="bg-blue-500/20 p-2.5 rounded-xl"><Globe className="text-blue-400 w-5 h-5" /></div>
                               <div>
                                 <h3 className="font-bold text-white text-sm">Apontamento DNS</h3>
                                 <p className="text-[10px] text-zinc-400">Configure no seu provedor de domínio</p>
@@ -1093,7 +1116,7 @@ const App: React.FC = () => {
                               </div>
                               <div>
                                 <div className="flex justify-between items-center mb-1"><span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">TIPO TXT</span></div>
-                                <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-indigo-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
+                                <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800"><code className="text-blue-300 text-[10px] break-all select-all block leading-tight">firebase-site-verification={currentProjectSlug}-app</code></div>
                               </div>
                             </div>
                           </div>
@@ -1107,10 +1130,10 @@ const App: React.FC = () => {
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                       
                       <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
                         
-                        <h3 className="text-lg font-black text-white mb-1 flex items-center gap-2"><CreditCard size={18} className="text-amber-400" /> Painel de Assinatura</h3>
-                        <p className="text-xs text-zinc-400 mb-6">Gerencie o plano do seu projeto <span className="text-amber-400 font-mono">{currentProjectSlug}</span></p>
+                        <h3 className="text-lg font-black text-white mb-1 flex items-center gap-2"><CreditCard size={18} className="text-orange-400" /> Painel de Assinatura</h3>
+                        <p className="text-xs text-zinc-400 mb-6">Gerencie o plano do seu projeto <span className="text-orange-400 font-mono">{currentProjectSlug}</span></p>
 
                         <div className="bg-[#050505] p-5 rounded-xl border border-zinc-800/50 mb-6">
                           <div className="flex justify-between items-center mb-3">
@@ -1118,7 +1141,7 @@ const App: React.FC = () => {
                             {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug) || {})}
                           </div>
                           <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-amber-400 h-full rounded-full" style={{ width: '100%' }}></div>
+                            <div className="bg-orange-400 h-full rounded-full" style={{ width: '100%' }}></div>
                           </div>
                         </div>
 
@@ -1126,7 +1149,7 @@ const App: React.FC = () => {
                           <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* Plano Mensal */}
-                              <div className="bg-zinc-800/30 p-5 rounded-xl border border-zinc-700 hover:border-amber-500/50 transition-colors flex flex-col h-full">
+                              <div className="bg-zinc-800/30 p-5 rounded-xl border border-zinc-700 hover:border-orange-500/50 transition-colors flex flex-col h-full">
                                 <h4 className="text-zinc-300 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
                                 <div className="flex items-end gap-1 mb-4">
                                   <span className="text-3xl font-black text-white">R$ 49,99</span>
@@ -1147,22 +1170,22 @@ const App: React.FC = () => {
                               </div>
 
                               {/* Plano Anual */}
-                              <div className="bg-gradient-to-br from-amber-500/10 to-amber-900/10 p-5 rounded-xl border border-amber-500/30 shadow-lg relative flex flex-col h-full">
-                                <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vantajoso</div>
-                                <h4 className="text-amber-400 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
+                              <div className="bg-gradient-to-br from-orange-500/10 to-orange-900/10 p-5 rounded-xl border border-orange-500/30 shadow-lg relative flex flex-col h-full">
+                                <div className="absolute top-0 right-0 bg-orange-500 text-orange-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg">Mais Vantajoso</div>
+                                <h4 className="text-orange-400 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
                                 <div className="flex items-end gap-1 mb-4">
-                                  <span className="text-3xl font-black text-amber-400">R$ 499</span>
-                                  <span className="text-xs text-amber-600/60 font-medium pb-1">/ano</span>
+                                  <span className="text-3xl font-black text-orange-400">R$ 499</span>
+                                  <span className="text-xs text-orange-600/60 font-medium pb-1">/ano</span>
                                 </div>
-                                <ul className="space-y-2 text-xs text-amber-200/60 mb-6 flex-1">
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-amber-400 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-amber-400 shrink-0 mt-0.5"/> Domínio premium configurado</li>
-                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-amber-400 shrink-0 mt-0.5"/> Maior prioridade de suporte</li>
+                                <ul className="space-y-2 text-xs text-orange-200/60 mb-6 flex-1">
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> Domínio premium configurado</li>
+                                  <li className="flex items-start gap-2"><CheckCircle size={14} className="text-orange-400 shrink-0 mt-0.5"/> Maior prioridade de suporte</li>
                                 </ul>
                                 <button 
                                   onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
                                   disabled={checkoutLoading === currentProjectSlug}
-                                  className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-amber-500/20"
+                                  className="w-full bg-orange-500 hover:bg-orange-400 text-zinc-900 py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20"
                                 >
                                   {checkoutLoading === currentProjectSlug ? 'Processando...' : 'Assinar Anual'}
                                 </button>
@@ -1171,7 +1194,7 @@ const App: React.FC = () => {
                             
                             <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-[10px] text-zinc-500 leading-relaxed font-mono">
                               <strong className="text-zinc-400 block mb-1">TERMOS DE RENOVAÇÃO E CICLO DE VIDA:</strong>
-                              O site conta com um <span className="text-amber-400 font-bold">período gratuito de 30 dias iniciais</span>. Vencido qualquer plano ou o período gratuito, o site será suspenso ("congelado") após 5 dias de atraso. O sistema exclui permanentemente todos os dados e o site do ar se não houver regularização no prazo de 60 dias após o vencimento, cancelando automaticamente associações na operadora de cartão. 
+                              O site conta com um <span className="text-orange-400 font-bold">período gratuito de 30 dias iniciais</span>. Vencido qualquer plano ou o período gratuito, o site será suspenso ("congelado") após 5 dias de atraso. O sistema exclui permanentemente todos os dados e o site do ar se não houver regularização no prazo de 60 dias após o vencimento, cancelando automaticamente associações na operadora de cartão. 
                             </div>
                             <p className="text-[9px] text-center text-zinc-600 flex items-center justify-center gap-1"><ShieldCheck size={10}/> Pagamentos 100% seguros operados globalmente pela Stripe.</p>
                           </div>
@@ -1201,16 +1224,16 @@ const App: React.FC = () => {
                               <>
                                 {savedProjects.find(p => p.id === currentProjectSlug)?.planSelected === 'mensal' ? (
                                   <div className="pt-4 mt-2 border-t border-emerald-500/20 text-left">
-                                    <div className="bg-gradient-to-r from-amber-500/10 to-amber-900/10 border border-amber-500/30 p-5 rounded-xl relative shadow-lg">
-                                      <div className="absolute top-0 right-0 bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
-                                      <h5 className="text-amber-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
-                                      <p className="text-[10px] text-amber-200/70 mb-4 leading-relaxed">
+                                    <div className="bg-gradient-to-r from-orange-500/10 to-orange-900/10 border border-orange-500/30 p-5 rounded-xl relative shadow-lg">
+                                      <div className="absolute top-0 right-0 bg-orange-500 text-orange-950 text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg">Upgrade Exclusivo</div>
+                                      <h5 className="text-orange-400 font-bold text-sm mb-1 uppercase tracking-wide">Mudar para Plano Anual</h5>
+                                      <p className="text-[10px] text-orange-200/70 mb-4 leading-relaxed">
                                         Faça o upgrade agora por R$ 499,00. Seu plano atual será substituído imediatamente e você iniciará um novo ciclo ininterrupto de 12 meses.
                                       </p>
                                       <button 
                                         onClick={() => handleStripeCheckout(currentProjectSlug, 'anual')}
                                         disabled={checkoutLoading === currentProjectSlug}
-                                        className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-amber-500/20 flex justify-center items-center gap-2"
+                                        className="w-full bg-orange-500 hover:bg-orange-400 text-zinc-900 py-3 rounded-lg font-black uppercase tracking-wider text-[10px] transition-colors shadow-lg shadow-orange-500/20 flex justify-center items-center gap-2"
                                       >
                                         {checkoutLoading === currentProjectSlug ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
                                         Fazer Upgrade e Pagar R$ 499
@@ -1230,7 +1253,7 @@ const App: React.FC = () => {
                                 ) : (
                                   <div className="pt-4 mt-2 border-t border-emerald-500/20">
                                     <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl text-left flex gap-3 items-start">
-                                      <Info size={18} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+                                      <Info size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
                                       <div>
                                         <h5 className="text-zinc-300 font-bold text-xs mb-1 uppercase tracking-wide">Sobre o seu plano</h5>
                                         <p className="text-[10px] text-zinc-500 leading-relaxed">
@@ -1294,7 +1317,7 @@ const App: React.FC = () => {
 
                     <button 
                       onClick={handlePublishSite} disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+                      className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
                     >
                       {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe size={14} />} 
                       Publicar Site
@@ -1311,4 +1334,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
