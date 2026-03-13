@@ -18,16 +18,24 @@ export const TEMPLATES: Record<string, string> = {
         /* HEADER GLASS NATIVO */
         .glass-header-premium { position: fixed; top: -100px; left: 0; width: 100%; z-index: 9998; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: color-mix(in srgb, {{COLOR_2}} 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid color-mix(in srgb, {{COLOR_3}} 30%, transparent); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
         .glass-header-premium.scrolled { top: 0; }
-        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; }
-        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; }
+        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; gap: 10px; }
+        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; flex-shrink: 0; }
         .glass-logo-premium img { max-height: 36px; width: auto; display: block; }
-        .glass-actions-premium { display: flex; align-items: center; gap: 20px; }
-        .glass-social-links-premium { display: flex; gap: 15px; align-items: center; }
+        .glass-actions-premium { display: flex; align-items: center; gap: 15px; flex-wrap: nowrap; }
+        .glass-social-links-premium { display: flex; gap: 12px; align-items: center; }
         .glass-social-link { font-size: 1.3rem; transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .glass-social-link:hover { transform: scale(1.15); opacity: 0.8; }
-        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; }
+        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .btn-contact-premium:hover { transform: scale(1.05); opacity: 0.9; }
-        @media (max-width: 768px) { .glass-social-links-premium { display: none; } }
+        .mobile-icon { display: none; }
+        @media (max-width: 768px) {
+           .desktop-text { display: none; }
+           .mobile-icon { display: block; font-size: 1.2rem; margin: 0; }
+           .btn-contact-premium { padding: 10px; width: 40px; height: 40px; border-radius: 50%; }
+           .glass-social-links-premium { gap: 10px; }
+           .glass-social-link { font-size: 1.1rem; }
+           .glass-logo-premium img { max-height: 28px !important; }
+        }
       </style>
     </head>
     <body class="antialiased flex flex-col min-h-screen">
@@ -37,7 +45,7 @@ export const TEMPLATES: Record<string, string> = {
               <a href="#" class="glass-logo-premium">[[LOGO_AREA]]</a>
               <div class="glass-actions-premium">
                   <div class="glass-social-links-premium">[[SOCIAL_LINKS]]</div>
-                  <a href="#contato" class="btn-contact-premium">Fale Conosco</a>
+                  [[HEADER_CONTACT_BTN]]
               </div>
           </div>
       </header>
@@ -122,16 +130,24 @@ export const TEMPLATES: Record<string, string> = {
         
         .glass-header-premium { position: fixed; top: -100px; left: 0; width: 100%; z-index: 9998; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: color-mix(in srgb, {{COLOR_2}} 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid color-mix(in srgb, {{COLOR_3}} 30%, transparent); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
         .glass-header-premium.scrolled { top: 0; }
-        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; }
-        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; }
+        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; gap: 10px; }
+        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; flex-shrink: 0; }
         .glass-logo-premium img { max-height: 36px; width: auto; display: block; }
-        .glass-actions-premium { display: flex; align-items: center; gap: 20px; }
-        .glass-social-links-premium { display: flex; gap: 15px; align-items: center; }
+        .glass-actions-premium { display: flex; align-items: center; gap: 15px; flex-wrap: nowrap; }
+        .glass-social-links-premium { display: flex; gap: 12px; align-items: center; }
         .glass-social-link { font-size: 1.3rem; transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .glass-social-link:hover { transform: scale(1.15); opacity: 0.8; }
-        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; }
+        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .btn-contact-premium:hover { transform: scale(1.05); opacity: 0.9; }
-        @media (max-width: 768px) { .glass-social-links-premium { display: none; } }
+        .mobile-icon { display: none; }
+        @media (max-width: 768px) {
+           .desktop-text { display: none; }
+           .mobile-icon { display: block; font-size: 1.2rem; margin: 0; }
+           .btn-contact-premium { padding: 10px; width: 40px; height: 40px; border-radius: 50%; }
+           .glass-social-links-premium { gap: 10px; }
+           .glass-social-link { font-size: 1.1rem; }
+           .glass-logo-premium img { max-height: 28px !important; }
+        }
       </style>
     </head>
     <body class="antialiased flex flex-col min-h-screen">
@@ -141,7 +157,7 @@ export const TEMPLATES: Record<string, string> = {
               <a href="#" class="glass-logo-premium">[[LOGO_AREA]]</a>
               <div class="glass-actions-premium">
                   <div class="glass-social-links-premium">[[SOCIAL_LINKS]]</div>
-                  <a href="#contato" class="btn-contact-premium">Fale Conosco</a>
+                  [[HEADER_CONTACT_BTN]]
               </div>
           </div>
       </header>
@@ -219,16 +235,24 @@ export const TEMPLATES: Record<string, string> = {
         
         .glass-header-premium { position: fixed; top: -100px; left: 0; width: 100%; z-index: 9998; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: color-mix(in srgb, {{COLOR_2}} 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid color-mix(in srgb, {{COLOR_3}} 30%, transparent); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
         .glass-header-premium.scrolled { top: 0; }
-        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; }
-        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; }
+        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; gap: 10px; }
+        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; flex-shrink: 0; }
         .glass-logo-premium img { max-height: 36px; width: auto; display: block; }
-        .glass-actions-premium { display: flex; align-items: center; gap: 20px; }
-        .glass-social-links-premium { display: flex; gap: 15px; align-items: center; }
+        .glass-actions-premium { display: flex; align-items: center; gap: 15px; flex-wrap: nowrap; }
+        .glass-social-links-premium { display: flex; gap: 12px; align-items: center; }
         .glass-social-link { font-size: 1.3rem; transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .glass-social-link:hover { transform: scale(1.15); opacity: 0.8; }
-        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; }
+        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .btn-contact-premium:hover { transform: scale(1.05); opacity: 0.9; }
-        @media (max-width: 768px) { .glass-social-links-premium { display: none; } }
+        .mobile-icon { display: none; }
+        @media (max-width: 768px) {
+           .desktop-text { display: none; }
+           .mobile-icon { display: block; font-size: 1.2rem; margin: 0; }
+           .btn-contact-premium { padding: 10px; width: 40px; height: 40px; border-radius: 50%; }
+           .glass-social-links-premium { gap: 10px; }
+           .glass-social-link { font-size: 1.1rem; }
+           .glass-logo-premium img { max-height: 28px !important; }
+        }
       </style>
     </head>
     <body class="antialiased p-4 md:p-8 min-h-screen flex flex-col relative">
@@ -238,7 +262,7 @@ export const TEMPLATES: Record<string, string> = {
               <a href="#" class="glass-logo-premium">[[LOGO_AREA]]</a>
               <div class="glass-actions-premium">
                   <div class="glass-social-links-premium">[[SOCIAL_LINKS]]</div>
-                  <a href="#contato" class="btn-contact-premium">Fale Conosco</a>
+                  [[HEADER_CONTACT_BTN]]
               </div>
           </div>
       </header>
@@ -325,16 +349,24 @@ export const TEMPLATES: Record<string, string> = {
         
         .glass-header-premium { position: fixed; top: -100px; left: 0; width: 100%; z-index: 9998; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: color-mix(in srgb, {{COLOR_2}} 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid color-mix(in srgb, {{COLOR_3}} 30%, transparent); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
         .glass-header-premium.scrolled { top: 0; }
-        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; }
-        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; }
+        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; gap: 10px; }
+        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; flex-shrink: 0; }
         .glass-logo-premium img { max-height: 36px; width: auto; display: block; }
-        .glass-actions-premium { display: flex; align-items: center; gap: 20px; }
-        .glass-social-links-premium { display: flex; gap: 15px; align-items: center; }
+        .glass-actions-premium { display: flex; align-items: center; gap: 15px; flex-wrap: nowrap; }
+        .glass-social-links-premium { display: flex; gap: 12px; align-items: center; }
         .glass-social-link { font-size: 1.3rem; transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .glass-social-link:hover { transform: scale(1.15); opacity: 0.8; }
-        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; }
+        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .btn-contact-premium:hover { transform: scale(1.05); opacity: 0.9; }
-        @media (max-width: 768px) { .glass-social-links-premium { display: none; } }
+        .mobile-icon { display: none; }
+        @media (max-width: 768px) {
+           .desktop-text { display: none; }
+           .mobile-icon { display: block; font-size: 1.2rem; margin: 0; }
+           .btn-contact-premium { padding: 10px; width: 40px; height: 40px; border-radius: 50%; }
+           .glass-social-links-premium { gap: 10px; }
+           .glass-social-link { font-size: 1.1rem; }
+           .glass-logo-premium img { max-height: 28px !important; }
+        }
       </style>
     </head>
     <body class="antialiased flex flex-col min-h-screen">
@@ -344,7 +376,7 @@ export const TEMPLATES: Record<string, string> = {
               <a href="#" class="glass-logo-premium">[[LOGO_AREA]]</a>
               <div class="glass-actions-premium">
                   <div class="glass-social-links-premium">[[SOCIAL_LINKS]]</div>
-                  <a href="#contato" class="btn-contact-premium">Fale Conosco</a>
+                  [[HEADER_CONTACT_BTN]]
               </div>
           </div>
       </header>
@@ -426,16 +458,24 @@ export const TEMPLATES: Record<string, string> = {
         
         .glass-header-premium { position: fixed; top: -100px; left: 0; width: 100%; z-index: 9998; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: color-mix(in srgb, {{COLOR_2}} 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid color-mix(in srgb, {{COLOR_3}} 30%, transparent); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
         .glass-header-premium.scrolled { top: 0; }
-        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; }
-        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; }
+        .glass-container-premium { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 12px 20px; gap: 10px; }
+        .glass-logo-premium { display: flex; align-items: center; text-decoration: none; color: {{COLOR_4}}; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; flex-shrink: 0; }
         .glass-logo-premium img { max-height: 36px; width: auto; display: block; }
-        .glass-actions-premium { display: flex; align-items: center; gap: 20px; }
-        .glass-social-links-premium { display: flex; gap: 15px; align-items: center; }
+        .glass-actions-premium { display: flex; align-items: center; gap: 15px; flex-wrap: nowrap; }
+        .glass-social-links-premium { display: flex; gap: 12px; align-items: center; }
         .glass-social-link { font-size: 1.3rem; transition: transform 0.2s ease; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .glass-social-link:hover { transform: scale(1.15); opacity: 0.8; }
-        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; }
+        .btn-contact-premium { padding: 10px 24px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 1px; background-color: {{COLOR_4}}; color: {{COLOR_1}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .btn-contact-premium:hover { transform: scale(1.05); opacity: 0.9; }
-        @media (max-width: 768px) { .glass-social-links-premium { display: none; } }
+        .mobile-icon { display: none; }
+        @media (max-width: 768px) {
+           .desktop-text { display: none; }
+           .mobile-icon { display: block; font-size: 1.2rem; margin: 0; }
+           .btn-contact-premium { padding: 10px; width: 40px; height: 40px; border-radius: 50%; }
+           .glass-social-links-premium { gap: 10px; }
+           .glass-social-link { font-size: 1.1rem; }
+           .glass-logo-premium img { max-height: 28px !important; }
+        }
       </style>
     </head>
     <body class="antialiased">
@@ -445,7 +485,7 @@ export const TEMPLATES: Record<string, string> = {
               <a href="#" class="glass-logo-premium">[[LOGO_AREA]]</a>
               <div class="glass-actions-premium">
                   <div class="glass-social-links-premium">[[SOCIAL_LINKS]]</div>
-                  <a href="#contato" class="btn-contact-premium">Fale Conosco</a>
+                  [[HEADER_CONTACT_BTN]]
               </div>
           </div>
       </header>
