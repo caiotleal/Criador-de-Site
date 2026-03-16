@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
+const DomainChecker = lazy(() => import('./components/DomainChecker'));
 mport { useIframeEditor } from './components/useIframeEditor'; 
 
 import { BRAND_LOGO } from './components/brand';
