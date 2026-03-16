@@ -9,9 +9,7 @@ import {
 import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
-mport { useIframeEditor } from './components/useIframeEditor'; 
-
-import { BRAND_LOGO } from './components/brand';
+import { useIframeEditor } from './components/useIframeEditor';
 
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
