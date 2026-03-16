@@ -11,7 +11,6 @@ const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
 import { useIframeEditor } from './components/useIframeEditor'; 
 
-// 👇 PUXANDO A IMAGEM DO ARQUIVO EXTERNO 👇
 import { BRAND_LOGO } from './components/brand';
 
 const LAYOUT_STYLES = [
@@ -355,7 +354,6 @@ const extractCustomImages = (html: string | null) => {
   return images;
 };
 
-// DADOS DOS PLANOS
 const PLAN_DETAILS = {
   free: {
     title: "Plano Teste Grátis",
@@ -619,12 +617,10 @@ const App: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  // NOVA FUNÇÃO DE SALVAR SEM TRAVA DE DOMÍNIO
   const handleSaveOrUpdateSite = async () => {
     if (!auth.currentUser) return setIsLoginOpen(true);
-    if (!currentProjectSlug && !registerLater && !officialDomain) {
-      setActiveTab('dominio');
-      return alert("Por favor, configure seu domínio ou marque a opção 'Configurar depois'.");
-    }
+    
     setIsSavingProject(true);
     try {
       const htmlToSave = cleanHtmlForPublishing(generatedHtml);
@@ -633,9 +629,18 @@ const App: React.FC = () => {
         await updateFn({ targetId: currentProjectSlug, html: htmlToSave, formData, aiContent });
       } else {
         const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const internalDomain = `${cleanName}-${Math.random().toString(36).substring(2, 6)}`;
+        const randomSuffix = Math.random().toString(36).substring(2, 6);
+        const internalDomain = `${cleanName}-${randomSuffix}`;
+        
         const saveFn = httpsCallable(functions, 'saveSiteProject');
-        const res: any = await saveFn({ businessName: formData.businessName, officialDomain: registerLater ? "Pendente" : officialDomain, internalDomain, generatedHtml: htmlToSave, formData, aiContent });
+        const res: any = await saveFn({ 
+            businessName: formData.businessName, 
+            officialDomain: officialDomain || "Pendente", 
+            internalDomain, 
+            generatedHtml: htmlToSave, 
+            formData, 
+            aiContent 
+        });
         if (res.data?.projectSlug) setCurrentProjectSlug(res.data.projectSlug);
       }
       setHasUnsavedChanges(false);
@@ -645,6 +650,7 @@ const App: React.FC = () => {
     finally { setIsSavingProject(false); }
   };
 
+  // NOVA FUNÇÃO DE PUBLICAR RÁPIDO
   const handlePublishSite = async () => {
     if (hasUnsavedChanges) return alert("Salve suas alterações antes de publicar.");
     setIsPublishing(true);
@@ -655,7 +661,8 @@ const App: React.FC = () => {
 
       const publishFn = httpsCallable(functions, 'publishUserProject');
       const res: any = await publishFn({ targetId: currentProjectSlug });
-      let publicUrl = res.data?.publishUrl || `https://${currentProjectSlug}.web.app`;
+      
+      let publicUrl = res.data?.publishUrl || `https://${project?.internalDomain || currentProjectSlug}.web.app`;
       if (!publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
       
       fetchProjects(); 
