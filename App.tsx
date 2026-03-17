@@ -645,8 +645,7 @@ const App: React.FC = () => {
       }
       setHasUnsavedChanges(false);
       fetchProjects();
-      alert("Site salvo com sucesso!");
-    } catch (err: any) { alert('Erro ao salvar o site.'); } 
+          } catch (err: any) { alert('Erro ao salvar o site.'); } 
     finally { setIsSavingProject(false); }
   };
 
