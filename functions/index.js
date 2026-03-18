@@ -322,22 +322,22 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
   }
 
   try {
+    const projectIdEnv = getProjectId(); // criador-de-site-1a91d
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
-    // Enviar EXATAMENTE a mesma string para a URL e para o corpo
-    const sitePath = projectId; 
-    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/sites/${sitePath}/domains`;
+    // A MÁGICA AQUI: A URL leva a estrutura completa (com o projeto)
+    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains`;
 
     console.log(`[DNS DEBUG] Endpoint: ${apiUrl}`);
-    console.log(`[DNS DEBUG] Payload Raiz:`, JSON.stringify({ site: sitePath, domainName: cleanDomain }));
+    console.log(`[DNS DEBUG] Payload Raiz:`, JSON.stringify({ site: projectId, domainName: cleanDomain }));
 
-    // 1. Cria o domínio principal
+    // 1. Cria o domínio principal (ex: clicadosnokart.com.br)
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        site: sitePath, // Google exigiu a string limpa aqui (caio-leal-4tmp)
+        site: projectId, // O JSON leva APENAS o ID do site
         domainName: cleanDomain 
       })
     });
@@ -354,7 +354,7 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
 
     // 2. Cria o subdomínio WWW com redirecionamento automático
     const wwwPayload = { 
-      site: sitePath, // String limpa aqui também
+      site: projectId, // Apenas o ID do site
       domainName: `www.${cleanDomain}`, 
       domainRedirect: { 
         type: "REDIRECT_301", 
