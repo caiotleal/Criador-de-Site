@@ -188,7 +188,6 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
   const uid = ensureAuthed(request);
   const { businessName, internalDomain, officialDomain, generatedHtml, formData, aiContent } = request.data;
   
-  // OTIMIZAÇÃO: Garante que o projectSlug seja seguro para o Firebase Hosting
   let safeBaseName = slugify(businessName).slice(0, 20); 
   if (!safeBaseName) safeBaseName = "site";
   const randomSuffix = Math.random().toString(36).substring(2, 6);
@@ -323,23 +322,22 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
   }
 
   try {
-    const projectIdEnv = getProjectId(); // criador-de-site-1a91d
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
-    // Cria a string exata que o Google exige para cruzar URL e JSON
-    const sitePath = `projects/${projectIdEnv}/sites/${projectId}`;
-    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/${sitePath}/domains`;
+    // A chave do sucesso: O Google quer APENAS o nome do site, sem barra e sem o ID do projeto
+    const sitePath = projectId; 
+    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/sites/${sitePath}/domains`;
 
     console.log(`[DNS DEBUG] Endpoint: ${apiUrl}`);
-    console.log(`[DNS DEBUG] Payload Raiz:`, JSON.stringify({ site: sitePath, domainName: cleanDomain }));
+    console.log(`[DNS DEBUG] Payload Raiz:`, JSON.stringify({ site: `sites/${sitePath}`, domainName: cleanDomain }));
 
     // 1. Cria o domínio principal (ex: clicadosnokart.com.br)
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        site: sitePath, 
+        site: `sites/${sitePath}`, // Tem que ser enviado com o prefixo 'sites/' no corpo
         domainName: cleanDomain 
       })
     });
@@ -356,7 +354,7 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
 
     // 2. Cria o subdomínio WWW redirecionando para a raiz (ex: www.clicadosnokart.com.br)
     const wwwPayload = { 
-      site: sitePath,
+      site: `sites/${sitePath}`,
       domainName: `www.${cleanDomain}`, 
       domainRedirect: { 
         type: "REDIRECT_301", 
@@ -391,6 +389,54 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     throw new HttpsError(error.code || "unknown", error.message);
   }
 });
+
+exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
+  const uid = ensureAuthed(request);
+  const { projectId, domain } = request.data;
+
+  if (!projectId || !domain) {
+    throw new HttpsError("invalid-argument", "Projeto e Domínio são obrigatórios.");
+  }
+
+  try {
+    const token = await getFirebaseAccessToken();
+    const cleanDomain = domain.trim().toLowerCase();
+
+    // Mesma lógica de rota simplificada
+    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/sites/${projectId}/domains/${cleanDomain}`;
+    
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    const domainData = await response.json();
+
+    if (!response.ok) {
+      console.error("[DNS VERIFY ERROR]:", domainData);
+      throw new HttpsError("unknown", `Erro Google (Verificação): ${domainData.error?.message}`);
+    }
+
+    // Atualiza o banco com o novo status
+    await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
+      domainStatus: domainData.status || "PENDING",
+      domainRecords: domainData.requiredDnsUpdates || null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { 
+      success: true, 
+      status: domainData.status, 
+      isPropagated: domainData.status === "ACTIVE",
+      records: domainData.requiredDnsUpdates
+    };
+  } catch (error) {
+    console.error("[DNS VERIFY CATCH ERROR]:", error);
+    throw new HttpsError(error.code || "unknown", error.message);
+  }
+});
+
+
 // ==============================================================================
 // STRIPE CHECKOUT E MENSALIDADE
 // ==============================================================================
