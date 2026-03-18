@@ -252,7 +252,6 @@ exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "
     if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
     const project = snap.data();
 
-    // TRAVA DE SEGURANÇA: Impede publicação via API se o site estiver congelado
     if (project.status === "frozen") {
       throw new HttpsError("permission-denied", "Seu site está congelado, para ativar selecione um dos nossos planos.");
     }
@@ -264,10 +263,9 @@ exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "
     const isPaidProject = project.paymentStatus === "paid";
     let nextExpiresAt = project.expiresAt || null;
 
-    // LÓGICA CORRIGIDA: Só define data de expiração se for Trial E se a data ainda NÃO existir
     if (!isPaidProject && !nextExpiresAt) {
       const trialExpiration = new Date();
-      trialExpiration.setDate(trialExpiration.getDate() + 7); // Ajustado para 7 dias do trial
+      trialExpiration.setDate(trialExpiration.getDate() + 7);
       nextExpiresAt = admin.firestore.Timestamp.fromDate(trialExpiration);
     }
 
@@ -322,7 +320,7 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
   }
 
   try {
-    const projectIdEnv = getProjectId(); // criador-de-site-1a91d
+    const projectIdEnv = getProjectId();
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
@@ -389,6 +387,54 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     throw new HttpsError(error.code || "unknown", error.message);
   }
 });
+
+exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
+  const uid = ensureAuthed(request);
+  const { projectId, domain } = request.data;
+
+  if (!projectId || !domain) {
+    throw new HttpsError("invalid-argument", "Projeto e Domínio são obrigatórios.");
+  }
+
+  try {
+    const projectIdEnv = getProjectId();
+    const token = await getFirebaseAccessToken();
+    const cleanDomain = domain.trim().toLowerCase();
+
+    // URL completa para a verificação não falhar por falta de projeto
+    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains/${cleanDomain}`;
+    
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    const domainData = await response.json();
+
+    if (!response.ok) {
+      console.error("[DNS VERIFY ERROR]:", domainData);
+      throw new HttpsError("unknown", `Erro Google (Verificação): ${domainData.error?.message}`);
+    }
+
+    // Atualiza o banco com o novo status
+    await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
+      domainStatus: domainData.status || "PENDING",
+      domainRecords: domainData.requiredDnsUpdates || null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { 
+      success: true, 
+      status: domainData.status, 
+      isPropagated: domainData.status === "ACTIVE",
+      records: domainData.requiredDnsUpdates
+    };
+  } catch (error) {
+    console.error("[DNS VERIFY CATCH ERROR]:", error);
+    throw new HttpsError(error.code || "unknown", error.message);
+  }
+});
+
 // ==============================================================================
 // STRIPE CHECKOUT E MENSALIDADE
 // ==============================================================================
