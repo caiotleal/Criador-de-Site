@@ -526,3 +526,101 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
     }
   }
 });
+
+// ==============================================================================
+// GESTÃO DE DOMÍNIOS PERSONALIZADOS E DNS
+// ==============================================================================
+
+exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
+  const uid = ensureAuthed(request);
+  const { projectId, domain } = request.data;
+  
+  if (!projectId || !domain) {
+    throw new HttpsError("invalid-argument", "Projeto e Domínio são obrigatórios.");
+  }
+
+  try {
+    const projectIdEnv = getProjectId();
+    const token = await getFirebaseAccessToken();
+    const cleanDomain = domain.trim().toLowerCase();
+
+    // 1. Chama a API REST do Firebase Hosting para criar o domínio
+    const url = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { 
+        "Authorization": `Bearer ${token}`, 
+        "Content-Type": "application/json" 
+      },
+      body: JSON.stringify({ 
+        domainName: cleanDomain, 
+        site: `projects/${projectIdEnv}/sites/${projectId}` 
+      })
+    });
+
+    const domainData = await response.json();
+
+    if (!response.ok) {
+      if (domainData.error?.status === "ALREADY_EXISTS") {
+        throw new HttpsError("already-exists", "Este domínio já está em uso ou vinculado a outro projeto.");
+      }
+      throw new HttpsError("internal", `Erro do Google: ${domainData.error?.message}`);
+    }
+
+    // 2. Salva os dados do domínio e os apontamentos DNS exigidos no banco de dados do usuário
+    await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
+      officialDomain: cleanDomain,
+      domainStatus: domainData.status || "PENDING",
+      domainRecords: domainData.requiredDnsUpdates || null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { success: true, status: domainData.status, records: domainData.requiredDnsUpdates };
+  } catch (error) {
+    throw new HttpsError(error.code || "internal", error.message);
+  }
+});
+
+exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
+  const uid = ensureAuthed(request);
+  const { projectId, domain } = request.data;
+
+  if (!projectId || !domain) {
+    throw new HttpsError("invalid-argument", "Projeto e Domínio são obrigatórios.");
+  }
+
+  try {
+    const projectIdEnv = getProjectId();
+    const token = await getFirebaseAccessToken();
+    const cleanDomain = domain.trim().toLowerCase();
+
+    // Bate na API do Firebase para ver o status atual daquele domínio específico
+    const url = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains/${cleanDomain}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!response.ok) {
+      throw new HttpsError("internal", "Não foi possível verificar o domínio no momento.");
+    }
+
+    const domainData = await response.json();
+
+    // Atualiza o banco com o novo status (se propagou, o status mudará para ACTIVE)
+    await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
+      domainStatus: domainData.status || "PENDING",
+      domainRecords: domainData.requiredDnsUpdates || null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { 
+      success: true, 
+      status: domainData.status, 
+      isPropagated: domainData.status === "ACTIVE",
+      records: domainData.requiredDnsUpdates
+    };
+  } catch (error) {
+    throw new HttpsError("internal", error.message);
+  }
+});
