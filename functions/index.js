@@ -316,26 +316,30 @@ exports.deleteUserProject = onCall({ cors: true }, async (request) => {
 // ==============================================================================
 exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
   const uid = ensureAuthed(request);
-  const { projectId, domain } = request.data; // projectId aqui é o ID do site (ex: caio-leal-4tmp)
+  const { projectId, domain } = request.data; 
   
   if (!projectId || !domain) {
     throw new HttpsError("invalid-argument", "Projeto e Domínio são obrigatórios.");
   }
 
   try {
+    const projectIdEnv = getProjectId(); // criador-de-site-1a91d
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
-    // 1. Cria o domínio principal usando a sintaxe simplificada (sites/SITE_ID)
-    const url = `https://firebasehosting.googleapis.com/v1beta1/sites/${projectId}/domains`;
-    
-    console.log(`[DNS] Criando domínio ${cleanDomain} para o site sites/${projectId}`);
+    // Cria a string exata que o Google exige para cruzar URL e JSON
+    const sitePath = `projects/${projectIdEnv}/sites/${projectId}`;
+    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/${sitePath}/domains`;
 
-    const response = await fetch(url, {
+    console.log(`[DNS DEBUG] Endpoint: ${apiUrl}`);
+    console.log(`[DNS DEBUG] Payload Raiz:`, JSON.stringify({ site: sitePath, domainName: cleanDomain }));
+
+    // 1. Cria o domínio principal (ex: clicadosnokart.com.br)
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        site: `sites/${projectId}`, // Tem que ser EXATAMENTE igual ao caminho da URL
+        site: sitePath, 
         domainName: cleanDomain 
       })
     });
@@ -343,36 +347,37 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     const domainData = await response.json();
 
     if (!response.ok) {
-      console.error("[DNS] Erro na API do Google (Raiz):", domainData);
+      console.error("[DNS ERROR] Raiz:", domainData);
       if (domainData.error?.status === "ALREADY_EXISTS") {
         throw new HttpsError("already-exists", "Este domínio já está em uso.");
       }
-      // Usamos 'unknown' em vez de 'internal' para que o erro chegue legível ao front-end
-      throw new HttpsError("unknown", `Erro Google: ${domainData.error?.message || 'Falha ao vincular.'}`);
+      throw new HttpsError("unknown", `Erro Google (Raiz): ${domainData.error?.message}`);
     }
 
-    // 2. Cria o subdomínio WWW com redirecionamento automático
-    const wwwUrl = `https://firebasehosting.googleapis.com/v1beta1/sites/${projectId}/domains`;
-    const wwwResponse = await fetch(wwwUrl, {
+    // 2. Cria o subdomínio WWW redirecionando para a raiz (ex: www.clicadosnokart.com.br)
+    const wwwPayload = { 
+      site: sitePath,
+      domainName: `www.${cleanDomain}`, 
+      domainRedirect: { 
+        type: "REDIRECT_301", 
+        domainName: cleanDomain 
+      }
+    };
+    
+    console.log(`[DNS DEBUG] Payload WWW:`, JSON.stringify(wwwPayload));
+
+    const wwwResponse = await fetch(apiUrl, {
       method: "POST",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        site: `sites/${projectId}`,
-        domainName: `www.${cleanDomain}`, 
-        domainRedirect: { 
-          type: "REDIRECT_301", 
-          domainName: cleanDomain 
-        }
-      })
+      body: JSON.stringify(wwwPayload)
     });
 
     if (!wwwResponse.ok) {
       const wwwData = await wwwResponse.json();
-      console.error("[DNS] Erro na API do Google (WWW):", wwwData);
-      // Não travamos o fluxo se o 'www' falhar, pois o domínio raiz já foi garantido.
+      console.error("[DNS ERROR] WWW:", wwwData);
     }
 
-    // 3. Salva os dados no Firestore
+    // 3. Salva no banco de dados
     await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
       officialDomain: cleanDomain,
       domainStatus: domainData.status || "PENDING",
@@ -382,53 +387,7 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
 
     return { success: true, status: domainData.status, records: domainData.requiredDnsUpdates };
   } catch (error) {
-    console.error("[DNS] Catch Error:", error);
-    throw new HttpsError(error.code || "unknown", error.message);
-  }
-});
-
-exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
-  const uid = ensureAuthed(request);
-  const { projectId, domain } = request.data;
-
-  if (!projectId || !domain) {
-    throw new HttpsError("invalid-argument", "Projeto e Domínio são obrigatórios.");
-  }
-
-  try {
-    const token = await getFirebaseAccessToken();
-    const cleanDomain = domain.trim().toLowerCase();
-
-    // Sintaxe simplificada
-    const url = `https://firebasehosting.googleapis.com/v1beta1/sites/${projectId}/domains/${cleanDomain}`;
-    
-    const response = await fetch(url, {
-      method: "GET",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-
-    const domainData = await response.json();
-
-    if (!response.ok) {
-      console.error("[DNS] Erro na API de Verificação:", domainData);
-      throw new HttpsError("unknown", `Erro Google: ${domainData.error?.message}`);
-    }
-
-    // Atualiza o banco com o novo status
-    await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
-      domainStatus: domainData.status || "PENDING",
-      domainRecords: domainData.requiredDnsUpdates || null,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    return { 
-      success: true, 
-      status: domainData.status, 
-      isPropagated: domainData.status === "ACTIVE",
-      records: domainData.requiredDnsUpdates
-    };
-  } catch (error) {
-    console.error("[DNS] Verify Error:", error);
+    console.error("[DNS CATCH ERROR]:", error);
     throw new HttpsError(error.code || "unknown", error.message);
   }
 });
