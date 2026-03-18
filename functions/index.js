@@ -253,6 +253,11 @@ exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "
     if (!snap.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
     const project = snap.data();
 
+    // TRAVA DE SEGURANÇA: Impede publicação via API se o site estiver congelado
+    if (project.status === "frozen") {
+      throw new HttpsError("permission-denied", "Seu site está congelado, para ativar selecione um dos nossos planos.");
+    }
+
     const hostingProvision = await ensureHostingReady(project.hostingSiteId);
     const deployResult = await deployHtmlToFirebaseHosting(project.hostingSiteId, project.generatedHtml);
     const publicUrl = hostingProvision.defaultUrl || `https://${project.hostingSiteId}.web.app`;
@@ -260,16 +265,22 @@ exports.publishUserProject = onCall({ cors: true, timeoutSeconds: 180, memory: "
     const isPaidProject = project.paymentStatus === "paid";
     let nextExpiresAt = project.expiresAt || null;
 
-    if (!isPaidProject) {
+    // LÓGICA CORRIGIDA: Só define data de expiração se for Trial E se a data ainda NÃO existir
+    if (!isPaidProject && !nextExpiresAt) {
       const trialExpiration = new Date();
-      trialExpiration.setDate(trialExpiration.getDate() + 5); 
+      trialExpiration.setDate(trialExpiration.getDate() + 7); // Ajustado para 7 dias do trial
       nextExpiresAt = admin.firestore.Timestamp.fromDate(trialExpiration);
     }
 
     await ref.set({
-      published: true, publishUrl: publicUrl, publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+      published: true, 
+      publishUrl: publicUrl, 
+      publishedAt: admin.firestore.FieldValue.serverTimestamp(),
       ...(nextExpiresAt ? { expiresAt: nextExpiresAt } : {}),
-      status: "published", paymentStatus: isPaidProject ? "paid" : "trial", needsDeploy: false, lastDeploy: deployResult,
+      status: "published", 
+      paymentStatus: isPaidProject ? "paid" : "trial", 
+      needsDeploy: false, 
+      lastDeploy: deployResult,
       hosting: { ...(project.hosting || {}), ...hostingProvision },
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
