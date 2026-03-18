@@ -1287,9 +1287,10 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {generatedHtml && (() => {
+{generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   const isPublished = Boolean(currentProject?.publishUrl || currentProject?.status === 'active');
+                  const isFrozen = currentProject?.status === 'frozen';
 
                   return (
                     <div className="p-4 border-t border-stone-200 bg-white flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
@@ -1302,14 +1303,24 @@ const App: React.FC = () => {
                         {currentProjectSlug ? 'Salvar Alterações' : 'Salvar Projeto'}
                       </button>
                       
-                      <button 
-                        onClick={handlePublishSite} 
-                        disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} 
-                        className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? (isPublished ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20') : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}
-                      >
-                        {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : (isPublished ? <RefreshCw size={14} /> : <Globe size={14} />)} 
-                        {isPublished ? 'Atualizar Publicação' : 'Publicar Site'}
-                      </button>
+                      {isFrozen ? (
+                        <button 
+                          onClick={() => setActiveTab('assinatura')} 
+                          className="w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20"
+                        >
+                          <Zap size={14} /> 
+                          Ativar Meu Site
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={handlePublishSite} 
+                          disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} 
+                          className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${!hasUnsavedChanges && currentProjectSlug ? (isPublished ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20') : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}
+                        >
+                          {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : (isPublished ? <RefreshCw size={14} /> : <Globe size={14} />)} 
+                          {isPublished ? 'Atualizar Publicação' : 'Publicar Site'}
+                        </button>
+                      )}
                     </div>
                   );
                 })()}
