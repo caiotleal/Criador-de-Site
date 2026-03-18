@@ -544,14 +544,11 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
-    // 1. Chama a API REST do Firebase Hosting para criar o domínio
+    // 1. Cria o domínio principal (ex: site.com.br)
     const url = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains`;
     const response = await fetch(url, {
       method: "POST",
-      headers: { 
-        "Authorization": `Bearer ${token}`, 
-        "Content-Type": "application/json" 
-      },
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ 
         domainName: cleanDomain, 
         site: `projects/${projectIdEnv}/sites/${projectId}` 
@@ -567,7 +564,21 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
       throw new HttpsError("internal", `Erro do Google: ${domainData.error?.message}`);
     }
 
-    // 2. Salva os dados do domínio e os apontamentos DNS exigidos no banco de dados do usuário
+    // 2. Cria o subdomínio WWW com redirecionamento automático para o domínio principal
+    const wwwUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains`;
+    await fetch(wwwUrl, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        domainName: `www.${cleanDomain}`, 
+        site: `projects/${projectIdEnv}/sites/${projectId}`,
+        behavior: "REDIRECT_301",
+        domainRedirect: { domainName: cleanDomain } // Redireciona o www para a raiz
+      })
+    });
+    // Não precisamos travar se o www der erro, o importante é o domínio raiz garantir o cadastro
+
+    // 3. Salva os dados no Firestore
     await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
       officialDomain: cleanDomain,
       domainStatus: domainData.status || "PENDING",
@@ -578,49 +589,5 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     return { success: true, status: domainData.status, records: domainData.requiredDnsUpdates };
   } catch (error) {
     throw new HttpsError(error.code || "internal", error.message);
-  }
-});
-
-exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
-  const uid = ensureAuthed(request);
-  const { projectId, domain } = request.data;
-
-  if (!projectId || !domain) {
-    throw new HttpsError("invalid-argument", "Projeto e Domínio são obrigatórios.");
-  }
-
-  try {
-    const projectIdEnv = getProjectId();
-    const token = await getFirebaseAccessToken();
-    const cleanDomain = domain.trim().toLowerCase();
-
-    // Bate na API do Firebase para ver o status atual daquele domínio específico
-    const url = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains/${cleanDomain}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-
-    if (!response.ok) {
-      throw new HttpsError("internal", "Não foi possível verificar o domínio no momento.");
-    }
-
-    const domainData = await response.json();
-
-    // Atualiza o banco com o novo status (se propagou, o status mudará para ACTIVE)
-    await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId).update({
-      domainStatus: domainData.status || "PENDING",
-      domainRecords: domainData.requiredDnsUpdates || null,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    return { 
-      success: true, 
-      status: domainData.status, 
-      isPropagated: domainData.status === "ACTIVE",
-      records: domainData.requiredDnsUpdates
-    };
-  } catch (error) {
-    throw new HttpsError("internal", error.message);
   }
 });
