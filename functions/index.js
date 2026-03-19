@@ -320,23 +320,21 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
   }
 
   try {
-    const projectIdEnv = getProjectId();
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
-    // A MÁGICA AQUI: A URL leva a estrutura completa (com o projeto)
-    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains`;
+    // URL curta: A API do Firebase Hosting deduz o projeto automaticamente a partir do site
+    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/sites/${projectId}/domains`;
 
     console.log(`[DNS DEBUG] Endpoint: ${apiUrl}`);
-    console.log(`[DNS DEBUG] Payload Raiz:`, JSON.stringify({ site: projectId, domainName: cleanDomain }));
+    console.log(`[DNS DEBUG] Payload Raiz:`, JSON.stringify({ domainName: cleanDomain }));
 
-    // 1. Cria o domínio principal (ex: clicadosnokart.com.br)
+    // 1. Cria o domínio principal
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        site: projectId, // O JSON leva APENAS o ID do site
-        domainName: cleanDomain 
+        domainName: cleanDomain // REMOVEMOS O CAMPO "site". O Google deduz da URL!
       })
     });
 
@@ -352,7 +350,6 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
 
     // 2. Cria o subdomínio WWW com redirecionamento automático
     const wwwPayload = { 
-      site: projectId, // Apenas o ID do site
       domainName: `www.${cleanDomain}`, 
       domainRedirect: { 
         type: "REDIRECT_301", 
@@ -369,8 +366,7 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     });
 
     if (!wwwResponse.ok) {
-      const wwwData = await wwwResponse.json();
-      console.error("[DNS ERROR] WWW:", wwwData);
+      console.error("[DNS ERROR] WWW:", await wwwResponse.json());
     }
 
     // 3. Salva no banco de dados
@@ -397,12 +393,11 @@ exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, asy
   }
 
   try {
-    const projectIdEnv = getProjectId();
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
-    // URL completa para a verificação não falhar por falta de projeto
-    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectId}/domains/${cleanDomain}`;
+    // Mesma lógica de rota simplificada
+    const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/sites/${projectId}/domains/${cleanDomain}`;
     
     const response = await fetch(apiUrl, {
       method: "GET",
@@ -434,7 +429,6 @@ exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, asy
     throw new HttpsError(error.code || "unknown", error.message);
   }
 });
-
 // ==============================================================================
 // STRIPE CHECKOUT E MENSALIDADE
 // ==============================================================================
