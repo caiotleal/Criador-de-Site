@@ -430,9 +430,12 @@ const App: React.FC = () => {
   const [customDomainInput, setCustomDomainInput] = useState('');
   const [isLinkingDomain, setIsLinkingDomain] = useState(false);
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
+  
+  // Novo modal visual para as intruções de DNS
+  const [isDnsModalOpen, setIsDnsModalOpen] = useState(false);
 
   // Estados de UI amigável
-  const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'info'} | null>(null);
+  const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'info'|'warning'} | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{title: string, message: string, onConfirm: () => void} | null>(null);
 
   const [formData, setFormData] = useState({
@@ -487,7 +490,7 @@ const App: React.FC = () => {
     }
   }, [toast]);
 
-  const showToast = (message: string, type: 'success'|'error'|'info' = 'info') => {
+  const showToast = (message: string, type: 'success'|'error'|'info'|'warning' = 'info') => {
     setToast({ message, type });
   };
 
@@ -618,7 +621,7 @@ const App: React.FC = () => {
     try {
       const linkFn = httpsCallable(functions, 'addCustomDomain');
       await linkFn({ projectId: currentProjectSlug, domain: customDomainInput });
-      showToast('Domínio configurado! Agora copie os apontamentos DNS gerados.', 'success');
+      showToast('Domínio configurado! Verifique as instruções de apontamento.', 'success');
       fetchProjects(); 
     } catch (error: any) {
       if (error.message.includes('already-exists') || error.message.includes('já está em uso')) {
@@ -639,7 +642,7 @@ const App: React.FC = () => {
       if (res.data?.isPropagated) {
         showToast('Sucesso! Seu domínio já propagou e está ativo.', 'success');
       } else {
-        showToast('Ainda aguardando propagação no provedor.', 'info');
+        showToast('Ainda aguardando propagação no provedor.', 'warning');
       }
       fetchProjects();
     } catch (error: any) {
@@ -832,7 +835,7 @@ const App: React.FC = () => {
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Toast Notification */}
+      {/* Toast Notification (Substitui os alerts nativos) */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -841,18 +844,18 @@ const App: React.FC = () => {
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl font-bold text-sm border backdrop-blur-md"
             style={{
-              backgroundColor: toast.type === 'error' ? 'rgba(254, 242, 242, 0.95)' : toast.type === 'success' ? 'rgba(240, 253, 244, 0.95)' : 'rgba(255, 251, 235, 0.95)',
-              color: toast.type === 'error' ? '#991B1B' : toast.type === 'success' ? '#166534' : '#92400E',
-              borderColor: toast.type === 'error' ? '#FCA5A5' : toast.type === 'success' ? '#86EFAC' : '#FCD34D'
+              backgroundColor: toast.type === 'error' ? 'rgba(254, 242, 242, 0.95)' : toast.type === 'success' ? 'rgba(240, 253, 244, 0.95)' : toast.type === 'warning' ? 'rgba(255, 251, 235, 0.95)' : 'rgba(248, 250, 252, 0.95)',
+              color: toast.type === 'error' ? '#991B1B' : toast.type === 'success' ? '#166534' : toast.type === 'warning' ? '#92400E' : '#334155',
+              borderColor: toast.type === 'error' ? '#FCA5A5' : toast.type === 'success' ? '#86EFAC' : toast.type === 'warning' ? '#FCD34D' : '#E2E8F0'
             }}
           >
-            {toast.type === 'error' ? <AlertCircle size={18} /> : toast.type === 'success' ? <CheckCircle size={18} /> : <Info size={18} />}
+            {toast.type === 'error' ? <AlertCircle size={18} /> : toast.type === 'success' ? <CheckCircle size={18} /> : toast.type === 'warning' ? <AlertCircle size={18} /> : <Info size={18} />}
             {toast.message}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Confirm Modal */}
+      {/* Confirm Modal (Substitui o window.confirm) */}
       <AnimatePresence>
         {confirmDialog && (
           <div className="fixed inset-0 z-[300] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -872,6 +875,88 @@ const App: React.FC = () => {
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
+      {/* MODAL AMPLO DE INSTRUÇÕES DNS */}
+      <AnimatePresence>
+        {isDnsModalOpen && currentProjectSlug && (() => {
+          const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
+          const domainRecords = currentProject?.domainRecords || [];
+          return (
+            <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white border border-stone-200 p-8 rounded-3xl shadow-2xl max-w-3xl w-full relative overflow-hidden"
+              >
+                <button onClick={() => setIsDnsModalOpen(false)} className="absolute top-6 right-6 text-stone-400 hover:text-stone-800 transition-colors bg-stone-100 p-2 rounded-full z-20">
+                  <X size={18} />
+                </button>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-orange-100 p-3 rounded-xl"><Settings className="text-orange-600 w-6 h-6" /></div>
+                  <div>
+                    <h2 className="text-2xl font-black text-stone-900 uppercase">Apontamentos DNS</h2>
+                    <p className="text-sm text-stone-500">Configure o domínio <span className="font-bold text-teal-600">{currentProject.officialDomain}</span></p>
+                  </div>
+                </div>
+
+                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-6">
+                  <p className="text-sm text-orange-800 leading-relaxed font-medium mb-4">
+                    Acesse o painel do seu provedor de domínio (ex: Registro.br, HostGator, Locaweb) e procure pela opção <strong>"Editar Zona DNS"</strong>. Em seguida, adicione as linhas abaixo <strong>exatamente</strong> como são apresentadas.
+                    <br/><span className="text-xs text-orange-600 italic block mt-1">* Dica de Ouro: Se o painel já possuir apontamentos do tipo "A" ou "CNAME" conflitantes, exclua os antigos primeiro.</span>
+                  </p>
+
+                  <div className="border border-stone-300 rounded-xl overflow-hidden bg-white shadow-sm">
+                    {/* Cabeçalho da Tabela */}
+                    <div className="bg-stone-100 text-xs font-black text-stone-500 p-4 grid grid-cols-12 gap-3 uppercase tracking-widest border-b border-stone-200">
+                      <div className="col-span-4">Nome (Host)</div>
+                      <div className="col-span-2">Tipo</div>
+                      <div className="col-span-6">Dados (Valor/Destino)</div>
+                    </div>
+
+                    {/* Linha 1: TIPO A */}
+                    <div className="p-4 grid grid-cols-12 gap-3 border-b border-stone-100 text-sm items-center hover:bg-stone-50 transition-colors">
+                      <div className="col-span-4 text-stone-500 font-medium">@ <span className="text-[11px] text-stone-400 italic">(Ou deixe em branco)</span></div>
+                      <div className="col-span-2 font-black text-stone-800">A</div>
+                      <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
+                        <span className="font-mono text-teal-700 font-bold select-all">199.36.158.100</span>
+                        <button onClick={() => { navigator.clipboard.writeText('199.36.158.100'); showToast('IP copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100"><Copy size={14}/> Copiar</button>
+                      </div>
+                    </div>
+
+                    {/* Linha 2: CNAME (WWW) */}
+                    <div className="p-4 grid grid-cols-12 gap-3 border-b border-stone-100 text-sm items-center hover:bg-stone-50 transition-colors">
+                      <div className="col-span-4 font-mono text-stone-800 font-bold">www</div>
+                      <div className="col-span-2 font-black text-stone-800">CNAME</div>
+                      <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
+                        <span className="font-mono text-teal-700 font-bold select-all truncate">{currentProjectSlug}.web.app</span>
+                        <button onClick={() => { navigator.clipboard.writeText(`${currentProjectSlug}.web.app`); showToast('Destino copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14}/> Copiar</button>
+                      </div>
+                    </div>
+
+                    {/* Linha 3: TXT (Se houver) */}
+                    {domainRecords && domainRecords.length > 0 && (
+                      <div className="p-4 grid grid-cols-12 gap-3 text-sm items-center hover:bg-stone-50 transition-colors">
+                        <div className="col-span-4 text-stone-500 font-medium">@ <span className="text-[11px] text-stone-400 italic">(Ou deixe em branco)</span></div>
+                        <div className="col-span-2 font-black text-stone-800">TXT</div>
+                        <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
+                          <span className="font-mono text-xs text-teal-700 font-bold select-all truncate" title={domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}>
+                            {domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}
+                          </span>
+                          <button onClick={() => { navigator.clipboard.writeText(domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`); showToast('TXT copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14}/> Copiar</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button onClick={() => setIsDnsModalOpen(false)} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors">
+                  Pronto, entendi como configurar
+                </button>
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
       <div className="w-full h-screen bg-[#FAFAF9] overflow-hidden font-sans text-stone-900 flex flex-col md:flex-row">
@@ -908,174 +993,6 @@ const App: React.FC = () => {
         <Suspense fallback={null}>
           <LoginPage isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSubmit={handleLoginSubmit} brandLogo={BRAND_LOGO} />
         </Suspense>
-
-        <AnimatePresence>
-          {cancelModalProject && (
-            <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-white border border-stone-200 p-8 rounded-3xl shadow-2xl max-w-lg w-full relative overflow-hidden"
-              >
-                <h2 className="text-2xl font-black mb-4 text-red-600 uppercase">Termos de Cancelamento</h2>
-                
-                <div className="mb-6 bg-red-50 p-5 rounded-xl border border-red-100">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={cancelTermsAccepted} 
-                      onChange={e => setCancelTermsAccepted(e.target.checked)} 
-                      className="mt-1 flex-shrink-0 w-5 h-5 accent-red-600 rounded border-gray-300" 
-                    />
-                    <span className="text-[12px] text-stone-700 leading-relaxed font-medium">
-                      Estou ciente de que, ao confirmar o cancelamento, <b>não haverá devolução ou reembolso de valores</b> referentes ao tempo restante da minha assinatura. Compreendo que meu site e meu acesso continuarão ativos apenas até o final do ciclo de faturamento já pago, sendo o serviço interrompido e os dados programados para exclusão após essa data.
-                    </span>
-                  </label>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button onClick={() => {setCancelModalProject(null); setCancelTermsAccepted(false)}} className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 py-4 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors">
-                    Voltar
-                  </button>
-                  <button onClick={() => handleConfirmCancel(cancelModalProject)} disabled={!cancelTermsAccepted || isCanceling} className={`flex-1 py-4 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg flex items-center justify-center gap-2 ${cancelTermsAccepted ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20' : 'bg-stone-300 text-stone-500 cursor-not-allowed'}`}>
-                    {isCanceling ? <Loader2 className="animate-spin w-4 h-4" /> : 'Confirmar Cancelamento'}
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {selectedPlanModal && (
-            <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-white border border-stone-200 p-8 rounded-3xl shadow-2xl max-w-lg w-full relative overflow-hidden"
-              >
-                <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-3/4 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
-                
-                <button onClick={() => setSelectedPlanModal(null)} className="absolute top-6 right-6 text-stone-400 hover:text-stone-800 transition-colors bg-stone-100 p-2 rounded-full z-20">
-                  <X size={18} />
-                </button>
-
-                <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 relative z-10 ${PLAN_DETAILS[selectedPlanModal].bgBadge}`}>
-                  {PLAN_DETAILS[selectedPlanModal].badge}
-                </div>
-                
-                <h2 className={`text-3xl font-black mb-1 italic uppercase relative z-10 ${PLAN_DETAILS[selectedPlanModal].color}`}>
-                  {PLAN_DETAILS[selectedPlanModal].title}
-                </h2>
-                
-                <div className="text-4xl font-black mb-1 text-stone-900 mt-2 relative z-10">
-                  {PLAN_DETAILS[selectedPlanModal].price} <span className="text-sm text-stone-500 font-normal">{PLAN_DETAILS[selectedPlanModal].period}</span>
-                </div>
-                <p className="text-xs text-stone-500 font-bold mb-6 pb-4 border-b border-stone-100 relative z-10">Todos os recursos disponíveis em qualquer plano.</p>
-
-                <ul className="space-y-4 text-stone-600 text-sm font-medium mb-6 relative z-10">
-                  {PLAN_DETAILS[selectedPlanModal].rules.map((rule, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle size={18} className={`${PLAN_DETAILS[selectedPlanModal].color} shrink-0 mt-0.5`} />
-                      <span className="leading-relaxed">{rule}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {selectedPlanModal !== 'free' && (
-                  <div className="mb-6 bg-stone-50 p-4 rounded-xl border border-stone-200 relative z-10">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={checkoutTermsAccepted} 
-                        onChange={e => setCheckoutTermsAccepted(e.target.checked)} 
-                        className="mt-1 flex-shrink-0 w-4 h-4 accent-teal-600 rounded" 
-                      />
-                      <span className="text-[10px] text-stone-600 leading-relaxed font-medium">
-                        Oferecemos 7 dias de avaliação gratuita. Por isso, <b>não realizamos reembolsos proporcionais</b>. 
-                        Ao prosseguir com a compra antes do término do seu teste, você declara estar ciente que já avaliou a plataforma, 
-                        concorda com a contratação e abre mão dos dias de teste restantes.
-                      </span>
-                    </label>
-                  </div>
-                )}
-
-                <div className="flex flex-col sm:flex-row gap-3 relative z-10">
-                  <button onClick={() => setSelectedPlanModal(null)} className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 py-4 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors">
-                    Voltar
-                  </button>
-                  <button 
-                    onClick={() => { 
-                      if (selectedPlanModal === 'free') {
-                        setSelectedPlanModal(null); 
-                        setIsMenuOpen(true); 
-                      } else {
-                        if (currentProjectSlug) {
-                          handleStripeCheckout(currentProjectSlug, selectedPlanModal === 'monthly' ? 'mensal' : 'anual');
-                        } else {
-                          showToast("Para assinar, primeiro preencha os dados e gere o seu site!", "warning");
-                          setSelectedPlanModal(null);
-                          setIsMenuOpen(true);
-                        }
-                      }
-                    }} 
-                    disabled={(selectedPlanModal !== 'free' && !checkoutTermsAccepted) || checkoutLoading === currentProjectSlug}
-                    className={`flex-1 py-4 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg flex items-center justify-center gap-2 ${selectedPlanModal === 'free' || checkoutTermsAccepted ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20' : 'bg-stone-300 text-stone-500 cursor-not-allowed'}`}
-                  >
-                    {checkoutLoading === currentProjectSlug ? <Loader2 size={16} className="animate-spin" /> : <Rocket size={16} />} 
-                    {checkoutLoading === currentProjectSlug 
-                      ? 'Processando...' 
-                      : selectedPlanModal === 'free' 
-                        ? 'Criar Meu Site' 
-                        : currentProjectSlug 
-                          ? 'Ir para Pagamento' 
-                          : 'Criar Site Primeiro'}
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {publishModalUrl && (
-            <div className="fixed inset-0 z-[100] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-white border border-stone-200 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-5 relative overflow-hidden"
-              >
-                <img src={BRAND_LOGO} className="absolute bottom-[-10%] left-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
-                <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-100 relative z-10">
-                  <CheckCircle size={32} />
-                </div>
-                <div className="relative z-10">
-                  <h2 className="text-2xl font-bold text-stone-900 mb-2">
-                    {isUpdatePublish ? 'Publicação Atualizada!' : 'Seu site está no ar!'}
-                  </h2>
-                  <p className="text-stone-500 text-sm leading-relaxed">
-                    {isUpdatePublish ? 'As alterações já refletem no seu endereço online.' : 'A sua página já está online. Caso tenha configurado um domínio oficial, pode demorar algumas horas para propagar.'}
-                  </p>
-                </div>
-
-                {!isUpdatePublish && savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid' && (
-                  <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl text-left relative z-10 shadow-sm">
-                     <h4 className="text-orange-600 font-bold text-[11px] uppercase tracking-wider mb-2">Aproveite seus 7 dias gratuitos</h4>
-                     <p className="text-[10px] text-stone-600 leading-relaxed font-medium">
-                       Durante esse período, explore todos os recursos. Lembre-se: caso a assinatura não seja efetivada ao final do prazo, o site entrará em estado de congelamento e será excluído.
-                     </p>
-                  </div>
-                )}
-
-                <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 flex items-center justify-between gap-3 overflow-hidden relative z-10 mt-2">
-                  <code className="text-teal-600 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
-                </div>
-                <div className="flex gap-3 pt-2 relative z-10">
-                  <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); showToast('Link copiado!', 'success'); }} className="flex-1 bg-white hover:bg-stone-50 text-stone-700 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-stone-200 shadow-sm"><Copy size={18} /> Copiar Link</button>
-                  <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-teal-600 hover:bg-teal-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-teal-500/20"><ExternalLink size={18} /> Abrir Site</button>
-                </div>
-                <button onClick={() => setPublishModalUrl(null)} className="text-stone-400 hover:text-stone-600 font-bold uppercase tracking-widest text-[10px] mt-2 block w-full transition-colors relative z-10">Fechar janela</button>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
 
         <AnimatePresence initial={false}>
           {isMenuOpen && (
@@ -1271,7 +1188,6 @@ const App: React.FC = () => {
                         const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                         const hasCustomDomain = currentProject?.officialDomain && currentProject.officialDomain !== 'Pendente' && !currentProject.officialDomain.includes('.web.app');
                         const isDomainActive = currentProject?.domainStatus === 'ACTIVE' || currentProject?.domainStatus === 'HOSTING_ACTIVE';
-                        const domainRecords = currentProject?.domainRecords || [];
 
                         return (
                           <div className="space-y-4">
@@ -1309,7 +1225,6 @@ const App: React.FC = () => {
                                     <h4 className="text-sm font-bold text-stone-900 mb-2">Já tenho um domínio. Conectar agora:</h4>
                                     <p className="text-[10px] text-stone-500 mb-4">Digite apenas o endereço raiz. O nosso sistema já configura o "www" automaticamente para você.</p>
                                     
-                                    {/* Ajuste de layout do botão e input de domínio */}
                                     <div className="flex flex-col sm:flex-row gap-2 relative">
                                       <div className="relative flex-1">
                                         <input 
@@ -1347,60 +1262,18 @@ const App: React.FC = () => {
                                   </div>
 
                                   {!isDomainActive && (
-                                    <div className="bg-white border border-stone-200 shadow-sm p-4 sm:p-5 rounded-2xl space-y-5 animate-in fade-in duration-500">
-                                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 sm:p-5">
-                                        <h4 className="text-xs font-black text-orange-800 mb-2 flex items-center gap-2 uppercase tracking-wider">
-                                          <Settings size={16} className="text-orange-500" /> Como configurar no Registro.br
-                                        </h4>
-                                        <p className="text-[11px] text-orange-700/90 leading-relaxed mb-5 font-medium">
-                                          Acesse o painel onde você comprou o seu domínio. Procure pela opção <strong className="bg-orange-200/50 px-1 rounded">"Editar Zona DNS"</strong> e adicione as linhas exatamente como mostramos na tabela abaixo. 
-                                          <br className="mb-1" /><span className="text-orange-600/80 italic">*Dica: Se já existir um apontamento do tipo "A" ou "CNAME" com o mesmo nome lá, exclua o antigo primeiro.</span>
-                                        </p>
-
-                                        {/* Tabela Didática simulando o painel de DNS */}
-                                        <div className="border border-stone-300 rounded-xl overflow-hidden bg-white shadow-sm">
-                                          {/* Cabeçalho da Tabela */}
-                                          <div className="bg-stone-100 text-[10px] font-black text-stone-500 p-3 grid grid-cols-12 gap-2 uppercase tracking-widest border-b border-stone-200">
-                                            <div className="col-span-4">Nome (Host)</div>
-                                            <div className="col-span-2">Tipo</div>
-                                            <div className="col-span-6">Dados (Valor/Destino)</div>
-                                          </div>
-
-                                          {/* Linha 1: TIPO A */}
-                                          <div className="p-3 grid grid-cols-12 gap-2 border-b border-stone-100 text-xs items-center hover:bg-stone-50 transition-colors group">
-                                            <div className="col-span-4 text-stone-400 italic font-medium text-[11px]">Deixe em branco</div>
-                                            <div className="col-span-2 font-black text-stone-800">A</div>
-                                            <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-2.5 py-1.5 rounded-lg">
-                                              <span className="font-mono text-teal-700 font-bold select-all">199.36.158.100</span>
-                                              <button onClick={() => { navigator.clipboard.writeText('199.36.158.100'); showToast('IP copiado!', 'success'); }} className="text-teal-500 hover:text-teal-700 transition-colors p-1 bg-white rounded shadow-sm border border-teal-100" title="Copiar"><Copy size={12} /></button>
-                                            </div>
-                                          </div>
-
-                                          {/* Linha 2: CNAME (WWW) */}
-                                          <div className="p-3 grid grid-cols-12 gap-2 border-b border-stone-100 text-xs items-center hover:bg-stone-50 transition-colors group">
-                                            <div className="col-span-4 font-mono text-stone-800 font-bold">www</div>
-                                            <div className="col-span-2 font-black text-stone-800">CNAME</div>
-                                            <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-2.5 py-1.5 rounded-lg overflow-hidden">
-                                              <span className="font-mono text-teal-700 font-bold select-all truncate">{currentProjectSlug}.web.app</span>
-                                              <button onClick={() => { navigator.clipboard.writeText(`${currentProjectSlug}.web.app`); showToast('Destino copiado!', 'success'); }} className="text-teal-500 hover:text-teal-700 transition-colors p-1 bg-white rounded shadow-sm border border-teal-100 ml-2 shrink-0" title="Copiar"><Copy size={12} /></button>
-                                            </div>
-                                          </div>
-
-                                          {/* Linha 3: TXT (Se Firebase exigir) */}
-                                          {domainRecords && domainRecords.length > 0 && (
-                                            <div className="p-3 grid grid-cols-12 gap-2 text-xs items-center hover:bg-stone-50 transition-colors group">
-                                              <div className="col-span-4 text-stone-400 italic font-medium text-[11px]">Deixe em branco</div>
-                                              <div className="col-span-2 font-black text-stone-800">TXT</div>
-                                              <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-2.5 py-1.5 rounded-lg overflow-hidden">
-                                                <span className="font-mono text-[10px] text-teal-700 font-bold select-all truncate" title={domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}>
-                                                  {domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}
-                                                </span>
-                                                <button onClick={() => { navigator.clipboard.writeText(domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`); showToast('TXT copiado!', 'success'); }} className="text-teal-500 hover:text-teal-700 transition-colors p-1 bg-white rounded shadow-sm border border-teal-100 ml-2 shrink-0" title="Copiar"><Copy size={12} /></button>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
+                                    <div className="bg-orange-50 border border-orange-200 p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
+                                      <Settings className="text-orange-400 w-8 h-8" />
+                                      <div>
+                                        <h4 className="text-sm font-black text-orange-800">Finalize a Configuração DNS</h4>
+                                        <p className="text-[11px] text-orange-700/80 mt-1">Para o site funcionar, você precisa adicionar alguns dados no seu provedor de domínio.</p>
                                       </div>
+                                      <button 
+                                        onClick={() => setIsDnsModalOpen(true)}
+                                        className="mt-2 bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-orange-500/20"
+                                      >
+                                        Abrir Instruções de Apontamento
+                                      </button>
                                     </div>
                                   )}
 
