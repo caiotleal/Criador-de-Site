@@ -413,6 +413,7 @@ const App: React.FC = () => {
   const [cancelModalProject, setCancelModalProject] = useState<string | null>(null);
   const [cancelTermsAccepted, setCancelTermsAccepted] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
 
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
@@ -430,11 +431,8 @@ const App: React.FC = () => {
   const [customDomainInput, setCustomDomainInput] = useState('');
   const [isLinkingDomain, setIsLinkingDomain] = useState(false);
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
-  
-  // Novo modal visual para as intruções de DNS
   const [isDnsModalOpen, setIsDnsModalOpen] = useState(false);
 
-  // Estados de UI amigável
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'info'|'warning'} | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{title: string, message: string, onConfirm: () => void} | null>(null);
 
@@ -612,10 +610,7 @@ const App: React.FC = () => {
 
   const handleAddCustomDomain = async () => {
     if (!customDomainInput) return showToast('Digite um domínio válido (ex: suamarca.com.br).', 'error');
-    
-    if (customDomainInput.includes('sitezing.com.br')) {
-      return showToast('Você não pode vincular o domínio oficial da plataforma.', 'error');
-    }
+    if (customDomainInput.includes('sitezing.com.br')) return showToast('Você não pode vincular o domínio oficial da plataforma.', 'error');
 
     setIsLinkingDomain(true);
     try {
@@ -632,6 +627,25 @@ const App: React.FC = () => {
     } finally {
       setIsLinkingDomain(false);
     }
+  };
+
+  const handleRemoveDomain = (domainToRemove: string) => {
+    setConfirmDialog({
+      title: 'Desconectar Domínio',
+      message: `Tem certeza que deseja remover o domínio ${domainToRemove}? Seu site voltará a usar o endereço temporário do sistema.`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        showToast('Desconectando domínio...', 'info');
+        try {
+          const removeFn = httpsCallable(functions, 'removeCustomDomain');
+          await removeFn({ projectId: currentProjectSlug, domain: domainToRemove });
+          showToast('Domínio removido com sucesso.', 'success');
+          fetchProjects();
+        } catch (error: any) {
+          showToast('Erro ao remover domínio: ' + error.message, 'error');
+        }
+      }
+    });
   };
 
   const handleVerifyDomain = async (domainToVerify: string) => {
@@ -778,6 +792,20 @@ const App: React.FC = () => {
       setCancelModalProject(null);
     } catch (error: any) { showToast("Erro ao cancelar: " + error.message, "error"); } 
     finally { setIsCanceling(false); }
+  };
+
+  const handleResumeSubscription = async (projectId: string) => {
+    setIsResuming(true);
+    try {
+      const resumeFn = httpsCallable(functions, 'resumeStripeSubscription');
+      await resumeFn({ projectId });
+      showToast("Assinatura reativada com sucesso!", "success");
+      fetchProjects();
+    } catch (error: any) {
+      showToast("Erro ao reativar: " + error.message, "error");
+    } finally {
+      setIsResuming(false);
+    }
   };
   
   const handleLoadProject = (project: any) => {
@@ -1256,9 +1284,19 @@ const App: React.FC = () => {
                                       <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">Endereço Vinculado</span>
                                       <span className="font-mono text-sm font-bold text-teal-700">{currentProject.officialDomain}</span>
                                     </div>
-                                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${isDomainActive ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700 animate-pulse'}`}>
-                                      {isDomainActive ? 'Propagado' : 'Pendente'}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                      <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${isDomainActive ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700 animate-pulse'}`}>
+                                        {isDomainActive ? 'Propagado' : 'Pendente'}
+                                      </span>
+                                      {/* BOTÃO PARA DESCONECTAR O DOMÍNIO */}
+                                      <button 
+                                        onClick={() => handleRemoveDomain(currentProject.officialDomain)} 
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors border border-transparent hover:border-red-100" 
+                                        title="Desconectar Domínio"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    </div>
                                   </div>
 
                                   {!isDomainActive && (
@@ -1303,6 +1341,13 @@ const App: React.FC = () => {
                     const isPaid = currentProject?.paymentStatus === 'paid';
                     const isCanceled = currentProject?.cancelAtPeriodEnd === true || currentProject?.subscriptionStatus === 'canceled';
                     
+                    // Lógica para verificar se o projeto congelou ou venceu
+                    let isExpired = false;
+                    if (currentProject?.expiresAt && expDate && expDate < Date.now() && !isPaid) {
+                      isExpired = true;
+                    }
+                    const needsPayment = currentProject?.status === 'frozen' || isExpired;
+
                     return (
                       <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="bg-white border border-stone-200 p-6 rounded-2xl shadow-sm relative overflow-hidden">
@@ -1337,7 +1382,35 @@ const App: React.FC = () => {
                               </div>
                           </div>
 
-                          {!isPaid ? (
+                          {/* Se for pago E cancelado (ainda no ar), botão para retomar */}
+                          {isPaid && isCanceled && daysLeft > 0 ? (
+                            <div className="bg-orange-50 border border-orange-200 p-6 rounded-xl text-center space-y-4 relative z-10">
+                              <h4 className="font-black text-orange-700 text-lg uppercase tracking-wider">Assinatura Cancelada</h4>
+                              <p className="text-xs text-orange-600/80">Seu site continuará no ar até o fim do ciclo pago. Deseja reativar a renovação automática para não perdê-lo?</p>
+                              <button 
+                                onClick={() => handleResumeSubscription(currentProjectSlug)} 
+                                disabled={isResuming} 
+                                className="bg-orange-500 text-white px-6 py-3.5 rounded-xl font-bold text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-colors w-full"
+                              >
+                                {isResuming ? <Loader2 className="animate-spin inline mr-2"/> : <RefreshCw className="inline mr-2" size={16}/>} Reativar Assinatura
+                              </button>
+                            </div>
+                          ) : isPaid && !isCanceled ? (
+                            /* Se for pago e estiver tudo ok, botão de mudar de plano */
+                            <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4 relative z-10">
+                              <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">Plano Operacional</h4>
+                              <p className="text-xs text-emerald-600/70">Seu ambiente está operando com potência máxima e sem restrições.</p>
+                              <div className="pt-2">
+                                <button 
+                                  onClick={() => { setSelectedPlanModal(currentProject.planSelected === 'anual' ? 'monthly' : 'annual'); setCheckoutTermsAccepted(false); }} 
+                                  className="bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-100 px-6 py-3 rounded-xl text-xs font-bold transition-colors shadow-sm w-full uppercase tracking-wider"
+                                >
+                                  Mudar de Plano
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            /* Se for trial (no ar) ou totalmente vencido/congelado (needsPayment), mostra os planos para comprar */
                             <div className="space-y-6">
                               <div className="grid grid-cols-1 gap-4">
                                 <div className="bg-white p-5 rounded-xl border border-teal-200 flex flex-col h-full relative overflow-hidden shadow-sm">
@@ -1348,8 +1421,8 @@ const App: React.FC = () => {
                                   <ul className="space-y-2 text-xs text-stone-600 mb-6 flex-1 relative z-10">
                                     <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5"/> Domínio próprio & Suporte</li>
                                   </ul>
-                                  <button onClick={() => { setSelectedPlanModal('monthly'); setCheckoutTermsAccepted(false); }} className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors relative z-10">
-                                    Assinar Mensal
+                                  <button onClick={() => { setSelectedPlanModal('monthly'); setCheckoutTermsAccepted(false); }} className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors relative z-10 shadow-lg shadow-teal-500/20">
+                                    {needsPayment ? 'Reativar com Plano Mensal' : 'Assinar Mensal'}
                                   </button>
                                 </div>
 
@@ -1362,15 +1435,10 @@ const App: React.FC = () => {
                                     <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
                                   </ul>
                                   <button onClick={() => { setSelectedPlanModal('annual'); setCheckoutTermsAccepted(false); }} className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20 relative z-10">
-                                    Assinar Anual
+                                    {needsPayment ? 'Reativar com Plano Anual' : 'Assinar Anual'}
                                   </button>
                                 </div>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4 relative z-10">
-                              <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">Plano Operacional</h4>
-                              <p className="text-xs text-emerald-600/70">Seu ambiente está operando com potência máxima e sem restrições.</p>
                             </div>
                           )}
                           
@@ -1419,7 +1487,6 @@ const App: React.FC = () => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   const isPublished = Boolean(currentProject?.publishUrl || currentProject?.status === 'active');
                   
-                  // Lógica blindada para verificar se o projeto precisa de pagamento
                   let isExpired = false;
                   if (currentProject?.expiresAt) {
                     const expDate = currentProject.expiresAt._seconds ? currentProject.expiresAt._seconds * 1000 : currentProject.expiresAt.seconds * 1000;
@@ -1445,12 +1512,12 @@ const App: React.FC = () => {
                         <button 
                           onClick={() => {
                             setActiveTab('assinatura');
-                            showToast('Seu período de teste expirou. Ative seu plano para publicar as alterações!', 'info');
+                            showToast('Seu site expirou. Ative um plano para reativá-lo e poder publicar as alterações!', 'warning');
                           }} 
                           className="w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20"
                         >
                           <Zap size={14} /> 
-                          Renovar Assinatura
+                          Reativar Assinatura
                         </button>
                       ) : (
                         <button 
