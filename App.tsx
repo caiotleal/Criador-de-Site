@@ -53,85 +53,141 @@ const PROMO_HTML = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SiteZing - Criação Inteligente em Segundos</title>
+  <title>SiteZing - Muito mais que um site</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: #FAFAF9; color: #1C1917; font-family: sans-serif; overflow-x: hidden; }
+    html, body { scroll-behavior: smooth; font-family: 'Inter', sans-serif; background-color: #ffffff; color: #111827; }
     ::-webkit-scrollbar { display: none; }
-    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(231, 229, 228, 0.8); transition: all 0.3s ease; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); cursor: pointer; }
-    .glass-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 40px -10px rgba(249, 115, 22, 0.15); border-color: rgba(249, 115, 22, 0.3); }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-    .plan-bg-logo { position: absolute; bottom: -15%; right: -10%; width: 70%; height: auto; opacity: 0.03; pointer-events: none; filter: grayscale(100%); }
+    .btn-orange { background-color: #f97316; color: white; transition: all 0.3s; }
+    .btn-orange:hover { background-color: #ea580c; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3); }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
   </style>
 </head>
 <body class="antialiased selection:bg-orange-500 selection:text-white">
-  <header class="fixed top-0 left-0 w-full z-[80] bg-[#FAFAF9]/80 backdrop-blur-md border-b border-stone-200/60 h-24 flex items-center px-6 md:px-12 transition-all">
-    <div class="max-w-7xl mx-auto w-full flex items-center">
-       <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-16 md:h-20 w-auto drop-shadow-sm" />
+  
+  <header class="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 transition-all">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+       <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-10 md:h-12 w-auto" />
+       <div class="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600">
+         <a href="#features" class="hover:text-orange-500 transition-colors">Recursos</a>
+         <a href="#pricing" class="hover:text-orange-500 transition-colors">Planos</a>
+         <button onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'free' }, '*')" class="btn-orange px-6 py-2.5 rounded-full font-bold shadow-md shadow-orange-500/20">Começar Agora</button>
+       </div>
     </div>
   </header>
 
-  <main class="pt-36 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
-    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/30 blur-[150px] rounded-full pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
-
-    <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
-      <div class="inline-block px-4 py-1.5 rounded-full bg-white border border-teal-100 text-xs font-bold tracking-widest text-teal-600 mb-6 uppercase shadow-sm">A revolução da web</div>
-      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-stone-900">
-        Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500 pr-10 inline-block">ZING!!!</span>
-      </h1>
-      <p class="text-lg md:text-2xl text-stone-500 font-light leading-relaxed">
-        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
-      </p>
+  <section class="pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
+    <div class="inline-block px-4 py-1.5 rounded-full bg-orange-50 text-orange-600 text-xs font-bold tracking-widest uppercase mb-6 border border-orange-100">Criação por Inteligência Artificial</div>
+    <h1 class="text-5xl md:text-7xl font-black tracking-tight text-gray-900 mb-6 leading-tight">
+      Muito mais que um site.<br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Uma presença online completa.</span>
+    </h1>
+    <p class="text-xl text-gray-500 max-w-3xl mx-auto mb-10 leading-relaxed">
+      Site customizado, SEO integrado e ferramentas digitais que ajudam você a ser encontrado no Google e gerar negócios no piloto automático. Sem dores de cabeça com tecnologia.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+      <button onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'free' }, '*')" class="btn-orange w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-orange-500/20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+        Gerar meu Site em Segundos
+      </button>
+      <a href="#features" class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-lg text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-center border border-gray-200">
+        Ver Funcionalidades
+      </a>
     </div>
+  </section>
 
-    <div class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'free' }, '*')">
-        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
-        <div class="absolute top-0 right-0 bg-stone-200 text-stone-700 text-[9px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase">Sem pagamento antecipado</div>
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-stone-800 mt-2">Teste Grátis</h3>
-        <p class="text-stone-500 mb-6 text-sm">Veja o seu site pronto hoje mesmo.</p>
-        <div class="text-4xl font-black mb-1 text-teal-600">R$ 0 <span class="text-sm text-stone-400 font-normal">/ 7 dias</span></div>
-        <p class="text-[11px] text-teal-500 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
-        <ul class="space-y-3 text-stone-600 text-sm font-medium">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Geração por IA</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10px]">✔</span> Domínio gratuito (.web.app)</li>
-        </ul>
-        <div class="mt-6 text-[10px] text-stone-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para ver regras</div>
+  <section id="features" class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Nós fazemos tudo para você</h2>
+        <p class="text-gray-500 text-lg">Deixamos a parte técnica conosco para você focar no seu negócio.</p>
       </div>
-
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden group border-teal-200" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'monthly' }, '*')">
-        <img src="${BRAND_LOGO}" class="plan-bg-logo" />
-        <div class="absolute top-0 right-0 bg-teal-600 text-white text-[9px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase shadow-md">Mais Assinado</div>
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-teal-600 mt-2">Mensal</h3>
-        <p class="text-stone-500 mb-6 text-sm">Ideal para validar seu negócio.</p>
-        <div class="text-4xl font-black mb-1 text-stone-900">R$ 49<span class="text-2xl">,90</span> <span class="text-sm text-stone-400 font-normal">/ mês</span></div>
-        <p class="text-[11px] text-stone-500 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
-        <ul class="space-y-3 text-stone-600 text-sm font-medium">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-[10px]">✔</span> Site online 24/7</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-[10px]">✔</span> Domínio próprio (.com.br)</li>
-        </ul>
-        <div class="mt-6 text-[10px] text-stone-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para ver regras</div>
-      </div>
-
-      <div class="glass-card p-8 rounded-[2rem] relative overflow-hidden border-orange-300 bg-white shadow-[0_20px_50px_-12px_rgba(249,115,22,0.15)] group" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'annual' }, '*')">
-        <img src="${BRAND_LOGO}" class="plan-bg-logo" style="opacity: 0.06;" />
-        <div class="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase flex gap-1.5 items-center justify-center shadow-lg">
-          <span class="leading-none">Mais Econômico</span>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 card-hover transition-all">
+          <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-500 mb-6">
+             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Design Profissional</h3>
+          <p class="text-gray-500 leading-relaxed text-sm">Nossa IA cria os textos, o design e estrutura tudo em menos de 1 minuto. Sem precisar arrastar blocos ou escrever códigos.</p>
         </div>
-        <h3 class="text-2xl font-black mb-1 italic uppercase text-orange-500 mt-2">Anual</h3>
-        <p class="text-stone-500 mb-6 text-sm">A solução definitiva e econômica.</p>
-        <div class="text-4xl font-black mb-1 text-stone-900">R$ 499 <span class="text-sm text-stone-400 font-normal">/ 1º ano</span></div>
-        <p class="text-[11px] text-orange-500 font-bold mb-6">Todos os recursos disponíveis em qualquer plano.</p>
-        <ul class="space-y-3 text-stone-600 text-sm font-medium">
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> 2 meses grátis</li>
-          <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-[12px]">★</span> Apontamento de Domínio</li>
-        </ul>
-        <div class="mt-6 text-[10px] text-stone-400/80 text-center uppercase tracking-widest font-bold group-hover:text-orange-600 transition-colors">Clique para ver regras</div>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 card-hover transition-all">
+          <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center text-teal-600 mb-6">
+             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Otimização SEO</h3>
+          <p class="text-gray-500 leading-relaxed text-sm">Seu site já nasce preparado para as buscas do Google. Meta tags, velocidade e arquitetura feitas para você ser encontrado facilmente.</p>
+        </div>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 card-hover transition-all">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-6">
+             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Domínio & Hospedagem</h3>
+          <p class="text-gray-500 leading-relaxed text-sm">Conecte seu domínio profissional e tenha a estabilidade de uma hospedagem na infraestrutura ultrarrápida do Google Cloud.</p>
+        </div>
       </div>
     </div>
-  </main>
+  </section>
+
+  <section id="pricing" class="py-24 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Planos sem surpresas</h2>
+      <p class="text-gray-500 text-lg">Experiência de agência, preço de software. Sem contratos de fidelidade.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
+      <div class="border border-gray-200 bg-white rounded-3xl p-8 flex flex-col relative card-hover transition-all h-[420px]">
+        <h3 class="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Teste Grátis</h3>
+        <p class="text-sm text-gray-500 mb-6 h-10">Crie seu site e veja o resultado antes de pagar.</p>
+        <div class="mb-6">
+          <span class="text-4xl font-black">R$ 0</span>
+          <span class="text-gray-500 font-medium">/ 7 dias</span>
+        </div>
+        <button onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'free' }, '*')" class="w-full py-3.5 rounded-xl border border-gray-300 text-gray-700 font-bold hover:border-gray-400 hover:bg-gray-50 transition-all mb-6">Testar Agora</button>
+        <ul class="space-y-3 text-sm text-gray-600 font-medium flex-1">
+          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> IA liberada</li>
+          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Domínio temporário</li>
+        </ul>
+      </div>
+
+      <div class="border-2 border-orange-500 bg-white rounded-3xl p-8 flex flex-col relative shadow-xl card-hover transition-all md:scale-105 h-[460px] z-10">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md">Mais Assinado</div>
+        <h3 class="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Mensal</h3>
+        <p class="text-sm text-gray-500 mb-6 h-10">O essencial para manter seu negócio profissional.</p>
+        <div class="mb-6">
+          <span class="text-4xl font-black">R$ 49</span><span class="text-2xl font-black">,90</span>
+          <span class="text-gray-500 font-medium">/ mês</span>
+        </div>
+        <button onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'monthly' }, '*')" class="w-full py-3.5 rounded-xl btn-orange font-bold transition-all mb-6 shadow-lg shadow-orange-500/20">Assinar Mensal</button>
+        <ul class="space-y-3 text-sm text-gray-600 font-medium flex-1">
+          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Domínio próprio (.com.br)</li>
+          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Hospedagem Google</li>
+          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Suporte Prioritário</li>
+        </ul>
+      </div>
+
+      <div class="border border-gray-200 bg-white rounded-3xl p-8 flex flex-col relative card-hover transition-all h-[420px]">
+        <div class="absolute top-4 right-4 text-teal-600 bg-teal-50 px-2.5 py-1 rounded text-xs font-black uppercase tracking-wider border border-teal-100">-16% OFF</div>
+        <h3 class="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Anual</h3>
+        <p class="text-sm text-gray-500 mb-6 h-10">Economia e tranquilidade o ano todo.</p>
+        <div class="mb-6">
+          <span class="text-4xl font-black">R$ 499</span>
+          <span class="text-gray-500 font-medium">/ 1º ano</span>
+        </div>
+        <button onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'annual' }, '*')" class="w-full py-3.5 rounded-xl border border-gray-300 text-gray-900 font-bold hover:border-teal-500 hover:text-teal-600 transition-all mb-6">Assinar Anual</button>
+        <ul class="space-y-3 text-sm text-gray-600 font-medium flex-1">
+          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-teal-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 2 Meses Grátis</li>
+          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-teal-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Apontamento Exclusivo</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-gray-900 text-white py-20 text-center px-6">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-black mb-8 tracking-tight">Pronto para ter seu site no ar hoje?</h2>
+      <button onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', plan: 'free' }, '*')" class="btn-orange px-8 py-4 rounded-xl font-bold text-lg inline-block shadow-lg shadow-orange-500/20">Começar Gratuitamente</button>
+      <p class="mt-8 text-gray-400 text-xs font-medium uppercase tracking-widest">© 2026 SiteZing. Desenvolvido com Inteligência Artificial.</p>
+    </div>
+  </footer>
 </body>
 </html>
 `;
@@ -365,7 +421,7 @@ const PLAN_DETAILS = {
     rules: [
       "Acesso completo à Inteligência Artificial da plataforma.",
       "Geração, edição e publicação de site grátis.",
-      "Hospedagem segura com subdomínio (.web.app).",
+      "Hospedagem segura no roteador da plataforma.",
       "Após 7 dias, o site é congelado automaticamente caso não haja assinatura.",
       "Sem necessidade de cadastrar cartão de crédito para testar."
     ]
@@ -620,7 +676,7 @@ const App: React.FC = () => {
       fetchProjects(); 
     } catch (error: any) {
       if (error.message.includes('already-exists') || error.message.includes('já está em uso')) {
-         showToast('Este domínio já está em uso por outro site.', 'error');
+         showToast('Este domínio já está em uso.', 'error');
       } else {
          showToast('Erro ao vincular domínio: ' + error.message, 'error');
       }
@@ -708,15 +764,10 @@ const App: React.FC = () => {
         await updateFn({ targetId: currentProjectSlug, html: htmlToSave, formData, aiContent });
         showToast('Alterações salvas com sucesso!', 'success');
       } else {
-        const cleanName = formData.businessName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const randomSuffix = Math.random().toString(36).substring(2, 6);
-        const internalDomain = `${cleanName}-${randomSuffix}`;
-        
         const saveFn = httpsCallable(functions, 'saveSiteProject');
         const res: any = await saveFn({ 
             businessName: formData.businessName, 
             officialDomain: officialDomain || "Pendente", 
-            internalDomain, 
             generatedHtml: htmlToSave, 
             formData, 
             aiContent 
@@ -735,14 +786,14 @@ const App: React.FC = () => {
     setIsPublishing(true);
     try {
       const project = savedProjects.find(p => p.id === currentProjectSlug);
-      const isAlreadyPublished = Boolean(project?.publishUrl || project?.status === 'active');
+      const isAlreadyPublished = Boolean(project?.publishUrl || project?.status === 'active' || project?.status === 'published');
       setIsUpdatePublish(isAlreadyPublished);
 
       const publishFn = httpsCallable(functions, 'publishUserProject');
       const res: any = await publishFn({ targetId: currentProjectSlug });
       
-      let publicUrl = res.data?.publishUrl || `https://${project?.internalDomain || currentProjectSlug}.web.app`;
-      if (!publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
+      let publicUrl = res.data?.publishUrl;
+      if (publicUrl && !publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
       
       fetchProjects(); 
       setPublishModalUrl(publicUrl);
@@ -883,7 +934,7 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Confirm Modal (Substitui o window.confirm) */}
+      {/* Confirm Modal */}
       <AnimatePresence>
         {confirmDialog && (
           <div className="fixed inset-0 z-[300] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1341,7 +1392,7 @@ const App: React.FC = () => {
                     const isPaid = currentProject?.paymentStatus === 'paid';
                     const isCanceled = currentProject?.cancelAtPeriodEnd === true || currentProject?.subscriptionStatus === 'canceled';
                     
-                    // Lógica para verificar se o projeto congelou ou venceu (CORRIGIDA)
+                    // Lógica para verificar se o projeto congelou ou venceu
                     let isExpired = false;
                     if (expirationDate && expirationDate < Date.now() && !isPaid) {
                       isExpired = true;
@@ -1472,7 +1523,7 @@ const App: React.FC = () => {
                         {savedProjects.length === 0 ? <p className="text-xs text-stone-400 italic text-center py-4">Nenhum projeto ainda.</p> : (
                           savedProjects.map((p: any) => (
                             <div key={p.id} className="flex gap-1.5 bg-white border border-stone-200 rounded-xl p-2.5 shadow-sm">
-                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-stone-50 hover:bg-stone-100 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-teal-400' : ''}`}><div className="flex flex-col truncate pr-2"><span className="font-bold text-stone-800 truncate flex items-center gap-2">{p.businessName || 'Sem Nome'} {getStatusBadge(p)}</span><span className="text-[9px] text-stone-400 font-mono mt-1">{p.id}.web.app</span></div></button>
+                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-stone-50 hover:bg-stone-100 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-teal-400' : ''}`}><div className="flex flex-col truncate pr-2"><span className="font-bold text-stone-800 truncate flex items-center gap-2">{p.businessName || 'Sem Nome'} {getStatusBadge(p)}</span><span className="text-[9px] text-stone-400 font-mono mt-1 truncate">{p.publishUrl?.replace('https://', '') || 'Sem link público'}</span></div></button>
                                 <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-stone-50 hover:bg-red-50 text-stone-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0"><Trash2 size={14} /></button>
                             </div>
                           ))
@@ -1485,7 +1536,7 @@ const App: React.FC = () => {
                 {/* BOTÕES DE AÇÃO PRINCIPAIS (COM TRAVA DE VENCIMENTO) */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
-                  const isPublished = Boolean(currentProject?.publishUrl || currentProject?.status === 'active');
+                  const isPublished = Boolean(currentProject?.publishUrl || currentProject?.status === 'active' || currentProject?.status === 'published');
                   
                   let isExpired = false;
                   if (currentProject?.expiresAt) {
