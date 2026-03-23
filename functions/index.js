@@ -139,10 +139,14 @@ exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
       return { available: false, error: "Slug não informado." };
     }
     
-    const db = admin.firestore();
-    const snap = await db.collectionGroup("projects").where("projectSlug", "==", projectSlug.toString().trim()).limit(1).get();
+    // Tratamento estrito do texto para ficar no padrão web domínio:
+    // minúsculo, sem acentos, sem espaços e apenas letras/números/hífens
+    const cleanSlug = slugify(projectSlug).slice(0, 30);
     
-    return { available: snap.empty };
+    const db = admin.firestore();
+    const snap = await db.collectionGroup("projects").where("projectSlug", "==", cleanSlug).limit(1).get();
+    
+    return { available: snap.empty, checkedSlug: cleanSlug };
   } catch (error) {
     console.error("Erro no checkDomainAvailability:", error);
     // Para depuração, retornamos o erro ao invés de crashar a function
