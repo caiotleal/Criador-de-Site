@@ -487,8 +487,7 @@ const App: React.FC = () => {
   const [customDomainInput, setCustomDomainInput] = useState('');
   const [isLinkingDomain, setIsLinkingDomain] = useState(false);
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
-  const [isDnsModalOpen, setIsDnsModalOpen] = useState(false);
-
+  
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'info'|'warning'} | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{title: string, message: string, onConfirm: () => void} | null>(null);
 
@@ -914,7 +913,7 @@ const App: React.FC = () => {
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Toast Notification (Substitui os alerts nativos) */}
+      {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -956,86 +955,59 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* MODAL AMPLO DE INSTRUÇÕES DNS */}
+      {/* MODAL DE SUCESSO E AVISO DE ASSINATURA */}
       <AnimatePresence>
-        {isDnsModalOpen && currentProjectSlug && (() => {
-          const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
-          const domainRecords = currentProject?.domainRecords || [];
-          return (
-            <div className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-white border border-stone-200 p-8 rounded-3xl shadow-2xl max-w-3xl w-full relative overflow-hidden"
-              >
-                <button onClick={() => setIsDnsModalOpen(false)} className="absolute top-6 right-6 text-stone-400 hover:text-stone-800 transition-colors bg-stone-100 p-2 rounded-full z-20">
-                  <X size={18} />
-                </button>
+        {publishModalUrl && (
+          <div className="fixed inset-0 z-[100] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white border border-stone-200 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-5 relative overflow-hidden"
+            >
+              <img src={BRAND_LOGO} className="absolute bottom-[-10%] left-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-100 relative z-10">
+                <CheckCircle size={32} />
+              </div>
+              <div className="relative z-10">
+                <h2 className="text-2xl font-bold text-stone-900 mb-2">
+                  {isUpdatePublish ? 'Publicação Atualizada!' : 'Seu site está no ar!'}
+                </h2>
+                <p className="text-stone-500 text-sm leading-relaxed">
+                  {isUpdatePublish ? 'As alterações já refletem no seu endereço online.' : 'A sua página já está online. Caso tenha configurado um domínio oficial, pode demorar algumas horas para propagar.'}
+                </p>
+              </div>
 
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-orange-100 p-3 rounded-xl"><Settings className="text-orange-600 w-6 h-6" /></div>
-                  <div>
-                    <h2 className="text-2xl font-black text-stone-900 uppercase">Apontamentos DNS</h2>
-                    <p className="text-sm text-stone-500">Configure o domínio <span className="font-bold text-teal-600">{currentProject.officialDomain}</span></p>
-                  </div>
+              {/* AVISO DO TEMPO DE TRIAL E BOTÃO PARA ASSINAR */}
+              {savedProjects.find(p => p.id === currentProjectSlug)?.paymentStatus !== 'paid' && (
+                <div className="bg-orange-50 border border-orange-200 p-5 rounded-2xl text-left relative z-10 shadow-sm mt-4">
+                   <h4 className="text-orange-800 font-black text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
+                     <AlertCircle size={16} className="text-orange-500"/> Atenção ao Prazo
+                   </h4>
+                   <p className="text-[11px] text-orange-700/90 leading-relaxed font-medium mb-4">
+                     O seu site está em <b>período de teste gratuito por 7 dias</b>. Se a assinatura premium não for ativada até o final do prazo, o site será congelado e sairá do ar automaticamente.
+                   </p>
+                   <button 
+                     onClick={() => {
+                       setPublishModalUrl(null);
+                       setActiveTab('assinatura');
+                     }} 
+                     className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-xs shadow-lg shadow-orange-500/20 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+                   >
+                     <Zap size={14}/> Ativar Plano Premium
+                   </button>
                 </div>
+              )}
 
-                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-6">
-                  <p className="text-sm text-orange-800 leading-relaxed font-medium mb-4">
-                    Acesse o painel do seu provedor de domínio (ex: Registro.br, HostGator, Locaweb) e procure pela opção <strong>"Editar Zona DNS"</strong>. Em seguida, adicione as linhas abaixo <strong>exatamente</strong> como são apresentadas.
-                    <br/><span className="text-xs text-orange-600 italic block mt-1">* Dica de Ouro: Se o painel já possuir apontamentos do tipo "A" ou "CNAME" conflitantes, exclua os antigos primeiro.</span>
-                  </p>
-
-                  <div className="border border-stone-300 rounded-xl overflow-hidden bg-white shadow-sm">
-                    {/* Cabeçalho da Tabela */}
-                    <div className="bg-stone-100 text-xs font-black text-stone-500 p-4 grid grid-cols-12 gap-3 uppercase tracking-widest border-b border-stone-200">
-                      <div className="col-span-4">Nome (Host)</div>
-                      <div className="col-span-2">Tipo</div>
-                      <div className="col-span-6">Dados (Valor/Destino)</div>
-                    </div>
-
-                    {/* Linha 1: TIPO A */}
-                    <div className="p-4 grid grid-cols-12 gap-3 border-b border-stone-100 text-sm items-center hover:bg-stone-50 transition-colors">
-                      <div className="col-span-4 text-stone-500 font-medium">@ <span className="text-[11px] text-stone-400 italic">(Ou deixe em branco)</span></div>
-                      <div className="col-span-2 font-black text-stone-800">A</div>
-                      <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
-                        <span className="font-mono text-teal-700 font-bold select-all">199.36.158.100</span>
-                        <button onClick={() => { navigator.clipboard.writeText('199.36.158.100'); showToast('IP copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100"><Copy size={14}/> Copiar</button>
-                      </div>
-                    </div>
-
-                    {/* Linha 2: CNAME (WWW) */}
-                    <div className="p-4 grid grid-cols-12 gap-3 border-b border-stone-100 text-sm items-center hover:bg-stone-50 transition-colors">
-                      <div className="col-span-4 font-mono text-stone-800 font-bold">www</div>
-                      <div className="col-span-2 font-black text-stone-800">CNAME</div>
-                      <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
-                        <span className="font-mono text-teal-700 font-bold select-all truncate">{currentProjectSlug}.web.app</span>
-                        <button onClick={() => { navigator.clipboard.writeText(`${currentProjectSlug}.web.app`); showToast('Destino copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14}/> Copiar</button>
-                      </div>
-                    </div>
-
-                    {/* Linha 3: TXT (Se houver) */}
-                    {domainRecords && domainRecords.length > 0 && (
-                      <div className="p-4 grid grid-cols-12 gap-3 text-sm items-center hover:bg-stone-50 transition-colors">
-                        <div className="col-span-4 text-stone-500 font-medium">@ <span className="text-[11px] text-stone-400 italic">(Ou deixe em branco)</span></div>
-                        <div className="col-span-2 font-black text-stone-800">TXT</div>
-                        <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
-                          <span className="font-mono text-xs text-teal-700 font-bold select-all truncate" title={domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}>
-                            {domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}
-                          </span>
-                          <button onClick={() => { navigator.clipboard.writeText(domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`); showToast('TXT copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14}/> Copiar</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <button onClick={() => setIsDnsModalOpen(false)} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors">
-                  Pronto, entendi como configurar
-                </button>
-              </motion.div>
-            </div>
-          );
-        })()}
+              <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 flex items-center justify-between gap-3 overflow-hidden relative z-10 mt-2">
+                <code className="text-teal-600 text-sm truncate flex-1 font-mono">{publishModalUrl}</code>
+              </div>
+              <div className="flex gap-3 pt-2 relative z-10">
+                <button onClick={() => { navigator.clipboard.writeText(publishModalUrl); showToast('Link copiado!', 'success'); }} className="flex-1 bg-white hover:bg-stone-50 text-stone-700 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-stone-200 shadow-sm"><Copy size={18} /> Copiar Link</button>
+                <button onClick={() => window.open(publishModalUrl, '_blank')} className="flex-1 bg-teal-600 hover:bg-teal-500 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-teal-500/20"><ExternalLink size={18} /> Abrir Site</button>
+              </div>
+              <button onClick={() => setPublishModalUrl(null)} className="text-stone-400 hover:text-stone-600 font-bold uppercase tracking-widest text-[10px] mt-2 block w-full transition-colors relative z-10">Fechar janela</button>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
 
       <div className="w-full h-screen bg-[#FAFAF9] overflow-hidden font-sans text-stone-900 flex flex-col md:flex-row">
@@ -1267,6 +1239,7 @@ const App: React.FC = () => {
                         const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                         const hasCustomDomain = currentProject?.officialDomain && currentProject.officialDomain !== 'Pendente' && !currentProject.officialDomain.includes('.web.app');
                         const isDomainActive = currentProject?.domainStatus === 'ACTIVE' || currentProject?.domainStatus === 'HOSTING_ACTIVE';
+                        const domainRecords = currentProject?.domainRecords || [];
 
                         return (
                           <div className="space-y-4">
@@ -1351,18 +1324,51 @@ const App: React.FC = () => {
                                   </div>
 
                                   {!isDomainActive && (
-                                    <div className="bg-orange-50 border border-orange-200 p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
-                                      <Settings className="text-orange-400 w-8 h-8" />
+                                    <div className="bg-orange-50 border border-orange-200 p-4 sm:p-5 rounded-2xl flex flex-col space-y-4">
                                       <div>
-                                        <h4 className="text-sm font-black text-orange-800">Finalize a Configuração DNS</h4>
-                                        <p className="text-[11px] text-orange-700/80 mt-1">Para o site funcionar, você precisa adicionar alguns dados no seu provedor de domínio.</p>
+                                        <h4 className="text-xs font-black text-orange-800 uppercase tracking-wider flex items-center gap-2 mb-1"><Settings size={16} className="text-orange-500" /> Configuração DNS</h4>
+                                        <p className="text-[11px] text-orange-700/80 leading-relaxed font-medium">Acesse o seu provedor de domínio (ex: Registro.br) e adicione os registros abaixo. <br/><span className="italic">*Se houver apontamentos antigos do tipo A ou CNAME, exclua-os.</span></p>
                                       </div>
-                                      <button 
-                                        onClick={() => setIsDnsModalOpen(true)}
-                                        className="mt-2 bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-orange-500/20"
-                                      >
-                                        Abrir Instruções de Apontamento
-                                      </button>
+
+                                      {/* Layout DNS Moderno (Cards Empilhados para evitar esmagamento) */}
+                                      <div className="space-y-3">
+                                        <div className="bg-white rounded-xl p-3.5 border border-orange-200/60 shadow-sm transition-all hover:border-teal-300">
+                                          <div className="flex justify-between items-center mb-2">
+                                            <span className="font-black text-stone-800 uppercase tracking-widest text-[10px]">TIPO A</span>
+                                            <span className="text-[10px] text-stone-400 italic">Nome: @ (Em branco)</span>
+                                          </div>
+                                          <div className="flex justify-between items-center bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg">
+                                            <span className="font-mono text-teal-700 font-bold select-all text-sm">199.36.158.100</span>
+                                            <button onClick={() => { navigator.clipboard.writeText('199.36.158.100'); showToast('IP copiado!', 'success'); }} className="text-stone-400 hover:text-teal-600 transition-colors"><Copy size={16}/></button>
+                                          </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-xl p-3.5 border border-orange-200/60 shadow-sm transition-all hover:border-teal-300">
+                                          <div className="flex justify-between items-center mb-2">
+                                            <span className="font-black text-stone-800 uppercase tracking-widest text-[10px]">CNAME (WWW)</span>
+                                            <span className="text-[10px] text-stone-400 italic">Nome: www</span>
+                                          </div>
+                                          <div className="flex justify-between items-center bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg">
+                                            <span className="font-mono text-teal-700 font-bold select-all text-sm truncate">{currentProjectSlug}.sitezing.com.br</span>
+                                            <button onClick={() => { navigator.clipboard.writeText(`${currentProjectSlug}.sitezing.com.br`); showToast('Destino copiado!', 'success'); }} className="text-stone-400 hover:text-teal-600 transition-colors ml-2 shrink-0"><Copy size={16}/></button>
+                                          </div>
+                                        </div>
+
+                                        {domainRecords && domainRecords.length > 0 && (
+                                          <div className="bg-white rounded-xl p-3.5 border border-orange-200/60 shadow-sm transition-all hover:border-teal-300">
+                                            <div className="flex justify-between items-center mb-2">
+                                              <span className="font-black text-stone-800 uppercase tracking-widest text-[10px]">TXT (Verificação)</span>
+                                              <span className="text-[10px] text-stone-400 italic">Nome: @ (Em branco)</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg">
+                                              <span className="font-mono text-[10px] text-teal-700 font-bold select-all truncate" title={domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}>
+                                                {domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}
+                                              </span>
+                                              <button onClick={() => { navigator.clipboard.writeText(domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`); showToast('TXT copiado!', 'success'); }} className="text-stone-400 hover:text-teal-600 transition-colors ml-2 shrink-0"><Copy size={16}/></button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
                                   )}
 
@@ -1392,7 +1398,6 @@ const App: React.FC = () => {
                     const isPaid = currentProject?.paymentStatus === 'paid';
                     const isCanceled = currentProject?.cancelAtPeriodEnd === true || currentProject?.subscriptionStatus === 'canceled';
                     
-                    // Lógica para verificar se o projeto congelou ou venceu
                     let isExpired = false;
                     if (expirationDate && expirationDate < Date.now() && !isPaid) {
                       isExpired = true;
@@ -1433,7 +1438,6 @@ const App: React.FC = () => {
                               </div>
                           </div>
 
-                          {/* Se for pago E cancelado (ainda no ar), botão para retomar */}
                           {isPaid && isCanceled && daysLeft > 0 ? (
                             <div className="bg-orange-50 border border-orange-200 p-6 rounded-xl text-center space-y-4 relative z-10">
                               <h4 className="font-black text-orange-700 text-lg uppercase tracking-wider">Assinatura Cancelada</h4>
@@ -1447,7 +1451,6 @@ const App: React.FC = () => {
                               </button>
                             </div>
                           ) : isPaid && !isCanceled ? (
-                            /* Se for pago e estiver tudo ok, botão de mudar de plano */
                             <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl text-center space-y-4 relative z-10">
                               <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">Plano Operacional</h4>
                               <p className="text-xs text-emerald-600/70">Seu ambiente está operando com potência máxima e sem restrições.</p>
@@ -1461,7 +1464,6 @@ const App: React.FC = () => {
                               </div>
                             </div>
                           ) : (
-                            /* Se for trial (no ar) ou totalmente vencido/congelado (needsPayment), mostra os planos para comprar */
                             <div className="space-y-6">
                               <div className="grid grid-cols-1 gap-4">
                                 <div className="bg-white p-5 rounded-xl border border-teal-200 flex flex-col h-full relative overflow-hidden shadow-sm">
@@ -1533,7 +1535,6 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                {/* BOTÕES DE AÇÃO PRINCIPAIS (COM TRAVA DE VENCIMENTO) */}
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   const isPublished = Boolean(currentProject?.publishUrl || currentProject?.status === 'active' || currentProject?.status === 'published');
