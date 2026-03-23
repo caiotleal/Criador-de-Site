@@ -358,13 +358,16 @@ const extractCustomImages = (html: string | null) => {
 const BUILDER_DOMAINS = ['localhost', 'sitezing.com.br', 'www.sitezing.com.br', 'criador-de-site-1a91d.web.app', 'criador-de-site-1a91d.firebaseapp.com'];
 
 const App: React.FC = () => {
-  // INTERCEPTADOR DE SUBDOMÍNIO (WILDCARD) E DOMÍNIO CUSTOMIZADO
+
+  // ==============================================================================
+  // INTERCEPTADOR DE SUBDOMÍNIO (WILDCARD) E DOMÍNIO CUSTOMIZADO DO CLIENTE
+  // ==============================================================================
   const [isClientSiteView, setIsClientSiteView] = useState(false);
 
   useEffect(() => {
     const host = window.location.hostname.toLowerCase();
     
-    // Se a URL acessada NÃO for a raiz da plataforma, é o site de um cliente
+    // Se a URL acessada NÃO for a plataforma principal, é o site de um cliente
     if (!BUILDER_DOMAINS.includes(host)) {
       setIsClientSiteView(true);
       const fetchSite = async () => {
@@ -440,7 +443,7 @@ const App: React.FC = () => {
       document.getElementsByTagName('head')[0].appendChild(link);
     }
     link.href = BRAND_LOGO;
-    if (!isClientSiteView) document.title = "SiteZing - Muito mais que um site !!!";
+    if (!isClientSiteView) document.title = "SiteZing - Seu site pronto em um ZING !!!";
   }, [isClientSiteView]);
 
   useEffect(() => {
@@ -475,7 +478,7 @@ const App: React.FC = () => {
     }
   }, [toast]);
 
-  // Se for o visitante vendo um site do cliente, congela a tela na animação de carregamento
+  // Se o visitante estiver visualizando um site de cliente, congela a tela de fundo
   if (isClientSiteView) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#FAFAF9]">
@@ -491,13 +494,130 @@ const App: React.FC = () => {
     setToast({ message, type });
   };
 
-  const fetchProjects = async () => {
-    if (!auth.currentUser) return setSavedProjects([]);
-    try {
-      const listFn = httpsCallable(functions, 'listUserProjects');
-      const listRes: any = await listFn({});
-      setSavedProjects(listRes.data?.projects || []);
-    } catch { setSavedProjects([]); }
+  // ==============================================================================
+  // CORREÇÃO: BUSCA DE PROJETOS E SINCRONIA DO AUTH
+  // ==============================================================================
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!loggedUserEmail) {
+        setSavedProjects([]);
+        return;
+      }
+      try {
+        const listFn = httpsCallable(functions, 'listUserProjects');
+        const listRes: any = await listFn({});
+        setSavedProjects(listRes.data?.projects || []);
+      } catch (err) {
+        console.error("Erro ao listar projetos:", err);
+        setSavedProjects([]);
+      }
+    };
+    fetchProjects();
+  }, [loggedUserEmail]);
+
+  const renderTemplate = (content: any, data: typeof formData, customImages: Record<string, string> = {}) => {
+    let html = TEMPLATES[data.layoutStyle] || TEMPLATES['layout_modern_center'];
+    const colors = COLORS.find(c => c.id === data.colorId) || COLORS[0];
+
+    const replaceAll = (token: string, value: string) => { html = html.split(token).join(value); };
+    const companyNameUpper = (data.businessName || 'Sua Empresa').toUpperCase();
+
+    replaceAll('{{BUSINESS_NAME}}', companyNameUpper);
+    replaceAll('{{HERO_TITLE}}', content.heroTitle || `Bem-vindo à ${data.businessName}`);
+    replaceAll('{{HERO_SUBTITLE}}', content.heroSubtitle || 'Presença digital profissional.');
+    replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
+    replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
+    replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
+    
+    replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
+    replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
+    replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
+    
+    replaceAll('{{ADDRESS}}', data.region ? `${data.address || 'Endereço não informado'} - ${data.region}` : (data.address || 'Endereço não informado'));
+    replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
+    replaceAll('{{EMAIL}}', data.email || 'Email não informado');
+
+    let headInjection = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
+    
+    const logoHeight = data.logoSize || 40;
+    if (data.logoBase64) {
+      headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
+      headInjection += `<style>.glass-logo-premium img { max-height: ${logoHeight}px !important; }</style>`;
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<img src="${data.logoBase64}" style="max-height: ${logoHeight}px; width: auto; display: block; object-fit: contain; transition: transform 0.2s ease;" alt="Logo" />`);
+    } else {
+      html = html.replace(/\[\[LOGO_AREA\]\]/g, `<span style="font-weight: 900; font-size: 1.2rem; text-transform: uppercase;">${companyNameUpper}</span>`);
+    }
+
+    replaceAll('[[WHATSAPP_BTN]]', ''); replaceAll('[[INSTAGRAM_BTN]]', ''); replaceAll('[[FACEBOOK_BTN]]', '');
+    replaceAll('[[TIKTOK_BTN]]', ''); replaceAll('[[LINKEDIN_BTN]]', ''); replaceAll('[[IFOOD_BTN]]', ''); replaceAll('[[NOVE_NOVE_BTN]]', ''); replaceAll('[[KEETA_BTN]]', '');
+
+    let socialHtml = '';
+    const addSocialBtn = (href: string, brandColor: string, label: string, innerHtml: string) => {
+      socialHtml += `<a href="${href}" target="_blank" class="glass-social-link" style="color: ${brandColor};" title="${label}">${innerHtml}</a>`;
+    };
+
+    if (data.whatsapp) addSocialBtn(`https://wa.me/${data.whatsapp.replace(/\D/g, '')}`, '#25D366', 'WhatsApp', '<i class="fab fa-whatsapp"></i>');
+    if (data.instagram) addSocialBtn(`https://instagram.com/${data.instagram.replace('@', '')}`, '#E1306C', 'Instagram', '<i class="fab fa-instagram"></i>');
+    if (data.facebook) addSocialBtn(data.facebook.startsWith('http') ? data.facebook : `https://${data.facebook}`, '#1877F2', 'Facebook', '<i class="fab fa-facebook-f"></i>');
+    if (data.linkedin) addSocialBtn(data.linkedin.startsWith('http') ? data.linkedin : `https://${data.linkedin}`, '#0A66C2', 'LinkedIn', '<i class="fab fa-linkedin-in"></i>');
+    if (data.tiktok) addSocialBtn(data.tiktok.startsWith('http') ? data.tiktok : `https://${data.tiktok}`, '#000000', 'TikTok', '<i class="fab fa-tiktok"></i>');
+    if (data.ifood) addSocialBtn(data.ifood.startsWith('http') ? data.ifood : `https://${data.ifood}`, '#EA1D2C', 'iFood', '<img src="https://cdn.simpleicons.org/ifood/EA1D2C" alt="iFood" style="width: 20px; height: 20px; object-fit: contain;"/>');
+    if (data.noveNove) addSocialBtn(data.noveNove.startsWith('http') ? data.noveNove : `https://${data.noveNove}`, '#FFC700', '99', '<span style="font-size: 15px; font-weight: 900; line-height: 1;">99</span>');
+    if (data.keeta) addSocialBtn(data.keeta.startsWith('http') ? data.keeta : `https://${data.keeta}`, '#19B84A', 'Keeta', '<span style="font-size: 15px; font-weight: 900; line-height: 1;">Keeta</span>');
+
+    replaceAll('[[SOCIAL_LINKS]]', socialHtml);
+
+    const headerContactBtn = data.showForm 
+      ? `<a href="#contato" class="btn-contact-premium"><span class="desktop-text">Fale Conosco</span><i class="fas fa-comment-dots mobile-icon"></i></a>` 
+      : ``;
+    replaceAll('[[HEADER_CONTACT_BTN]]', headerContactBtn);
+
+    const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing.com.br</a></div>`;
+    html = html.replace('</body>', `${footerBrand}</body>`);
+
+    const mapUrl = data.address ? `https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed` : '';
+    const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
+    replaceAll('[[MAP_AREA]]', mapCode);
+    
+    const formAction = data.email ? `action="https://formsubmit.co/ajax/${data.email}"` : '';
+    const hiddenInputs = data.email ? `<input type="hidden" name="_subject" value="[Contato do seu Site] Nova mensagem de um cliente"><input type="hidden" name="_language" value="pt-BR"><input type="hidden" name="_template" value="box"><input type="hidden" name="_captcha" value="false">` : '';
+
+    const formCode = data.showForm ? `
+    <form id="sitecraft-contact-form" ${formAction} class="space-y-4 ux-form ux-glass p-8 md:p-12 rounded-[2rem] relative">
+      ${hiddenInputs}
+      <input name="Nome" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu nome" />
+      <input name="Email" type="email" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" placeholder="Seu email" />
+      <textarea name="Mensagem" required class="w-full bg-[${colors.c1}] border border-[${colors.c3}] rounded-xl p-4 text-sm focus:outline-none focus:border-[${colors.c4}] transition-all text-[${colors.c4}] placeholder:text-[${colors.c6}]" rows="4" placeholder="Sua mensagem"></textarea>
+      <button type="${data.email ? 'submit' : 'button'}" class="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all text-[${colors.c1}]" style="background-color: ${colors.c7}; border: none;">Enviar mensagem</button>
+    </form>
+    <script id="contact-form-script">
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('sitecraft-contact-form');
+        if (form && form.hasAttribute('action')) {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            const btn = form.querySelector('button[type="submit"]');
+            if(btn) { btn.innerText = 'Enviando...'; btn.style.opacity = '0.7'; btn.disabled = true; }
+            fetch(form.action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) })
+            .then(response => response.json())
+            .then(data => { form.innerHTML = '<div style="text-align:center; padding: 20px; animation: fadeUp 0.5s ease;"><div style="width: 64px; height: 64px; background: rgba(16,185,129,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;"><i class="fas fa-check" style="font-size: 30px; color: #10b981;"></i></div><h3 style="font-size: 24px; font-weight: 900; color: ${colors.c4}; margin-bottom: 8px;">Enviado com sucesso!</h3><p style="font-size: 14px; color: ${colors.c6};">Agradecemos o seu contato. Retornaremos o mais breve possível.</p></div>'; })
+            .catch(error => { if(btn) { btn.innerText = 'Erro ao enviar. Tente novamente.'; btn.style.opacity = '1'; btn.disabled = false; } });
+          });
+        }
+      });
+    </script>` : '';
+
+    replaceAll('[[CONTACT_FORM]]', formCode);
+
+    const imgPlaceholder = (id: string, label: string) => {
+      if (customImages[id]) return `<div class="editable-image-wrapper w-full py-4"><div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}"><img src="${customImages[id]}" class="w-full h-full block object-contain" style="border-radius: inherit; margin: 0; box-shadow: none;" /></div></div>`;
+      return `<div class="editable-image-wrapper w-full py-4"><div class="editable-image rounded-2xl flex flex-col items-center justify-center text-zinc-500 hover:text-emerald-500 transition-colors cursor-pointer w-full min-h-[320px] bg-black/20" data-id="${id}"><i class="fas fa-camera text-4xl mb-3"></i><span class="text-xs font-bold uppercase tracking-widest">Adicionar Imagem - ${label}</span></div></div>`;
+    };
+
+    replaceAll('[[HERO_IMAGE]]', imgPlaceholder('hero-img', 'Destaque (Topo)'));
+    replaceAll('[[ABOUT_IMAGE]]', imgPlaceholder('about-img', 'Quem Somos'));
+
+    return html.replace('</head>', `${headInjection}</head>`);
   };
 
   const handleAddCustomDomain = async () => {
@@ -509,10 +629,13 @@ const App: React.FC = () => {
       const linkFn = httpsCallable(functions, 'addCustomDomain');
       await linkFn({ projectId: currentProjectSlug, domain: customDomainInput });
       showToast('Domínio configurado! Verifique as instruções de apontamento.', 'success');
-      fetchProjects(); 
+      // Força a recarga para refletir a nova URL na tela de Meus Projetos
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
     } catch (error: any) {
       if (error.message.includes('already-exists') || error.message.includes('já está em uso')) {
-         showToast('Este domínio já está em uso.', 'error');
+         showToast('Este domínio já está em uso por outro site.', 'error');
       } else {
          showToast('Erro ao vincular domínio: ' + error.message, 'error');
       }
@@ -532,7 +655,10 @@ const App: React.FC = () => {
           const removeFn = httpsCallable(functions, 'removeCustomDomain');
           await removeFn({ projectId: currentProjectSlug, domain: domainToRemove });
           showToast('Domínio removido com sucesso.', 'success');
-          fetchProjects();
+          
+          const listFn = httpsCallable(functions, 'listUserProjects');
+          const listRes: any = await listFn({});
+          setSavedProjects(listRes.data?.projects || []);
         } catch (error: any) {
           showToast('Erro ao remover domínio: ' + error.message, 'error');
         }
@@ -550,7 +676,10 @@ const App: React.FC = () => {
       } else {
         showToast('Ainda aguardando propagação no provedor.', 'warning');
       }
-      fetchProjects();
+      
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
     } catch (error: any) {
       showToast('Erro ao verificar: ' + error.message, 'error');
     } finally {
@@ -600,7 +729,6 @@ const App: React.FC = () => {
         await updateFn({ targetId: currentProjectSlug, html: htmlToSave, formData, aiContent });
         showToast('Alterações salvas com sucesso!', 'success');
       } else {
-        // Validação Agressiva no Back-end: Garante que não duplica
         const saveFn = httpsCallable(functions, 'saveSiteProject');
         const res: any = await saveFn({ 
             businessName: formData.businessName, 
@@ -613,9 +741,11 @@ const App: React.FC = () => {
         showToast('Projeto criado e salvo!', 'success');
       }
       setHasUnsavedChanges(false);
-      fetchProjects();
+      
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
     } catch (err: any) { 
-      // Se der erro de already-exists (nome em uso), exibe na tela
       showToast(err.message.includes('já está em uso') ? err.message : 'Erro ao salvar o site.', 'error'); 
     } 
     finally { setIsSavingProject(false); }
@@ -635,7 +765,10 @@ const App: React.FC = () => {
       let publicUrl = res.data?.publishUrl;
       if (publicUrl && !publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
       
-      fetchProjects(); 
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
+
       setPublishModalUrl(publicUrl);
     } catch (err: any) { showToast('Erro ao publicar: ' + err.message, 'error'); } 
     finally { setIsPublishing(false); }
@@ -654,7 +787,10 @@ const App: React.FC = () => {
             setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
             setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', logoBase64: '', logoSize: 40 });
           }
-          fetchProjects();
+          
+          const listFn = httpsCallable(functions, 'listUserProjects');
+          const listRes: any = await listFn({});
+          setSavedProjects(listRes.data?.projects || []);
         } catch (error) { showToast("Erro ao excluir o site.", "error"); }
         setConfirmDialog(null);
       }
@@ -679,7 +815,11 @@ const App: React.FC = () => {
       const cancelFn = httpsCallable(functions, 'cancelStripeSubscription');
       await cancelFn({ projectId });
       showToast("Assinatura programada para cancelamento.", "success");
-      fetchProjects(); 
+      
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
+
       setCancelModalProject(null);
     } catch (error: any) { showToast("Erro ao cancelar: " + error.message, "error"); } 
     finally { setIsCanceling(false); }
@@ -691,7 +831,10 @@ const App: React.FC = () => {
       const resumeFn = httpsCallable(functions, 'resumeStripeSubscription');
       await resumeFn({ projectId });
       showToast("Assinatura reativada com sucesso!", "success");
-      fetchProjects();
+      
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
     } catch (error: any) {
       showToast("Erro ao reativar: " + error.message, "error");
     } finally {
@@ -754,7 +897,7 @@ const App: React.FC = () => {
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Toast Notification */}
+      {/* Toast Notification (Substitui os alerts nativos) */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -774,7 +917,7 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Confirm Modal */}
+      {/* Confirm Modal (Substitui o window.confirm) */}
       <AnimatePresence>
         {confirmDialog && (
           <div className="fixed inset-0 z-[300] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1191,36 +1334,18 @@ const App: React.FC = () => {
                                   </div>
 
                                   {!isDomainActive && (
-                                    <div className="bg-orange-50 border border-orange-200 p-4 sm:p-5 rounded-2xl flex flex-col space-y-4">
+                                    <div className="bg-orange-50 border border-orange-200 p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
+                                      <Settings className="text-orange-400 w-8 h-8" />
                                       <div>
-                                        <h4 className="text-xs font-black text-orange-800 uppercase tracking-wider flex items-center gap-2 mb-1"><Settings size={16} className="text-orange-500" /> Configuração DNS</h4>
-                                        <p className="text-[11px] text-orange-700/80 leading-relaxed font-medium">Acesse o seu provedor de domínio (ex: Registro.br) e adicione os registros abaixo. <br/><span className="italic">*Se houver apontamentos antigos do tipo A ou CNAME, exclua-os.</span></p>
+                                        <h4 className="text-sm font-black text-orange-800">Finalize a Configuração DNS</h4>
+                                        <p className="text-[11px] text-orange-700/80 mt-1">Para o site funcionar, você precisa adicionar alguns dados no seu provedor de domínio.</p>
                                       </div>
-
-                                      {/* Layout DNS Moderno (Cards Empilhados para evitar esmagamento) */}
-                                      <div className="space-y-3">
-                                        <div className="bg-white rounded-xl p-3.5 border border-orange-200/60 shadow-sm transition-all hover:border-teal-300">
-                                          <div className="flex justify-between items-center mb-2">
-                                            <span className="font-black text-stone-800 uppercase tracking-widest text-[10px]">TIPO A</span>
-                                            <span className="text-[10px] text-stone-400 italic">Nome: @ (Em branco)</span>
-                                          </div>
-                                          <div className="flex justify-between items-center bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg">
-                                            <span className="font-mono text-teal-700 font-bold select-all text-sm">199.36.158.100</span>
-                                            <button onClick={() => { navigator.clipboard.writeText('199.36.158.100'); showToast('IP copiado!', 'success'); }} className="text-stone-400 hover:text-teal-600 transition-colors"><Copy size={16}/></button>
-                                          </div>
-                                        </div>
-
-                                        <div className="bg-white rounded-xl p-3.5 border border-orange-200/60 shadow-sm transition-all hover:border-teal-300">
-                                          <div className="flex justify-between items-center mb-2">
-                                            <span className="font-black text-stone-800 uppercase tracking-widest text-[10px]">CNAME (WWW)</span>
-                                            <span className="text-[10px] text-stone-400 italic">Nome: www</span>
-                                          </div>
-                                          <div className="flex justify-between items-center bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg">
-                                            <span className="font-mono text-teal-700 font-bold select-all text-sm truncate">sitezing.com.br</span>
-                                            <button onClick={() => { navigator.clipboard.writeText(`sitezing.com.br`); showToast('Destino copiado!', 'success'); }} className="text-stone-400 hover:text-teal-600 transition-colors ml-2 shrink-0"><Copy size={16}/></button>
-                                          </div>
-                                        </div>
-                                      </div>
+                                      <button 
+                                        onClick={() => setIsDnsModalOpen(true)}
+                                        className="mt-2 bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-orange-500/20"
+                                      >
+                                        Abrir Instruções de Apontamento
+                                      </button>
                                     </div>
                                   )}
 
