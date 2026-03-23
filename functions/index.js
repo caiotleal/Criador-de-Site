@@ -4,7 +4,6 @@ const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
-const { onRequest } = require("firebase-functions/v2/https");
 
 const stripe = require("stripe")("sk_test_51T3iV5LK0sp6cEMAbpSV1cM4MGESQ9s3EOffFfpUuiU0cbinuy64HCekpoyfAuWZy1gemNFcSpgF1cKPgHDM3pf500vcGP7tGW");
 
@@ -45,23 +44,29 @@ exports.getSiteContent = onCall({ cors: true }, async (request) => {
   let projectSnap;
   const cleanHost = domain.replace(/^www\./, '').toLowerCase();
 
-  // Se for o subdomínio gratuito da plataforma
+  // Se for o subdomínio gratuito da plataforma (ex: nome.sitezing.com.br)
   if (cleanHost.endsWith('.sitezing.com.br')) {
     const slug = cleanHost.replace('.sitezing.com.br', '');
+    
+    // Busca Inteligente: Procura pelo ID, Slug ou Internal Domain para não dar erro 404
     projectSnap = await db.collectionGroup("projects").where("projectSlug", "==", slug).limit(1).get();
+    if (projectSnap.empty) {
+        projectSnap = await db.collectionGroup("projects").where("internalDomain", "==", slug).limit(1).get();
+    }
   } else {
-    // Se for o domínio customizado (ex: casacaiu.com.br)
+    // Se for o domínio customizado oficial do cliente (ex: casacaiu.com.br)
     projectSnap = await db.collectionGroup("projects").where("officialDomain", "==", cleanHost).limit(1).get();
   }
 
   if (!projectSnap || projectSnap.empty) {
-    throw new HttpsError("not-found", "Site não encontrado ou URL inválida.");
+    throw new HttpsError("not-found", "O site não foi encontrado no banco de dados.");
   }
 
   const project = projectSnap.docs[0].data();
 
+  // Trava de Site Congelado
   if (project.status === "frozen") {
-    throw new HttpsError("permission-denied", "Site temporariamente inativo por pendência de pagamento.");
+    throw new HttpsError("permission-denied", "Este site encontra-se temporariamente suspenso.");
   }
 
   return { html: project.generatedHtml };
@@ -100,22 +105,14 @@ exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [gemi
   } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
-// VALIDAÇÃO DE DISPONIBILIDADE DO SUBDOMÍNIO
-exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
-  const { slug } = request.data;
-  if (!slug) return { available: false };
-  const snap = await admin.firestore().collectionGroup("projects").where("projectSlug", "==", slug).limit(1).get();
-  return { available: snap.empty };
-});
-
 exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (request) => {
   const uid = ensureAuthed(request);
-  const { businessName, officialDomain, generatedHtml, formData, aiContent } = request.data;
+  const { businessName, officialDomain, internalDomain, generatedHtml, formData, aiContent } = request.data;
   
-  let projectSlug = slugify(businessName).slice(0, 30); 
-  if (!projectSlug) projectSlug = "site-" + Math.random().toString(36).substring(2, 6);
+  // Confia na URL gerada pelo painel React do usuário
+  const projectSlug = internalDomain || (slugify(businessName).slice(0, 30) + "-" + Math.random().toString(36).substring(2, 6));
 
-  // Validação final de segurança no backend
+  // Validação Backend: Garante que não duplica URL
   const snap = await admin.firestore().collectionGroup("projects").where("projectSlug", "==", projectSlug).limit(1).get();
   if (!snap.empty) {
      throw new HttpsError("already-exists", "Este nome de negócio já está em uso.");
@@ -125,7 +122,7 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
-    uid, businessName, projectSlug,
+    uid, businessName, projectSlug, internalDomain: projectSlug,
     officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
     updatedAt: now, createdAt: now, status: "draft", paymentStatus: "pending"
   }, { merge: true });
@@ -200,6 +197,7 @@ exports.deleteUserProject = onCall({ cors: true }, async (request) => {
 
   if (snap.exists) {
     const project = snap.data();
+    // Limpa domínios anexados ao projeto principal do Firebase se houver
     if (project.officialDomain && project.officialDomain !== "Pendente") {
       try {
         const projectIdEnv = getProjectId();
@@ -214,7 +212,7 @@ exports.deleteUserProject = onCall({ cors: true }, async (request) => {
 });
 
 // ==============================================================================
-// GESTÃO DE DOMÍNIOS PERSONALIZADOS (ANEXADOS AO PROJETO PRINCIPAL)
+// GESTÃO DE DOMÍNIOS PERSONALIZADOS
 // ==============================================================================
 exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (request) => {
   const uid = ensureAuthed(request);
@@ -227,7 +225,6 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     const token = await getFirebaseAccessToken();
     const cleanDomain = domain.trim().toLowerCase();
 
-    // Vincula o domínio diretamente ao site principal do SiteZing
     const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectIdEnv}/customDomains?customDomainId=${cleanDomain}`;
 
     const response = await fetch(apiUrl, {
