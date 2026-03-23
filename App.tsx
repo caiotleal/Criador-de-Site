@@ -737,7 +737,10 @@ const App: React.FC = () => {
         const checkFn = httpsCallable(functions, 'checkDomainAvailability');
         const checkRes: any = await checkFn({ projectSlug: targetSlug });
         
-        if (!checkRes.data?.available) {
+        if (checkRes.data?.error) {
+           console.warn("Aviso ao checar domínio:", checkRes.data.error);
+           // Continua a execução e deixa o save tratar se der ruim
+        } else if (checkRes.data && checkRes.data.available === false) {
            throw new Error('already-exists');
         }
 

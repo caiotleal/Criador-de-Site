@@ -132,11 +132,22 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
 });
 
 exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
-  const { projectSlug } = request.data;
-  if (!projectSlug) throw new HttpsError("invalid-argument", "Slug não informado.");
-  
-  const snap = await admin.firestore().collectionGroup("projects").where("projectSlug", "==", projectSlug).limit(1).get();
-  return { available: snap.empty };
+  try {
+    const { projectSlug } = request.data || {};
+    
+    if (!projectSlug) {
+      return { available: false, error: "Slug não informado." };
+    }
+    
+    const db = admin.firestore();
+    const snap = await db.collectionGroup("projects").where("projectSlug", "==", projectSlug.toString().trim()).limit(1).get();
+    
+    return { available: snap.empty };
+  } catch (error) {
+    console.error("Erro no checkDomainAvailability:", error);
+    // Para depuração, retornamos o erro ao invés de crashar a function
+    return { available: false, error: error.message };
+  }
 });
 
 exports.updateSiteProject = onCall({ cors: true }, async (request) => {
