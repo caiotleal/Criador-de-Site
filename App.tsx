@@ -63,25 +63,56 @@ const PROMO_HTML = `
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .animate-up { animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
     .plan-bg-logo { position: absolute; bottom: -15%; right: -10%; width: 70%; height: auto; opacity: 0.03; pointer-events: none; filter: grayscale(100%); }
+    
+    @media (min-width: 1024px) {
+      body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+      main { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: none !important; padding: 0 8% !important; margin: 0 !important; }
+      header { height: 80px !important; }
+      .footer-commercial { height: 80px; }
+    }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    async function zingSharePlatform() {
+      const shareData = {
+        title: "SiteZing - Criação Inteligente de Sites",
+        text: "Crie seu site profissional em segundos com a SiteZing! 🚀",
+        url: window.location.origin
+      };
+      try {
+        if (navigator.share) { await navigator.share(shareData); }
+        else { 
+          const dummy = document.createElement('input');
+          document.body.appendChild(dummy);
+          dummy.value = window.location.origin;
+          dummy.select();
+          document.execCommand('copy');
+          document.body.removeChild(dummy);
+          alert('Link da SiteZing copiado!');
+        }
+      } catch (err) { console.log('Erro ao compartilhar:', err); }
+    }
+  </script>
 </head>
 <body class="antialiased selection:bg-orange-500 selection:text-white">
   <header class="fixed top-0 left-0 w-full z-[80] bg-[#FAFAF9]/80 backdrop-blur-md border-b border-stone-200/60 h-24 flex items-center px-6 md:px-12 transition-all">
-    <div class="max-w-7xl mx-auto w-full flex items-center">
-       <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-16 md:h-20 w-auto drop-shadow-sm" />
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+       <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-12 md:h-16 w-auto drop-shadow-sm" />
+       <div onclick="zingSharePlatform()" class="cursor-pointer bg-white border border-stone-200 w-12 h-12 rounded-full flex items-center justify-center text-stone-500 hover:text-orange-500 hover:border-orange-500 transition-all shadow-sm">
+         <i class="fas fa-share-alt"></i>
+       </div>
     </div>
   </header>
 
-  <main class="pt-36 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-screen relative">
+  <main class="pt-32 pb-12 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-[calc(100vh-160px)] relative">
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
 
-    <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-16">
-      <div class="inline-block px-4 py-1.5 rounded-full bg-white border border-teal-100 text-xs font-bold tracking-widest text-teal-600 mb-6 uppercase shadow-sm">A revolução da web</div>
-      <h1 class="text-[3rem] md:text-[5.5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-stone-900">
+    <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-12">
+      <h1 class="text-[3rem] md:text-[5rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-stone-900">
         Seu site pronto em um <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500 pr-10 inline-block">ZING!!!</span>
       </h1>
-      <p class="text-lg md:text-2xl text-stone-500 font-light leading-relaxed">
+      <p class="text-lg md:text-xl text-stone-500 font-light leading-relaxed">
         Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
       </p>
     </div>
@@ -132,6 +163,33 @@ const PROMO_HTML = `
       </div>
     </div>
   </main>
+
+  <footer class="footer-commercial bg-white border-t border-stone-200 py-6 px-6 md:px-12 relative z-50">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="text-[10px] text-stone-400 font-bold uppercase tracking-widest text-center md:text-left">
+        &copy; 2024 SiteZing. Todos os direitos reservados. 
+        <br/><span class="text-stone-300">Tecnologia proprietária de criação acelerada.</span>
+      </div>
+      <div class="flex items-center gap-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+        <div class="flex flex-col items-center">
+          <i class="fab fa-google text-2xl mb-1"></i>
+          <span class="text-[8px] font-black uppercase">Google Cloud Partner</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <i class="fas fa-fire-alt text-2xl mb-1"></i>
+          <span class="text-[8px] font-black uppercase">Firebase Certified Architecture</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <i class="fas fa-cloud text-2xl mb-1"></i>
+          <span class="text-[8px] font-black uppercase">Cloudflare Global Network</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <i class="fas fa-shield-alt text-2xl mb-1"></i>
+          <span class="text-[8px] font-black uppercase">Site Blindado SSL</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
 `;
