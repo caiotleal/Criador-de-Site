@@ -22,6 +22,7 @@ const CPanel: React.FC = () => {
   const [manualCss, setManualCss] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [inspectingProject, setInspectingProject] = useState<any>(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,7 +70,8 @@ const CPanel: React.FC = () => {
       const listFn = httpsCallable(functions, 'listAllProjectsAdmin');
       const res: any = await listFn({});
       const allProjects = Array.isArray(res.data?.projects) ? res.data.projects : [];
-      setProjects(allProjects);
+      // Ordenar por data de criação (se houver) decrescente
+      setProjects(allProjects.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
 
       let revenue = 0;
       allProjects.forEach((p: any) => {
@@ -96,8 +98,8 @@ const CPanel: React.FC = () => {
     try {
       const deleteFn = httpsCallable(functions, 'deleteProjectAdmin');
       await deleteFn({ projectId });
+      setProjects(prev => prev.filter(p => p.id !== projectId));
       alert("Projeto apagado com sucesso.");
-      fetchAdminData();
     } catch (err: any) {
       alert("Erro ao apagar: " + err.message);
     }
