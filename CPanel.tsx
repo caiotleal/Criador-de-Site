@@ -5,7 +5,7 @@ import { auth, functions, db } from './firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, Users, Globe, Settings, LogOut, ChevronRight, Eye, Edit3, 
-  Search, ShieldAlert, DollarSign, ExternalLink, Loader2, RefreshCw, Save, Trash2, Star
+  Search, ShieldAlert, DollarSign, ExternalLink, Loader2, RefreshCw, Save, Trash2, Star, X
 } from 'lucide-react';
 import { BRAND_LOGO } from './components/brand';
 
@@ -342,8 +342,6 @@ const CPanel: React.FC = () => {
               </motion.div>
             )}
 
-            {/* ... (outros views: users, domains, settings) */}
-            
             {view === 'users' && (
               <motion.div key="users" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                 <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
@@ -416,9 +414,6 @@ const CPanel: React.FC = () => {
                 </div>
               </motion.div>
             )}
-
-            {view === 'editor' && (
-              // ... o editor já está lá
 
             {view === 'editor' && (
               <motion.div key="editor" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-6">
@@ -501,6 +496,28 @@ const CPanel: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Modal de Inspeção de JSON */}
+          <AnimatePresence>
+            {inspectingProject && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-stone-900/60 backdrop-blur-sm">
+                <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
+                  <div className="p-8 border-b border-stone-100 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-black uppercase italic">Universal Inspector</h3>
+                      <p className="text-[10px] font-black uppercase text-stone-400 tracking-widest mt-1">Firestore Record: {inspectingProject.id}</p>
+                    </div>
+                    <button onClick={() => setInspectingProject(null)} className="p-3 bg-stone-100 hover:bg-stone-200 rounded-2xl transition-all"><X size={20} className="" /></button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-8 bg-stone-50">
+                    <pre className="text-[11px] font-mono text-stone-800 bg-white p-6 rounded-2xl border border-stone-200 shadow-inner overflow-x-auto">
+                      {JSON.stringify(inspectingProject, null, 2)}
+                    </pre>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
