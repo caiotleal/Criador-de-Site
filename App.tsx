@@ -474,7 +474,16 @@ const App: React.FC = () => {
       updates.showReviews = true;
     }
     if (d.photos && d.photos.length > 0) updates.googlePhotos = d.photos;
-    if (d.editorialSummary) updates.editorialSummary = d.editorialSummary;
+    if (d.editorialSummary) {
+       updates.editorialSummary = d.editorialSummary;
+       updates.description = d.editorialSummary;
+    }
+    if (d.website) {
+       try {
+           const domain = new URL(d.website).hostname;
+           updates.logoBase64 = `https://logo.clearbit.com/${domain}`;
+       } catch (e) {}
+    }
     
     setFormData(prev => {
         const nextState = { ...prev, ...updates };
@@ -1238,6 +1247,25 @@ const App: React.FC = () => {
             </div>
           );
         })()}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isGenerating && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-stone-900/95 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden"
+          >
+            <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="flex flex-col items-center">
+               <div className="w-24 h-24 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl mb-8 relative">
+                  <Rocket className="w-12 h-12 text-orange-500 animate-bounce relative z-10" />
+                  <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-orange-500/40 to-transparent blur-xl rounded-full animate-pulse"></div>
+               </div>
+               <img src={BRAND_LOGO} alt="SiteZing" className="h-8 mb-4 opacity-50 block" />
+               <h2 className="text-3xl font-black text-white px-6 text-center tracking-tight">Criando sua Mágica...</h2>
+               <p className="text-stone-400 mt-3 text-sm font-medium animate-pulse text-center max-w-sm px-6">A Inteligência Artificial está escrevendo e montando o layout do seu novo site profissional em segundos.</p>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <div className="w-full h-screen bg-[#FAFAF9] overflow-hidden font-sans text-stone-900 flex flex-col md:flex-row">
