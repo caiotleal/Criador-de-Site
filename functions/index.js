@@ -546,7 +546,29 @@ exports.listAllProjectsAdmin = onCall({ cors: true }, async (request) => {
   }
   const db = admin.firestore();
   const projectsSnap = await db.collectionGroup("projects").get();
-  return { projects: projectsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) };
+  
+  const projects = projectsSnap.docs.map(doc => {
+    const data = doc.data();
+    const { generatedHtml, ...rest } = data; // Remove HTML pesado
+    return { id: doc.id, ...rest };
+  });
+
+  return { projects };
+});
+
+exports.deleteProjectAdmin = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
+  }
+  const { projectId } = request.data;
+  const db = admin.firestore();
+  
+  const projectsSnap = await db.collectionGroup("projects").get();
+  const projectDoc = projectsSnap.docs.find(d => d.id === projectId);
+  if (!projectDoc) throw new HttpsError("not-found", "Projeto não encontrado.");
+  
+  await projectDoc.ref.delete();
+  return { success: true };
 });
 
 exports.updateProjectAdminManual = onCall({ cors: true }, async (request) => {
