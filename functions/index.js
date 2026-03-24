@@ -535,3 +535,52 @@ exports.fetchGoogleBusiness = onCall({ cors: true }, async (request) => {
   }
 });
 
+// ============================================================================
+// FUNÇÕES DE ADMINISTRAÇÃO (cPanel)
+// ============================================================================
+const ADMIN_EMAIL = 'caiotleal@gmail.com.br';
+
+exports.listAllProjectsAdmin = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
+  }
+  const db = admin.firestore();
+  const projectsSnap = await db.collectionGroup("projects").get();
+  return { projects: projectsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) };
+});
+
+exports.updateProjectAdminManual = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
+  }
+  const { projectId, manualCss } = request.data;
+  const db = admin.firestore();
+  
+  const projectsSnap = await db.collectionGroup("projects").get();
+  const projectDoc = projectsSnap.docs.find(d => d.id === projectId);
+  
+  if (!projectDoc) throw new HttpsError("not-found", "Projeto não encontrado.");
+  
+  const docRef = projectDoc.ref;
+  const currentData = projectDoc.data();
+  
+  let newHtml = currentData.generatedHtml || '';
+  const cssBlock = `<style id="admin-css">${manualCss}</style>`;
+  
+  if (newHtml.includes('id="admin-css"')) {
+    newHtml = newHtml.replace(/<style id="admin-css">.*?<\/style>/s, cssBlock);
+  } else {
+    newHtml = newHtml.replace('</head>', `${cssBlock}</head>`);
+  }
+
+  const updatedFormData = { ...(currentData.formData || {}), manualCss };
+
+  await docRef.update({ 
+    manualCss, 
+    generatedHtml: newHtml,
+    formData: updatedFormData
+  });
+  
+  return { success: true };
+});
+
