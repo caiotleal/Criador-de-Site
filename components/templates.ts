@@ -80,6 +80,8 @@ export const TEMPLATES: Record<string, string> = {
         </div>
       </section>
 
+      [[REVIEWS_AREA]]
+
       <section id="contato" class="py-24 px-6">
         <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
@@ -189,6 +191,8 @@ export const TEMPLATES: Record<string, string> = {
         </div>
       </section>
 
+      [[REVIEWS_AREA]]
+
       <section id="contato" class="py-24 px-6 max-w-7xl mx-auto w-full text-center">
         <h2 class="text-4xl font-bold mb-16">Fale Conosco</h2>
         <div class="grid md:grid-cols-3 gap-8 mb-16">
@@ -296,6 +300,8 @@ export const TEMPLATES: Record<string, string> = {
             <p class="text-lg opacity-80 leading-relaxed">{{ABOUT_TEXT}}</p>
           </div>
         </div>
+
+        [[REVIEWS_AREA]]
 
         <div id="contato" class="glass-panel p-10">
           <h2 class="text-3xl font-bold mb-8 text-center border-b border-white/10 pb-6">Contato & Localização</h2>
@@ -405,6 +411,8 @@ export const TEMPLATES: Record<string, string> = {
 
         <div class="w-24 h-px bg-[{{COLOR_3}}] mx-auto my-12"></div>
 
+        [[REVIEWS_AREA]]
+
         <section id="contato" class="py-24 text-center">
           <h2 class="text-4xl mb-16">Contato</h2>
           <div class="flex flex-col md:flex-row justify-center gap-12 text-lg mb-16">
@@ -513,6 +521,8 @@ export const TEMPLATES: Record<string, string> = {
           </div>
         </div>
       </section>
+
+      [[REVIEWS_AREA]]
 
       <section id="contato" class="bg-[{{COLOR_2}}] rounded-t-[5rem] pt-32 pb-24 px-6 relative z-20">
         <div class="max-w-7xl mx-auto">

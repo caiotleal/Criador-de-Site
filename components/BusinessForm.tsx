@@ -10,7 +10,7 @@ import { httpsCallable } from 'firebase/functions';
 
 interface BusinessFormProps {
   data: SiteFormData;
-  onChange: (name: keyof SiteFormData, value: string) => void;
+  onChange: (name: keyof SiteFormData, value: any) => void;
 }
 
 const BusinessForm: React.FC<BusinessFormProps> = ({ data, onChange }) => {
@@ -82,8 +82,83 @@ const BusinessForm: React.FC<BusinessFormProps> = ({ data, onChange }) => {
     }
   };
 
+  const [isFetchingGoogle, setIsFetchingGoogle] = React.useState(false);
+  const [googleStatus, setGoogleStatus] = React.useState<{type: 'success'|'error', msg: string}|null>(null);
+
+  const fetchGoogleData = async () => {
+    if (!data.googlePlaceUrl) return;
+    setIsFetchingGoogle(true);
+    setGoogleStatus(null);
+    try {
+      const fetchFn = httpsCallable(functions, 'fetchGoogleBusiness');
+      const res: any = await fetchFn({ query: data.googlePlaceUrl });
+      const d = res.data;
+      
+      if (d.name) onChange('businessName', d.name);
+      if (d.phone) onChange('whatsapp', d.phone);
+      if (d.address) onChange('address', d.address);
+      if (d.reviews && d.reviews.length > 0) {
+        onChange('reviews', d.reviews);
+        onChange('showReviews', true);
+      }
+      setGoogleStatus({ type: 'success', msg: 'Dados importados com sucesso!' });
+    } catch (e: any) {
+      setGoogleStatus({ type: 'error', msg: e.message });
+    } finally {
+      setIsFetchingGoogle(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* 0. AUTO-FILL DO GOOGLE MEU NEGÓCIO */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+        <label className="block text-[11px] font-black text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" /> Importação Mágica (Google)
+        </label>
+        
+        <div className="flex flex-col sm:flex-row gap-2 relative z-10 w-full shrink-0">
+          <input 
+            type="text" 
+            placeholder="Cole o nome da empresa ou o Link do Mapa"
+            className="w-full bg-zinc-950/50 border border-emerald-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-zinc-600/70 text-emerald-100 min-w-0"
+            value={data.googlePlaceUrl || ''}
+            onChange={(e) => onChange('googlePlaceUrl', e.target.value)}
+          />
+          <button 
+            type="button"
+            onClick={fetchGoogleData}
+            disabled={isFetchingGoogle || !data.googlePlaceUrl}
+            className="w-full sm:w-auto shrink-0 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-xl transition-all shadow-lg flex-none"
+          >
+            {isFetchingGoogle ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Puxar Dados'}
+          </button>
+        </div>
+
+        {googleStatus && (
+          <div className={`mt-3 text-xs font-bold ${googleStatus.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+            {googleStatus.msg}
+          </div>
+        )}
+
+        {data.reviews && data.reviews.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-emerald-500/20 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl leading-none">⭐</span> 
+              <div>
+                <span className="block text-emerald-100 text-xs font-bold">{data.reviews.length} Avaliações Carregadas</span>
+                <span className="block text-emerald-500/80 text-[10px]">As melhores irão pro site.</span>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" checked={data.showReviews || false} onChange={e => onChange('showReviews', e.target.checked)} />
+              <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+        )}
+      </motion.div>
+
       {/* 1. Nome da Empresa */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <label className={labelClass}>Nome da Empresa</label>

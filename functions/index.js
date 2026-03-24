@@ -463,3 +463,59 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
     }
   }
 });
+
+// ============================================================================
+// GOOGLE PLACES API: BUSCAR NEGÓCIO
+// ============================================================================
+exports.fetchGoogleBusiness = onCall({ cors: true }, async (request) => {
+  const uid = ensureAuthed(request);
+  const { query } = request.data;
+  if (!query) throw new HttpsError("invalid-argument", "Busca vazia.");
+  
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY || "SUA_API_KEY_AQUI"; 
+  if (apiKey === "SUA_API_KEY_AQUI") throw new HttpsError("failed-precondition", "A API Key do Google Places ainda não foi configurada no Backend.");
+
+  const axios = require("axios");
+  
+  try {
+    const searchUrl = "https://places.googleapis.com/v1/places:searchText";
+    const data = {
+      textQuery: query,
+      languageCode: "pt-BR"
+    };
+    
+    const headers = {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.reviews"
+    };
+
+    const searchRes = await axios.post(searchUrl, data, { headers });
+    
+    if (!searchRes.data.places || searchRes.data.places.length === 0) {
+      throw new Error("Nenhum local encontrado com esse nome/link.");
+    }
+    const place = searchRes.data.places[0];
+
+    const parsedReviews = (place.reviews || []).map(r => ({
+      author_name: r.authorAttribution?.displayName || "Cliente",
+      profile_photo_url: r.authorAttribution?.photoUri || "https://via.placeholder.com/50",
+      rating: r.rating || 5,
+      text: r.text?.text || "",
+      relative_time_description: r.relativePublishTimeDescription || ""
+    }));
+
+    return {
+      name: place.displayName?.text || "",
+      address: place.formattedAddress || "",
+      phone: place.nationalPhoneNumber || "",
+      website: place.websiteUri || "",
+      rating: place.rating || 0,
+      reviews: parsedReviews
+    };
+  } catch (err) {
+    console.error("Erro na API Places (New):", err.response?.data || err.message);
+    throw new HttpsError("internal", "Falha ao consultar o Google: " + err.message);
+  }
+});
+

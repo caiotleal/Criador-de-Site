@@ -16,6 +16,17 @@ export interface SiteFormData {
   linkedin: string;
   paletteId: string;
   layoutId: string;    // NOVO: Qual estrutura de site usar
+  googlePlaceUrl?: string;
+  showReviews?: boolean;
+  address?: string;
+  phone?: string;
+  reviews?: Array<{
+    author_name: string;
+    profile_photo_url: string;
+    rating: number;
+    relative_time_description: string;
+    text: string;
+  }>;
 }
 
 export interface Palette {
