@@ -443,40 +443,49 @@ const App: React.FC = () => {
 
   const [isFetchingGoogle, setIsFetchingGoogle] = useState(false);
   const [googleStatus, setGoogleStatus] = useState<{type: 'success'|'error', msg: string}|null>(null);
+  const [pendingGoogleData, setPendingGoogleData] = useState<any>(null);
 
   const fetchGoogleData = async () => {
     if (!formData.googlePlaceUrl) return;
     setIsFetchingGoogle(true);
     setGoogleStatus(null);
+    setPendingGoogleData(null);
     try {
       const fetchFn = httpsCallable(functions, 'fetchGoogleBusiness');
       const res: any = await fetchFn({ query: formData.googlePlaceUrl });
-      const d = res.data;
-      
-      setConfirmDialog({
-        title: 'É Esta a Sua Empresa?',
-        message: `${d.name || 'Empresa Local'} - ${d.address || 'Sem endereço disponível na Busca.'}`,
-        onConfirm: () => {
-          const updates: any = {};
-          if (d.name) updates.businessName = d.name;
-          if (d.phone) updates.whatsapp = d.phone;
-          if (d.address) updates.address = d.address;
-          if (d.reviews && d.reviews.length > 0) {
-            updates.reviews = d.reviews;
-            updates.showReviews = true;
-          }
-          if (d.editorialSummary) updates.editorialSummary = d.editorialSummary;
-          setFormData(prev => ({ ...prev, ...updates }));
-          setHasUnsavedChanges(true);
-          setGoogleStatus({ type: 'success', msg: 'Dados importados com sucesso!' });
-          setConfirmDialog(null);
-        }
-      });
+      setPendingGoogleData(res.data);
+      setGoogleStatus({ type: 'success', msg: 'Localizamos a empresa!' });
     } catch (e: any) {
       setGoogleStatus({ type: 'error', msg: e.message });
     } finally {
       setIsFetchingGoogle(false);
     }
+  };
+
+  const confirmGoogleInjection = () => {
+    if (!pendingGoogleData) return;
+    const d = pendingGoogleData;
+    const updates: any = {};
+    if (d.name) updates.businessName = d.name;
+    if (d.phone) updates.whatsapp = d.phone;
+    if (d.address) updates.address = d.address;
+    if (d.reviews && d.reviews.length > 0) {
+      updates.reviews = d.reviews;
+      updates.showReviews = true;
+    }
+    if (d.editorialSummary) updates.editorialSummary = d.editorialSummary;
+    
+    setFormData(prev => {
+        const nextState = { ...prev, ...updates };
+        if (!nextState.isCustomSlugEdited && updates.businessName) {
+            nextState.customSlug = slugify(updates.businessName).slice(0, 30);
+            checkDomainDebounced(nextState.customSlug);
+        }
+        return nextState;
+    });
+    setHasUnsavedChanges(true);
+    setGoogleStatus({ type: 'success', msg: 'Google Inteligência ativada!' });
+    setPendingGoogleData(null);
   };
 
   useEffect(() => {
@@ -1319,8 +1328,18 @@ const App: React.FC = () => {
                               {isFetchingGoogle ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Puxar Dados'}
                             </button>
                           </div>
-                          {googleStatus && (
-                            <div className={`mt-3 text-xs font-bold ${googleStatus.type === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
+                          {pendingGoogleData && (
+                            <div className="mt-3 bg-white border border-emerald-200 p-3.5 rounded-xl shadow-[0_4px_20px_-4px_rgba(16,185,129,0.3)] text-center relative z-20 overflow-hidden before:absolute before:inset-0 before:bg-emerald-500/5">
+                              <p className="text-[11px] font-black justify-center text-emerald-800 uppercase flex items-center gap-1.5 mb-1.5"><CheckCircle size={14}/> É esta a empresa?</p>
+                              <p className="text-[10px] text-stone-600 mb-3 font-medium px-2 leading-relaxed h-10 line-clamp-2"><span className="font-bold">{pendingGoogleData.name}</span> - {pendingGoogleData.address}</p>
+                              <div className="flex gap-2 relative z-10">
+                                 <button type="button" onClick={() => setPendingGoogleData(null)} className="flex-1 py-2.5 bg-stone-100 text-stone-500 rounded-lg text-[9px] uppercase font-black tracking-wider hover:bg-stone-200 transition-colors">Voltar</button>
+                                 <button type="button" onClick={confirmGoogleInjection} className="flex-[2] py-2.5 px-3 bg-emerald-600 text-white rounded-lg text-[10px] uppercase font-black tracking-widest hover:bg-emerald-500 shadow-md transition-all flex items-center justify-center gap-1.5"><Rocket size={12}/> Confirmar</button>
+                              </div>
+                            </div>
+                          )}
+                          {!pendingGoogleData && googleStatus && (
+                            <div className={`mt-3 text-[10px] uppercase font-black tracking-widest text-center ${googleStatus.type === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
                               {googleStatus.msg}
                             </div>
                           )}
@@ -1949,23 +1968,41 @@ const App: React.FC = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-5">
-                  <div className="bg-blue-50/50 p-4 border border-blue-100 rounded-2xl relative overflow-hidden">
-                    <label className="text-[10px] uppercase tracking-widest font-black text-blue-800 mb-2 flex items-center justify-center gap-1.5"><MapPin size={12} /> Tem link do Google Maps?</label>
+                  <div className="bg-blue-50/50 p-4 border border-blue-100 rounded-2xl relative overflow-hidden ring-1 ring-blue-500/10">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-blue-800 mb-3 flex items-center justify-center gap-1.5"><MapPin size={14} className="text-blue-600"/> Importação Mágica do Google</label>
                     <div className="flex flex-col gap-2 relative z-10 w-full">
                       <input 
-                        type="text" placeholder="https://maps.google.com/..."
-                        className="w-full bg-white border border-blue-200 rounded-xl text-center px-3 py-3 text-[11px] font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-stone-800 shadow-sm"
+                        type="text" placeholder="Cole de onde achar: Maps, Link ou Nome..."
+                        className="w-full bg-white border border-blue-200 rounded-xl text-center px-3 py-3.5 text-[11px] font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-stone-800 shadow-sm transition-all"
                         value={formData.googlePlaceUrl || ''}
                         onChange={(e) => setFormData(p => ({ ...p, googlePlaceUrl: e.target.value }))}
                       />
                       <button 
                          onClick={async () => fetchGoogleData()}
                          disabled={isFetchingGoogle || !formData.googlePlaceUrl}
-                         className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-md transition-all cursor-pointer flex items-center justify-center gap-1"
+                         className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 mt-1"
                       >
-                         {isFetchingGoogle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Puxar Dados Google'}
+                         {isFetchingGoogle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Trazer Meu Negócio'}
                       </button>
                     </div>
+
+                    {pendingGoogleData && (
+                      <div className="mt-4 pt-4 border-t border-blue-200/50">
+                        <div className="bg-white p-3 rounded-xl shadow-sm border border-emerald-100 flex flex-col items-center text-center">
+                          <CheckCircle size={16} className="text-emerald-500 mb-1.5" />
+                          <p className="text-[10px] text-stone-800 font-bold mb-0.5">{pendingGoogleData.name}</p>
+                          <p className="text-[9px] text-stone-500 font-medium mb-3 h-6 line-clamp-2 leading-tight">{pendingGoogleData.address}</p>
+                          <div className="flex gap-2 w-full">
+                            <button type="button" onClick={() => setPendingGoogleData(null)} className="flex-1 py-2 bg-stone-100 text-stone-500 rounded-lg text-[9px] uppercase font-black hover:bg-stone-200 transition-colors">Tentar Outro</button>
+                            <button type="button" onClick={confirmGoogleInjection} className="flex-[1.5] py-2 bg-emerald-600 text-white rounded-lg text-[9px] uppercase font-black shadow-md hover:bg-emerald-500 transition-all flex justify-center items-center gap-1">Puxar Tudo <Rocket size={10}/></button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!pendingGoogleData && googleStatus && googleStatus.type === 'error' && (
+                       <div className="mt-3 text-[9px] text-center font-bold text-red-500">{googleStatus.msg}</div>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3 opacity-60 px-4">
