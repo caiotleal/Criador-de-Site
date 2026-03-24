@@ -189,7 +189,7 @@ const CPanel: React.FC = () => {
         className="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-md w-full border border-stone-200"
       >
         <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center mx-auto mb-8 p-4">
-          <BRAND_LOGO className="w-full h-full text-orange-600" />
+          <img src={BRAND_LOGO} alt="Logo" className="max-w-full max-h-full object-contain" />
         </div>
         <h1 className="text-2xl font-black text-stone-900 mb-2 uppercase italic">Admin Portal</h1>
         <p className="text-stone-400 text-[10px] mb-10 font-black uppercase tracking-widest">Painel de Controle SiteZing</p>
@@ -218,7 +218,7 @@ const CPanel: React.FC = () => {
     <div className="min-h-screen bg-[#FBFBFA] text-[#1C1917] flex font-[Inter]">
       <aside className="w-72 bg-white border-r border-stone-200 h-screen sticky top-0 flex flex-col">
         <div className="p-8 pb-4 flex items-center gap-3">
-          <div className="w-8 h-8 text-orange-600"><BRAND_LOGO /></div>
+          <div className="w-8 h-8"><img src={BRAND_LOGO} alt="Logo" className="w-full h-full object-contain" /></div>
           <h1 className="text-lg font-black uppercase italic tracking-tighter">SiteZing <span className="text-orange-600">Admin</span></h1>
         </div>
         
