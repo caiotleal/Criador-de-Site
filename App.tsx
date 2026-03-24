@@ -1796,9 +1796,9 @@ const App: React.FC = () => {
                       <div className="max-h-52 overflow-y-auto space-y-2">
                         {savedProjects.length === 0 ? <p className="text-xs text-stone-400 italic text-center py-4">Nenhum projeto ainda.</p> : (
                           savedProjects.map((p: any) => (
-                            <div key={p.id} className="flex gap-1.5 bg-white border border-stone-200 rounded-xl p-2.5 shadow-sm">
-                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left text-xs bg-stone-50 hover:bg-stone-100 rounded-lg p-3 flex justify-between items-center transition-all ${currentProjectSlug === p.id ? 'ring-1 ring-teal-400' : ''}`}><div className="flex flex-col truncate pr-2"><span className="font-bold text-stone-800 truncate flex items-center gap-2">{p.businessName || 'Sem Nome'} {getStatusBadge(p)}</span><span className="text-[9px] text-stone-400 font-mono mt-1 truncate">{p.publishUrl?.replace('https://', '') || 'Sem link público'}</span></div></button>
-                                <button onClick={() => handleDeleteSite(p.id)} className="w-10 bg-stone-50 hover:bg-red-50 text-stone-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all flex-shrink-0"><Trash2 size={14} /></button>
+                            <div key={p.id} className="flex gap-1 sm:gap-1.5 bg-white border border-stone-200 rounded-xl p-2 sm:p-2.5 shadow-sm max-w-full overflow-hidden">
+                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left bg-stone-50 hover:bg-stone-100 rounded-lg p-2 sm:p-3 flex items-center transition-all min-w-0 ${currentProjectSlug === p.id ? 'ring-1 ring-teal-400' : ''}`}><div className="flex flex-col min-w-0 w-full pr-1.5"><div className="flex items-center gap-1.5 w-full"><span className="font-bold text-[10px] sm:text-xs text-stone-800 truncate leading-tight">{p.businessName || 'Sem Nome'}</span>{getStatusBadge(p)}</div><span className="text-[8px] sm:text-[9px] text-stone-400 font-mono mt-0.5 truncate w-full block">{p.publishUrl?.replace('https://', '') || 'Sem link público'}</span></div></button>
+                                <button onClick={() => handleDeleteSite(p.id)} className="w-8 sm:w-10 flex-shrink-0 bg-stone-50 hover:bg-red-50 text-stone-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all min-h-full"><Trash2 size={14} /></button>
                             </div>
                           ))
                         )}
