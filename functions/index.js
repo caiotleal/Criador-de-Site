@@ -78,11 +78,15 @@ exports.getSiteContent = onCall({ cors: true }, async (request) => {
 // ============================================================================
 exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB", secrets: [geminiKey] }, async (request) => {
   const genAI = getGeminiClient();
-  const { businessName, description, region } = request.data;
+  const { businessName, description, region, googleContext } = request.data;
   if (!businessName) throw new HttpsError("invalid-argument", "Nome obrigatório");
 
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
-  const prompt = `Atue como um redator publicitário sênior. Empresa: "${businessName}". Descrição: "${description}". Região de atuação: "${region || "Brasil"}". Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall. Textos curtos, persuasivos e com linguagem natural.`;
+  let prompt = `Atue como um redator publicitário sênior. Empresa: "${businessName}". Descrição: "${description}". Região de atuação: "${region || "Brasil"}". Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall. Textos curtos, persuasivos e com linguagem natural.`;
+  
+  if (googleContext) {
+    prompt += ` Integre naturalmente também as seguintes informações reais do perfil e avaliações do Google Maps desta empresa para criar uma comunicação verdadeira e social proof: ${googleContext}`;
+  }
 
   try {
     const result = await model.generateContent(prompt);
@@ -111,12 +115,17 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
   const { businessName, officialDomain, internalDomain, generatedHtml, formData, aiContent } = request.data;
   
   // Confia na URL gerada pelo painel React do usuário ou cria um slug fixo
-  const projectSlug = internalDomain || slugify(businessName).slice(0, 30);
+  let projectSlug = internalDomain || slugify(businessName).slice(0, 30);
 
-  // Validação Backend: Garante que não duplica URL
+  // Validação Backend: Garante que não duplica URL de NENHUM outro cliente
   const snap = await admin.firestore().collectionGroup("projects").where("projectSlug", "==", projectSlug).limit(1).get();
   if (!snap.empty) {
-     throw new HttpsError("already-exists", "Este nome de negócio já está em uso.");
+     const existingOwnerId = snap.docs[0].ref.parent.parent.id;
+     if (existingOwnerId !== uid) {
+         // O site já existe MAS pertence a outro dono. Adicionamos hash curto.
+         const shortHash = Math.random().toString(36).substring(2, 6);
+         projectSlug = `${projectSlug}-${shortHash}`;
+     }
   }
 
   await admin.firestore().collection("users").doc(uid).set({ activeUser: true, uid: uid }, { merge: true });
@@ -192,16 +201,18 @@ exports.publishUserProject = onCall({ cors: true }, async (request) => {
     const publicUrl = `https://${subdomainVal}`;
 
     // REGISTRA O SUBDOMÍNIO NO FIREBASE HOSTING PARA SSL E ROTEAMENTO
-    try {
-      const projectIdEnv = getProjectId();
-      const token = await getFirebaseAccessToken();
-      const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectIdEnv}/customDomains?customDomainId=${subdomainVal}`;
-      await fetch(apiUrl, {
-        method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({}) 
-      });
-    } catch (apiError) {
-      console.error("Erro ao registrar subdomínio no Hosting da nuvem Firebase:", apiError);
+    if (!project.published) {
+      try {
+        const projectIdEnv = getProjectId();
+        const token = await getFirebaseAccessToken();
+        const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectIdEnv}/customDomains?customDomainId=${subdomainVal}`;
+        await fetch(apiUrl, {
+          method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({}) 
+        });
+      } catch (apiError) {
+        console.error("Erro ao registrar subdomínio no Hosting da nuvem Firebase:", apiError);
+      }
     }
 
     const isPaidProject = project.paymentStatus === "paid";

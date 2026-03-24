@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth, functions } from './firebase';
+import { auth, functions, db } from './firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket, Settings, Upload, Loader2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info
@@ -431,8 +431,9 @@ const App: React.FC = () => {
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
     showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', 
-    logoBase64: '', logoSize: 40, segment: '', googlePlaceUrl: '', showReviews: false, reviews: [] as any[]
+    logoBase64: '', logoSize: 40, segment: '', googlePlaceUrl: '', showReviews: false, reviews: [] as any[], editorialSummary: ''
   });
+  const [pendingSave, setPendingSave] = useState(false);
 
   const [showFloatModal, setShowFloatModal] = useState(false);
   const [floatDomainStatus, setFloatDomainStatus] = useState<{ loading: boolean; available?: boolean; slug?: string; alternatives?: string[] }>({ loading: false });
@@ -450,17 +451,25 @@ const App: React.FC = () => {
       const res: any = await fetchFn({ query: formData.googlePlaceUrl });
       const d = res.data;
       
-      const updates: any = {};
-      if (d.name) updates.businessName = d.name;
-      if (d.phone) updates.whatsapp = d.phone;
-      if (d.address) updates.address = d.address;
-      if (d.reviews && d.reviews.length > 0) {
-        updates.reviews = d.reviews;
-        updates.showReviews = true;
-      }
-      setFormData(prev => ({ ...prev, ...updates }));
-      setHasUnsavedChanges(true);
-      setGoogleStatus({ type: 'success', msg: 'Dados importados com sucesso!' });
+      setConfirmDialog({
+        title: 'É Esta a Sua Empresa?',
+        message: `${d.name || 'Empresa Local'} - ${d.address || 'Sem endereço disponível na Busca.'}`,
+        onConfirm: () => {
+          const updates: any = {};
+          if (d.name) updates.businessName = d.name;
+          if (d.phone) updates.whatsapp = d.phone;
+          if (d.address) updates.address = d.address;
+          if (d.reviews && d.reviews.length > 0) {
+            updates.reviews = d.reviews;
+            updates.showReviews = true;
+          }
+          if (d.editorialSummary) updates.editorialSummary = d.editorialSummary;
+          setFormData(prev => ({ ...prev, ...updates }));
+          setHasUnsavedChanges(true);
+          setGoogleStatus({ type: 'success', msg: 'Dados importados com sucesso!' });
+          setConfirmDialog(null);
+        }
+      });
     } catch (e: any) {
       setGoogleStatus({ type: 'error', msg: e.message });
     } finally {
@@ -487,6 +496,7 @@ const App: React.FC = () => {
 
   const handleFloatNameChange = (val: string) => {
     setFormData(p => ({ ...p, businessName: val }));
+    setHasUnsavedChanges(true);
     if (val.length < 3) {
       setFloatDomainStatus({ loading: false });
       return;
@@ -546,7 +556,20 @@ const App: React.FC = () => {
   }, [formData.layoutStyle, formData.colorId, formData.logoBase64, formData.logoSize, formData.whatsapp, formData.instagram, formData.facebook, formData.linkedin, formData.tiktok, formData.ifood, formData.noveNove, formData.keeta, formData.showForm, formData.showFloatingContact, formData.showMap, formData.address, formData.phone, formData.email, formData.region]);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => setLoggedUserEmail(user?.email || null));
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      setLoggedUserEmail(user?.email || null);
+      if (user) {
+        try {
+          const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+          await setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            name: user.displayName || '',
+            authProvider: user.providerData?.[0]?.providerId || 'password',
+            lastLogin: serverTimestamp()
+          }, { merge: true });
+        } catch (error) { console.error("Erro ao salvar lead", error); }
+      }
+    });
     return () => unsub();
   }, []);
 
@@ -792,7 +815,12 @@ const App: React.FC = () => {
         return;
       }
       const generateFn = httpsCallable(functions, 'generateSite');
-      const result: any = await generateFn({ businessName: formData.businessName, description: formData.description, region: formData.region });
+      const result: any = await generateFn({ 
+        businessName: formData.businessName, 
+        description: formData.description, 
+        region: formData.region,
+        googleContext: formData.showReviews ? JSON.stringify({ summary: formData.editorialSummary, reviews: formData.reviews }) : ''
+      });
       setAiContent(result.data);
       const extractedImages = extractCustomImages(generatedHtml);
       setGeneratedHtml(renderTemplate(result.data, formData, extractedImages));
@@ -813,7 +841,10 @@ const App: React.FC = () => {
   const slugify = (value = "") => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
 
   const handleSaveOrUpdateSite = async () => {
-    if (!auth.currentUser) return setIsLoginOpen(true);
+    if (!auth.currentUser) {
+      setPendingSave(true);
+      return setIsLoginOpen(true);
+    }
     
     if (!formData.businessName) return showToast('Preencha o Nome do Negócio antes de salvar.', 'warning');
 
@@ -897,7 +928,7 @@ const App: React.FC = () => {
           showToast("Site excluído com sucesso.", "success");
           if (projectId === currentProjectSlug) {
             setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
-            setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', logoBase64: '', logoSize: 40, segment: '', googlePlaceUrl: '', showReviews: false, reviews: [] });
+            setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', logoBase64: '', logoSize: 40, segment: '', googlePlaceUrl: '', showReviews: false, reviews: [], editorialSummary: '' });
           }
           
           const listFn = httpsCallable(functions, 'listUserProjects');
@@ -965,6 +996,13 @@ const App: React.FC = () => {
     setHasUnsavedChanges(false);
     setActiveTab('geral');
   };
+
+  useEffect(() => {
+    if (loggedUserEmail && pendingSave) {
+      setPendingSave(false);
+      handleSaveOrUpdateSite();
+    }
+  }, [loggedUserEmail, pendingSave]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -1245,11 +1283,11 @@ const App: React.FC = () => {
                           <label className="block text-xs font-black text-emerald-600 uppercase tracking-widest mb-3 flex items-center gap-2">
                             <CheckCircle className="w-4 h-4" /> Importação Mágica (Google)
                           </label>
-                          <div className="flex flex-col sm:flex-row gap-2 relative z-10 w-full shrink-0">
+                          <div className="flex flex-col gap-2 relative z-10 w-full shrink-0">
                             <input 
                               type="text" 
-                              placeholder="Cole o nome da empresa ou o link do Google Maps"
-                              className="w-full bg-white border border-emerald-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all placeholder:text-stone-400 text-stone-800 min-w-0"
+                              placeholder="Link do Maps ou Nome do Local..."
+                              className="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2.5 text-[11px] font-medium focus:outline-none focus:border-emerald-500 transition-all placeholder:text-stone-400 text-stone-800 min-w-0"
                               value={formData.googlePlaceUrl || ''}
                               onChange={(e) => {setFormData({ ...formData, googlePlaceUrl: e.target.value }); setHasUnsavedChanges(true)}}
                             />
@@ -1257,7 +1295,7 @@ const App: React.FC = () => {
                               type="button"
                               onClick={fetchGoogleData}
                               disabled={isFetchingGoogle || !formData.googlePlaceUrl}
-                              className="w-full sm:w-auto shrink-0 bg-emerald-600 hover:bg-emerald-500 border border-emerald-700 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-xl transition-all flex border items-center justify-center gap-2"
+                              className="w-full shrink-0 bg-emerald-600 hover:bg-emerald-500 border border-emerald-700 disabled:opacity-50 text-white font-black text-[10px] uppercase tracking-widest py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
                             >
                               {isFetchingGoogle ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Puxar Dados'}
                             </button>
@@ -1269,8 +1307,22 @@ const App: React.FC = () => {
                           )}
                         </motion.div>
 
-                        <div><label className="text-xs font-bold text-stone-500 uppercase flex gap-2 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label><input className="w-full bg-white border border-stone-200 rounded-xl p-3.5 text-sm focus:border-teal-500 outline-none transition-colors" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => {setFormData({ ...formData, businessName: e.target.value }); setHasUnsavedChanges(true)}} /></div>
-                           <div><label className="text-xs font-bold text-stone-500 uppercase flex gap-2 mb-1.5"><FileText size={12} /> Ideia Principal</label><textarea className="w-full h-20 bg-white border border-stone-200 rounded-xl p-3.5 text-sm resize-none focus:border-teal-500 outline-none transition-colors" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} /></div>
+                        <div className="relative">
+                          <label className="text-[11px] font-black text-stone-500 uppercase flex items-center gap-1.5 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
+                          <input className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-[12px] font-bold text-stone-800 focus:border-teal-500 outline-none transition-colors" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => handleFloatNameChange(e.target.value)} />
+                          <div className="mt-1.5 min-h-[16px]">
+                             {floatDomainStatus.loading && (
+                                <div className="text-[10px] text-stone-400 flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin"/> Validando domínio...</div>
+                             )}
+                             {!floatDomainStatus.loading && formData.businessName.length >= 3 && floatDomainStatus.available === false && (
+                                <div className="text-[10px] text-red-500 font-bold flex items-center gap-1"><AlertCircle size={10}/> "{floatDomainStatus.slug}" já está em uso! Geraremos um link único para você.</div>
+                             )}
+                             {!floatDomainStatus.loading && formData.businessName.length >= 3 && floatDomainStatus.available && floatDomainStatus.slug && (
+                                <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle size={10}/> Domínio liberado: {floatDomainStatus.slug}.sitezing.com.br</div>
+                             )}
+                          </div>
+                        </div>
+                        <div><label className="text-[11px] font-black text-stone-500 uppercase flex items-center gap-1.5 mb-1.5"><FileText size={12} /> Ideia Principal</label><textarea className="w-full h-20 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-[12px] resize-none focus:border-teal-500 outline-none transition-colors text-stone-800" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} /></div>
                       </div>
 
                       <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-stone-700 transition-colors shadow-md">
@@ -1823,11 +1875,34 @@ const App: React.FC = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-5">
+                  <div className="bg-blue-50/50 p-4 border border-blue-100 rounded-2xl relative overflow-hidden">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-blue-800 mb-2 flex items-center justify-center gap-1.5"><MapPin size={12} /> Tem link do Google Maps?</label>
+                    <div className="flex flex-col gap-2 relative z-10 w-full">
+                      <input 
+                        type="text" placeholder="https://maps.google.com/..."
+                        className="w-full bg-white border border-blue-200 rounded-xl text-center px-3 py-3 text-[11px] font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-stone-800 shadow-sm"
+                        value={formData.googlePlaceUrl || ''}
+                        onChange={(e) => setFormData(p => ({ ...p, googlePlaceUrl: e.target.value }))}
+                      />
+                      <button 
+                         onClick={async () => fetchGoogleData()}
+                         disabled={isFetchingGoogle || !formData.googlePlaceUrl}
+                         className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-md transition-all cursor-pointer flex items-center justify-center gap-1"
+                      >
+                         {isFetchingGoogle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Puxar Dados Google'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 opacity-60 px-4">
+                    <div className="flex-1 h-px bg-stone-300"></div><span className="text-[9px] font-black uppercase tracking-widest text-stone-500">OU DIGITE MANUAL</span><div className="flex-1 h-px bg-stone-300"></div>
+                  </div>
+
                   <div>
                     <label className="text-[10px] uppercase tracking-widest font-bold text-stone-500 mb-2 block text-center">Qual o Nome do Seu Negócio?</label>
                     <input 
                       type="text" placeholder="Ex: Studio da Beleza"
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-4 text-center focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none text-stone-800 font-bold"
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-4 text-center text-[12px] focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none text-stone-800 font-bold"
                       value={formData.businessName}
                       onChange={(e) => handleFloatNameChange(e.target.value)}
                     />
