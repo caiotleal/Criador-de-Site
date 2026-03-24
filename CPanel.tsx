@@ -27,7 +27,7 @@ const CPanel: React.FC = () => {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (u && u.email === ADMIN_EMAIL) {
+      if (u && u.email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
         setUser(u);
         fetchAdminData();
       } else {
@@ -35,7 +35,17 @@ const CPanel: React.FC = () => {
       }
       setLoading(false);
     });
-    return () => unsub();
+    
+    // Forçar fundo branco para o painel admin (sobrescrever index.html)
+    document.body.style.backgroundColor = '#FBFBFA';
+    document.body.style.color = '#1C1917';
+    
+    return () => {
+      unsub();
+      // Resetar ao sair (opcional, mas bom para o App principal)
+      document.body.style.backgroundColor = '';
+      document.body.style.color = '';
+    };
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -43,12 +53,15 @@ const CPanel: React.FC = () => {
     setLoading(true);
     setAuthError('');
     try {
-      if (email !== ADMIN_EMAIL) {
+      console.log("Iniciando login admin:", email);
+      if (email.trim().toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
         throw new Error("Este e-mail não tem permissão de administrador.");
       }
       await signInWithEmailAndPassword(auth, email, password);
+      console.log("Login Firebase aceito.");
     } catch (err: any) {
-      setAuthError(err.message);
+      console.error("Erro no login admin:", err);
+      setAuthError(err.message || "Erro desconhecido ao autenticar.");
     } finally {
       setLoading(false);
     }
@@ -56,26 +69,34 @@ const CPanel: React.FC = () => {
 
   const fetchAdminData = async () => {
     try {
+      console.log("Solicitando listAllProjectsAdmin...");
       const listFn = httpsCallable(functions, 'listAllProjectsAdmin');
       const res: any = await listFn({});
-      const allProjects = res.data?.projects || [];
+      console.log("Resposta recebida:", res.data);
+      
+      const allProjects = Array.isArray(res.data?.projects) ? res.data.projects : [];
       setProjects(allProjects);
 
       // Calc stats
       let revenue = 0;
       allProjects.forEach((p: any) => {
+        if (!p) return;
         if (p.status === 'active' || p.status === 'published') {
           if (p.plan === 'monthly') revenue += 49.90;
-          if (p.plan === 'annual') revenue += 41.58; // 499/12
+          if (p.plan === 'annual') revenue += 41.58; 
         }
       });
+      
       setStats({
         totalSites: allProjects.length,
         totalRevenue: revenue,
-        activeSites: allProjects.filter((p: any) => p.status === 'active' || p.status === 'published').length
+        activeSites: allProjects.filter((p: any) => p && (p.status === 'active' || p.status === 'published')).length
       });
-    } catch (err) {
-      console.error("Erro ao carregar dados admin:", err);
+    } catch (err: any) {
+      console.error("ERRO CRÍTICO no fetchAdminData:", err);
+      // fallback for safety
+      setProjects([]);
+      setStats({ totalSites: 0, totalRevenue: 0, activeSites: 0 });
     }
   };
 
