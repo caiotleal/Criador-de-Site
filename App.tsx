@@ -433,7 +433,7 @@ const App: React.FC = () => {
     showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', 
     showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', 
     logoBase64: '', logoSize: 40, segment: '', googlePlaceUrl: '', showReviews: false, reviews: [] as any[], editorialSummary: '',
-    customSlug: '', isCustomSlugEdited: false
+    customSlug: '', isCustomSlugEdited: false, googlePhotos: [] as string[]
   });
   const [pendingSave, setPendingSave] = useState(false);
 
@@ -473,6 +473,7 @@ const App: React.FC = () => {
       updates.reviews = d.reviews;
       updates.showReviews = true;
     }
+    if (d.photos && d.photos.length > 0) updates.googlePhotos = d.photos;
     if (d.editorialSummary) updates.editorialSummary = d.editorialSummary;
     
     setFormData(prev => {
@@ -709,6 +710,8 @@ const App: React.FC = () => {
     const mapCode = (data.showMap && mapUrl) ? `<div class="overflow-hidden rounded-[2rem] mt-6 map-container ux-glass"><iframe src="${mapUrl}" width="100%" height="240" style="border:0;" loading="lazy"></iframe></div>` : '';
     replaceAll('[[MAP_AREA]]', mapCode);
 
+    let reviewsAndPhotosHtml = '';
+
     if (data.showReviews && data.reviews && data.reviews.length > 0) {
       let reviewsHtml = `<section id="avaliacoes" class="py-24 px-6 w-full"><div class="max-w-7xl mx-auto"><div class="text-center mb-16"><h2 class="text-4xl font-black mb-4">O que dizem sobre nós</h2><div class="flex justify-center gap-1 text-yellow-500 text-2xl mb-4">★★★★★</div><p class="opacity-70 max-w-2xl mx-auto">Avaliações reais de clientes no Google</p></div><div class="grid md:grid-cols-3 gap-8">`;
       data.reviews.slice(0, 3).forEach(r => {
@@ -716,10 +719,29 @@ const App: React.FC = () => {
         reviewsHtml += `<div class="p-8 rounded-3xl" style="background: ${colors.c2}; border: 1px solid ${colors.c3}; display: flex; flex-direction: column; gap: 1rem; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.05);"><div style="display: flex; align-items: center; gap: 1rem;"><img src="${r.profile_photo_url || 'https://via.placeholder.com/50'}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;"/><div style="text-align: left;"><h4 style="font-weight: 800; color: ${colors.c4}; font-size: 0.95rem; margin-bottom: 2px;">${r.author_name}</h4><div style="color: #EAB308; font-size: 0.75rem; letter-spacing: 0.1em;">${stars}</div></div><svg width="24" height="24" viewBox="0 0 24 24" style="position: absolute; top: 24px; right: 24px; opacity: 0.1;" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div><p style="font-size: 0.875rem; opacity: 0.8; font-style: italic; flex: 1; line-height: 1.6;">"${r.text}"</p><span style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.4; margin-top: auto;">${r.relative_time_description}</span></div>`;
       });
       reviewsHtml += `</div></div></section>`;
-      replaceAll('[[REVIEWS_AREA]]', reviewsHtml);
-    } else {
-      replaceAll('[[REVIEWS_AREA]]', '');
+      reviewsAndPhotosHtml += reviewsHtml;
     }
+
+    if (data.googlePhotos && data.googlePhotos.length > 0) {
+      let photosHtml = `<section id="galeria" class="py-24 overflow-hidden w-full"><div class="max-w-7xl mx-auto px-6 text-center mb-16"><h2 class="text-4xl font-black mb-4">Nossa Galeria</h2><div class="w-20 h-2 mx-auto rounded-full mb-4" style="background-color: ${colors.c5};"></div><p class="opacity-70 max-w-2xl mx-auto">Conheça nosso espaço e trabalho em detalhes</p></div>`;
+      photosHtml += `<div class="relative w-full overflow-hidden" style="display: flex; gap: 20px; white-space: nowrap;">`;
+      photosHtml += `<style>
+         @keyframes scroll-gallery { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-320px * ${Math.max(1, data.googlePhotos.length)})); } }
+         .gallery-track { display: flex; gap: 20px; animation: scroll-gallery ${Math.max(20, data.googlePhotos.length * 5)}s linear infinite; width: max-content; }
+         .gallery-track:hover { animation-play-state: paused; }
+         .gallery-img-container { width: 300px; height: 300px; border-radius: 20px; overflow: hidden; flex-shrink: 0; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 2px solid opacity-20; }
+         .gallery-img-container img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+         .gallery-img-container:hover img { transform: scale(1.1); }
+      </style>`;
+      photosHtml += `<div class="gallery-track">`;
+      const renderPhotos = () => data.googlePhotos.map((url: string) => `<div class="gallery-img-container" style="border-color: ${colors.c3}"><img src="${url}" loading="lazy" alt="Galeria"/></div>`).join('');
+      photosHtml += renderPhotos() + renderPhotos();
+      photosHtml += `</div></section>`;
+      
+      reviewsAndPhotosHtml += photosHtml;
+    }
+
+    replaceAll('[[REVIEWS_AREA]]', reviewsAndPhotosHtml);
     
     const formAction = data.email ? `action="https://formsubmit.co/ajax/${data.email}"` : '';
     const hiddenInputs = data.email ? `<input type="hidden" name="_subject" value="[Contato do seu Site] Nova mensagem de um cliente"><input type="hidden" name="_language" value="pt-BR"><input type="hidden" name="_template" value="box"><input type="hidden" name="_captcha" value="false">` : '';
