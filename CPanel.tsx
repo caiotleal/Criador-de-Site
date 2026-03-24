@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, functions, db } from './firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -21,6 +21,10 @@ const CPanel: React.FC = () => {
   const [manualCss, setManualCss] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (u && u.email === ADMIN_EMAIL) {
@@ -28,12 +32,27 @@ const CPanel: React.FC = () => {
         fetchAdminData();
       } else {
         setUser(null);
-        if (u) signOut(auth); // Desloga se não for admin
       }
       setLoading(false);
     });
     return () => unsub();
   }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setAuthError('');
+    try {
+      if (email !== ADMIN_EMAIL) {
+        throw new Error("Este e-mail não tem permissão de administrador.");
+      }
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      setAuthError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchAdminData = async () => {
     try {
@@ -92,15 +111,49 @@ const CPanel: React.FC = () => {
 
   if (!user) return (
     <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center p-6 text-center">
-      <ShieldAlert className="w-16 h-16 text-orange-500 mb-6" />
-      <h1 className="text-2xl font-black text-white mb-2 uppercase italic">Acesso Restrito</h1>
-      <p className="text-stone-400 max-w-sm mb-8">Esta área é exclusiva para administradores da SiteZing. Faça login com uma conta autorizada.</p>
-      <button 
-        onClick={() => window.location.href = '/'} 
-        className="px-8 py-3 bg-white text-black font-black uppercase tracking-widest rounded-xl hover:bg-stone-200 transition-all"
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+        className="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full"
       >
-        Voltar ao Site
-      </button>
+        <ShieldAlert className="w-16 h-16 text-orange-500 mb-6 mx-auto" />
+        <h1 className="text-2xl font-black text-stone-900 mb-2 uppercase italic">Admin Login</h1>
+        <p className="text-stone-500 text-sm mb-8 font-medium">Acesso exclusivo para gestão SiteZing.</p>
+        
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input 
+            type="email" 
+            placeholder="E-mail" 
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="w-full px-5 py-4 bg-stone-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all font-bold"
+            required
+          />
+          <input 
+            type="password" 
+            placeholder="Senha" 
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="w-full px-5 py-4 bg-stone-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all font-bold"
+            required
+          />
+          
+          {authError && <p className="text-xs text-red-500 font-bold">{authError}</p>}
+          
+          <button 
+            type="submit"
+            className="w-full py-4 bg-orange-500 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-orange-600 transition-all shadow-lg text-sm"
+          >
+            Entrar no cPanel
+          </button>
+        </form>
+
+        <button 
+          onClick={() => window.location.href = '/'} 
+          className="mt-6 text-[10px] font-black uppercase text-stone-400 tracking-widest hover:text-stone-600 transition-colors"
+        >
+          Voltar ao Site Principal
+        </button>
+      </motion.div>
     </div>
   );
 
