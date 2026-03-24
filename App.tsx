@@ -231,55 +231,73 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
     html = html.replace(/R\$ 499/g, `R$ ${platformConfigs.pricing.anual}`);
   }
   
-  // Banner de Marketing
-  if (platformConfigs.marketing?.bannerActive && platformConfigs.marketing?.bannerText) {
+  // Banner e Decorações Temáticas
+  if (platformConfigs.marketing?.bannerActive) {
     const type = platformConfigs.marketing.bannerType || 'info';
-    let bannerStyle = '';
-    let bannerContent = platformConfigs.marketing.bannerText;
+    const text = platformConfigs.marketing.bannerText || '';
+    let decoHtml = '';
     let extraCss = '';
 
     if (type === 'christmas') {
-      bannerStyle = 'background: linear-gradient(90deg, #ef4444 0%, #991b1b 100%); border-bottom: 2px solid #fca5a5;';
-      bannerContent = `<i class="fas fa-snowflake animate-pulse mr-2"></i> ${bannerContent} <i class="fas fa-snowflake animate-pulse ml-2"></i>`;
+      // Cordão de luzes e chapéu no logo
+      decoHtml = `
+        <!-- Luzes Penduradas -->
+        <div style="position: fixed; top: 90px; left: 0; width: 100%; height: 40px; z-index: 85; pointer-events: none; overflow: hidden;">
+          <svg width="100%" height="100%" viewBox="0 0 1200 40" preserveAspectRatio="none">
+            <path d="M0,10 Q150,40 300,10 T600,10 T900,10 T1200,10" fill="none" stroke="#064e3b" stroke-width="2"/>
+            ${[20, 150, 280, 450, 580, 750, 880, 1050, 1150].map((x, i) => `
+              <circle cx="${x}" cy="${i % 2 === 0 ? 25 : 15}" r="4" fill="${['#ff0000', '#00ff00', '#ffff00', '#ffffff'][i % 4]}" class="christmas-light"/>
+            `).join('')}
+          </svg>
+        </div>
+        <!-- Texto no Vão -->
+        <div style="position: fixed; top: 96px; left: 0; width: 100%; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 70; pointer-events: none;">
+          <span style="background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 16px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.3); text-transform: uppercase;">
+             <i class="fas fa-snowflake mr-2"></i> ${text}
+          </span>
+        </div>
+      `;
       extraCss = `
-        @keyframes snow { from { background-position: 0 0; } to { background-position: 500px 500px; } }
-        .banner-christmas::before { content: ""; position: absolute; inset: 0; opacity: 0.15; background-image: url('https://www.transparenttextures.com/patterns/snow.png'); animation: snow 20s linear infinite; pointer-events: none; }
+        @keyframes lightBlink { 0%, 100% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 5px currentColor); } 50% { opacity: 0.5; filter: brightness(1); } }
+        .christmas-light { animation: lightBlink 1s infinite alternate; }
+        .christmas-light:nth-child(2n) { animation-delay: 0.5s; }
       `;
     } else if (type === 'black-friday') {
-      bannerStyle = 'background: #000; border-bottom: 2px solid #f97316; box-shadow: 0 0 20px rgba(249,115,22,0.4);';
-      bannerContent = `<i class="fas fa-tag text-orange-500 mr-2"></i> <span style="text-shadow: 0 0 10px #f97316;">${bannerContent}</span> <i class="fas fa-bolt text-orange-500 ml-2"></i>`;
-      extraCss = `
-        @keyframes neonPulse { 0%, 100% { border-color: #f97316; box-shadow: 0 0 15px rgba(249,115,22,0.4); } 50% { border-color: #fbbf24; box-shadow: 0 0 30px rgba(249,115,22,0.6); } }
-        .banner-black-friday { animation: neonPulse 2s infinite ease-in-out; }
-      `;
-    } else if (type === 'warning') {
-      bannerStyle = 'background: #f97316;';
-      bannerContent = `<i class="fas fa-fire-alt animate-bounce mr-2"></i> ${bannerContent}`;
-      extraCss = `
-        @keyframes zingPulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-        .banner-warning { animation: zingPulse 1.5s infinite ease-in-out; }
-      `;
+       // Fita Neon e Badge
+       decoHtml = `
+        <div style="position: fixed; top: 96px; left: 0; width: 100%; height: 32px; z-index: 70; pointer-events: none; display: flex; align-items: center; justify-content: center;">
+          <div style="height: 2px; width: 100%; background: #f97316; position: absolute; box-shadow: 0 0 15px #f97316; opacity: 0.5;"></div>
+          <span class="bf-badge" style="background: #000; color: #f97316; border: 1px solid #f97316; padding: 4px 20px; border-radius: 4px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 20px rgba(249,115,22,0.4); position: relative; z-index: 2;">
+            <i class="fas fa-bolt mr-2"></i> ${text}
+          </span>
+        </div>
+       `;
+       extraCss = `
+        @keyframes bfPulse { 0%, 100% { box-shadow: 0 0 10px #f97316; transform: scale(1); } 50% { box-shadow: 0 0 25px #f97316; transform: scale(1.05); } }
+        .bf-badge { animation: bfPulse 2s infinite ease-in-out; }
+       `;
     } else {
-      bannerStyle = 'background: #3b82f6;';
-      bannerContent = `<i class="fas fa-info-circle mr-2"></i> ${bannerContent}`;
+      // Banner Info/Warning padrão no vão
+      const bgColor = type === 'warning' ? '#f97316' : '#3b82f6';
+      decoHtml = `
+        <div style="position: fixed; top: 96px; left: 0; width: 100%; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 70; pointer-events: none;">
+          <div style="background: ${bgColor}; color: white; padding: 4px 16px; border-radius: 99px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2);">
+            ${text}
+          </div>
+        </div>
+      `;
     }
-
-    const bannerHtml = `
-      <div class="banner-${type}" style="${bannerStyle} color: white; text-align: center; padding: 14px; font-weight: 900; font-size: 14px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.2; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-        ${bannerContent}
-      </div>
-    `;
 
     const bannerStyles = `
       <style>
         ${extraCss}
-        header { top: 46px !important; transition: top 0.3s ease; }
-        main { padding-top: calc(8rem + 46px) !important; transition: padding 0.3s ease; }
-        body { padding-top: 46px !important; }
+        /* Garantir que o header original continue no topo 0 sem empurrar nada */
+        header { border-bottom: none !important; }
+        .promo-overlay { pointer-events: none; }
       </style>
     `;
     html = html.replace(/<\/head>/i, `${bannerStyles}</head>`);
-    html = html.replace(/<body[^>]*>/i, (match) => `${match}${bannerHtml}`);
+    html = html.replace(/<body[^>]*>/i, (match) => `${match}${decoHtml}`);
   }
 
   return html;
