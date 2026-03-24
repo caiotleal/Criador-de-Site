@@ -76,9 +76,11 @@ const CPanel: React.FC = () => {
       let revenue = 0;
       allProjects.forEach((p: any) => {
         if (!p) return;
-        if (p.status === 'active' || p.status === 'published' || p.subscriptionStatus === 'active') {
-          if (p.plan === 'monthly' || p.stripePlanId?.includes('monthly')) revenue += 49.90;
-          if (p.plan === 'annual' || p.stripePlanId?.includes('annual')) revenue += 41.58; 
+        // Considerar tanto status de publicação quanto status de pagamento/assinatura
+        if (p.status === 'active' || p.status === 'published' || p.subscriptionStatus === 'active' || p.paymentStatus === 'paid') {
+          const plan = p.planSelected?.toLowerCase() || p.plan?.toLowerCase() || '';
+          if (plan === 'mensal' || p.stripePlanId?.includes('monthly')) revenue += 49.90;
+          if (plan === 'anual' || p.stripePlanId?.includes('annual')) revenue += 499.00; 
         }
       });
       
@@ -140,21 +142,26 @@ const CPanel: React.FC = () => {
   // Helper selectors
   const filteredProjects = projects.filter(p => 
     p.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.ownerEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.accountEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const uniqueUsers = Array.from(new Set(projects.map(p => p.ownerEmail))).map(email => {
-    const userProjects = projects.filter(p => p.ownerEmail === email);
+  const uniqueUsers = Array.from(new Set(projects.map(p => p.accountEmail))).map(email => {
+    const userProjects = projects.filter(p => p.accountEmail === email);
+    let userRevenue = 0;
+    userProjects.forEach(p => {
+      if (p.status === 'active' || p.status === 'published' || p.subscriptionStatus === 'active' || p.paymentStatus === 'paid') {
+        const plan = p.planSelected?.toLowerCase() || p.plan?.toLowerCase() || '';
+        if (plan === 'mensal' || p.stripePlanId?.includes('monthly')) userRevenue += 49.90;
+        if (plan === 'anual' || p.stripePlanId?.includes('annual')) userRevenue += 499.00;
+      }
+    });
+
     return {
       email: email || 'Anônimo',
       count: userProjects.length,
       active: userProjects.filter(p => p.status === 'active' || p.status === 'published').length,
-      revenue: userProjects.reduce((sum, p) => {
-        if (p.plan === 'monthly') return sum + 49.90;
-        if (p.plan === 'annual') return sum + 41.58;
-        return sum;
-      }, 0)
+      revenue: userRevenue
     };
   });
 
@@ -167,50 +174,52 @@ const CPanel: React.FC = () => {
   }));
 
   if (loading) return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+    <div className="min-h-screen bg-[#FBFBFA] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-12 h-12 animate-spin text-orange-500" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Processando...</p>
+      </div>
     </div>
   );
 
   if (!user) return (
-    <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center p-6 text-center">
+    <div className="min-h-screen bg-[#FBFBFA] flex flex-col items-center justify-center p-6 text-center">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full"
+        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+        className="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-md w-full border border-stone-200"
       >
-        <ShieldAlert className="w-16 h-16 text-orange-500 mb-6 mx-auto" />
-        <h1 className="text-2xl font-black text-stone-900 mb-2 uppercase italic">Admin Login</h1>
-        <p className="text-stone-500 text-sm mb-8 font-medium">Acesso exclusivo para gestão SiteZing.</p>
+        <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center mx-auto mb-8 p-4">
+          <BRAND_LOGO className="w-full h-full text-orange-600" />
+        </div>
+        <h1 className="text-2xl font-black text-stone-900 mb-2 uppercase italic">Admin Portal</h1>
+        <p className="text-stone-400 text-[10px] mb-10 font-black uppercase tracking-widest">Painel de Controle SiteZing</p>
         
         <form onSubmit={handleLogin} className="space-y-4">
           <input 
-            type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)}
-            className="w-full px-5 py-4 bg-stone-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all font-bold"
+            type="email" placeholder="Username / Email" value={email} onChange={e => setEmail(e.target.value)}
+            className="w-full px-6 py-4 bg-stone-50 border border-stone-200 rounded-2xl text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all font-bold"
             required
           />
           <input 
-            type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)}
-            className="w-full px-5 py-4 bg-stone-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all font-bold"
+            type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
+            className="w-full px-6 py-4 bg-stone-50 border border-stone-200 rounded-2xl text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all font-bold"
             required
           />
-          {authError && <p className="text-xs text-red-500 font-bold">{authError}</p>}
-          <button type="submit" className="w-full py-4 bg-orange-500 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-orange-600 transition-all shadow-lg text-sm">
-            Entrar no cPanel
+          {authError && <p className="text-[10px] font-black uppercase text-red-500 tracking-widest">{authError}</p>}
+          <button type="submit" disabled={loading} className="w-full py-4 bg-stone-900 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-stone-800 transition-all shadow-xl text-xs flex items-center justify-center gap-2 mt-4">
+            {loading ? <Loader2 className="animate-spin w-4 h-4" /> : "Acessar Sistema"}
           </button>
         </form>
-        <button onClick={() => window.location.href = '/'} className="mt-6 text-[10px] font-black uppercase text-stone-400 tracking-widest hover:text-stone-600 transition-colors">
-          Voltar ao Site Principal
-        </button>
       </motion.div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FBFBFA] text-stone-900 font-sans flex">
-      <aside className="w-64 bg-white border-r border-stone-200 flex flex-col flex-shrink-0 sticky top-0 h-screen">
-        <div className="p-8 border-b border-stone-200">
-          <img src={BRAND_LOGO} alt="SiteZing" className="h-8 w-auto mb-2" />
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Admin Control Panel</p>
+    <div className="min-h-screen bg-[#FBFBFA] text-[#1C1917] flex font-[Inter]">
+      <aside className="w-72 bg-white border-r border-stone-200 h-screen sticky top-0 flex flex-col">
+        <div className="p-8 pb-4 flex items-center gap-3">
+          <div className="w-8 h-8 text-orange-600"><BRAND_LOGO /></div>
+          <h1 className="text-lg font-black uppercase italic tracking-tighter">SiteZing <span className="text-orange-600">Admin</span></h1>
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
@@ -289,6 +298,7 @@ const CPanel: React.FC = () => {
                       <thead>
                         <tr className="bg-stone-50 border-b border-stone-200">
                           <th className="px-6 py-4 text-[10px] font-black uppercase text-stone-400 tracking-widest">Projeto / Proprietário</th>
+                          <th className="px-6 py-4 text-[10px] font-black uppercase text-stone-400 tracking-widest">Criação</th>
                           <th className="px-6 py-4 text-[10px] font-black uppercase text-stone-400 tracking-widest">Plano / Stripe</th>
                           <th className="px-6 py-4 text-[10px] font-black uppercase text-stone-400 tracking-widest">Status Geral</th>
                           <th className="px-6 py-4 text-[10px] font-black uppercase text-stone-400 tracking-widest">Assinatura</th>
@@ -300,12 +310,16 @@ const CPanel: React.FC = () => {
                           <tr key={p.id} className="hover:bg-stone-50/50 transition-colors">
                             <td className="px-6 py-4">
                               <div className="font-bold text-stone-900">{p.businessName}</div>
-                              <div className="text-[10px] text-stone-500 mt-0.5">{p.ownerEmail || 'Desconhecido'}</div>
-                              <div className="text-[9px] font-mono text-stone-400">{p.id}</div>
+                              <div className="text-[10px] text-stone-500 mt-0.5">{p.accountEmail || 'Desconhecido'}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-xs font-bold text-stone-700">
+                                {p.createdAt?._seconds ? new Date(p.createdAt._seconds * 1000).toLocaleDateString() : 'N/A'}
+                              </div>
                             </td>
                             <td className="px-6 py-4">
                               <div className="text-xs font-bold text-stone-700 capitalize">
-                                {p.plan === 'monthly' ? 'Mensal (R$ 49,90)' : p.plan === 'annual' ? 'Anual (R$ 499,00)' : 'Gratuito'}
+                                {p.planSelected === 'mensal' || p.plan === 'mensal' ? 'Mensal (R$ 49,90)' : p.planSelected === 'anual' || p.plan === 'anual' ? 'Anual (R$ 499,00)' : 'Gratuito'}
                               </div>
                               <div className="text-[9px] text-stone-400 font-mono">{p.stripeSubscriptionId || 'Sem Checkout'}</div>
                             </td>
@@ -320,9 +334,9 @@ const CPanel: React.FC = () => {
                             </td>
                             <td className="px-6 py-4">
                               <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                p.subscriptionStatus === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-50 text-stone-400'
+                                p.subscriptionStatus === 'active' || p.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-50 text-stone-400'
                               }`}>
-                                {p.subscriptionStatus || 'N/A'}
+                                {p.subscriptionStatus || (p.paymentStatus === 'paid' ? 'Paid' : 'N/A')}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-right">

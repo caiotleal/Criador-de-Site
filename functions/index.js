@@ -547,10 +547,27 @@ exports.listAllProjectsAdmin = onCall({ cors: true }, async (request) => {
   const db = admin.firestore();
   const projectsSnap = await db.collectionGroup("projects").get();
   
+  // Coletar UIDs únicos para evitar múltiplas leituras do mesmo usuário
+  const uids = [...new Set(projectsSnap.docs.map(doc => doc.data().uid).filter(Boolean))];
+  const userEmailsMap = {};
+  
+  // Buscar e-mails em blocos (limite do Firestore 'in' é 30, mas aqui buscamos individual ou por coleção)
+  // Como são poucos usuários geralmente, vamos buscar os documentos da coleção users
+  const usersSnap = await db.collection("users").get();
+  usersSnap.docs.forEach(uDoc => {
+    userEmailsMap[uDoc.id] = uDoc.data().email || uDoc.data().ownerEmail;
+  });
+
   const projects = projectsSnap.docs.map(doc => {
     const data = doc.data();
     const { generatedHtml, ...rest } = data; // Remove HTML pesado
-    return { id: doc.id, ...rest };
+    const accountEmail = userEmailsMap[data.uid] || data.ownerEmail || data.formData?.email || "Sem E-mail";
+    
+    return { 
+      id: doc.id, 
+      ...rest,
+      accountEmail // Adiciona o e-mail da conta resolvido
+    };
   });
 
   return { projects };
