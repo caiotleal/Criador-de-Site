@@ -1879,6 +1879,54 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* MODAL DE CANCELAMENTO */}
+      <AnimatePresence>
+        {cancelModalProject && (
+          <div className="fixed inset-0 z-[500] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.95 }}
+              className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl border border-red-100"
+            >
+              <div className="bg-red-50 p-6 flex flex-col items-center text-center border-b border-red-100 relative">
+                <button onClick={() => setCancelModalProject(null)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors">
+                  <X size={18} />
+                </button>
+                <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-3"><AlertCircle size={24} /></div>
+                <h3 className="text-lg font-black text-red-900 mb-1 uppercase tracking-wider">Cancelar Assinatura?</h3>
+                <p className="text-xs text-red-700/80 font-medium">Você perderá os benefícios ao final do ciclo atual.</p>
+              </div>
+              
+              <div className="p-6 bg-white space-y-4">
+                <div className="bg-red-50/50 p-4 border border-red-100 rounded-xl space-y-2">
+                  <p className="text-[11px] text-stone-600 uppercase font-black">Atenção:</p>
+                  <ul className="text-xs text-stone-500 list-none space-y-1.5">
+                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"/>O site continuará online até o fim do período já pago.</li>
+                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"/>Após o vencimento, o site será <strong className="text-stone-700">Congelado</strong>.</li>
+                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"/>Você não será mais cobrado nos próximos meses.</li>
+                  </ul>
+                </div>
+                
+                <label className="flex items-start gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-100 transition-colors">
+                  <input type="checkbox" className="mt-0.5 w-4 h-4 text-red-600 rounded border-stone-300 focus:ring-red-500" checked={cancelTermsAccepted} onChange={(e) => setCancelTermsAccepted(e.target.checked)} />
+                  <span className="text-[11px] font-bold text-stone-600 leading-relaxed">Estou ciente de que meu site será suspenso ao fim do ciclo atual.</span>
+                </label>
+              </div>
+              
+              <div className="p-4 bg-stone-50 border-t border-stone-100 flex gap-2">
+                <button onClick={() => setCancelModalProject(null)} className="flex-1 py-3 px-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-stone-50 transition-colors">Voltar</button>
+                <button 
+                  onClick={() => handleConfirmCancel(cancelModalProject)} 
+                  disabled={!cancelTermsAccepted || isCanceling} 
+                  className="flex-1 py-3 px-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
+                >
+                  {isCanceling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Confirmar Cancelamento'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* MODAL FLUTUANTE DE CAPTAÇÃO 10S - CENTRALIZADO E SIMPLIFICADO */}
       <AnimatePresence>
         {showFloatModal && !isMenuOpen && !generatedHtml && !currentProjectSlug && (
