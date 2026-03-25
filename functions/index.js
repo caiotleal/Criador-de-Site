@@ -557,32 +557,24 @@ exports.listAllProjectsAdmin = onCall({ cors: true }, async (request) => {
     throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
   }
   const db = admin.firestore();
-  const projectsSnap = await db.collectionGroup("projects").get();
   
-  // Coletar UIDs únicos para evitar múltiplas leituras do mesmo usuário
-  const uids = [...new Set(projectsSnap.docs.map(doc => doc.data().uid).filter(Boolean))];
-  const userEmailsMap = {};
-  
-  // Buscar e-mails em blocos (limite do Firestore 'in' é 30, mas aqui buscamos individual ou por coleção)
-  // Como são poucos usuários geralmente, vamos buscar os documentos da coleção users
+  // 1. Buscar todos os usuários cadastrados
   const usersSnap = await db.collection("users").get();
-  usersSnap.docs.forEach(uDoc => {
-    userEmailsMap[uDoc.id] = uDoc.data().email || uDoc.data().ownerEmail;
-  });
+  const allUsers = usersSnap.docs.map(uDoc => ({
+    uid: uDoc.id,
+    ...uDoc.data(),
+    email: uDoc.data().email || uDoc.data().ownerEmail || "Sem E-mail"
+  }));
 
+  // 2. Buscar todos os projetos
+  const projectsSnap = await db.collectionGroup("projects").get();
   const projects = projectsSnap.docs.map(doc => {
     const data = doc.data();
-    const { generatedHtml, ...rest } = data; // Remove HTML pesado
-    const accountEmail = userEmailsMap[data.uid] || data.ownerEmail || data.formData?.email || "Sem E-mail";
-    
-    return { 
-      id: doc.id, 
-      ...rest,
-      accountEmail // Adiciona o e-mail da conta resolvido
-    };
+    const { generatedHtml, ...rest } = data; // Remove HTML pesado para economia de banda
+    return { id: doc.id, ...rest };
   });
 
-  return { projects };
+  return { projects, users: allUsers };
 });
 
 exports.deleteProjectAdmin = onCall({ cors: true }, async (request) => {
