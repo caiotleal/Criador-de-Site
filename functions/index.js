@@ -568,10 +568,19 @@ exports.listAllProjectsAdmin = onCall({ cors: true }, async (request) => {
 
   // 2. Buscar todos os projetos
   const projectsSnap = await db.collectionGroup("projects").get();
+  const userEmailsMap = {};
+  allUsers.forEach(u => {
+    userEmailsMap[u.uid] = u.email;
+  });
+
   const projects = projectsSnap.docs.map(doc => {
     const data = doc.data();
     const { generatedHtml, ...rest } = data; // Remove HTML pesado para economia de banda
-    return { id: doc.id, ...rest };
+    return { 
+      id: doc.id, 
+      ...rest,
+      accountEmail: userEmailsMap[data.uid] || data.ownerEmail || data.formData?.email || "Sem E-mail"
+    };
   });
 
   return { projects, users: allUsers };

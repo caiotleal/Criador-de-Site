@@ -16,9 +16,10 @@ const CPanel: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [platformConfigs, setPlatformConfigs] = useState<any>(null);
   const [isSavingConfigs, setIsSavingConfigs] = useState(false);
-  const [stats, setStats] = useState({ totalSites: 0, totalRevenue: 0, activeSites: 0 });
+  const [stats, setStats] = useState({ totalSites: 0, totalRevenue: 0, activeSites: 0, totalUsers: 0 });
   const [view, setView] = useState<'dashboard' | 'editor' | 'users' | 'domains' | 'settings' | 'platform' | 'edit'>('dashboard');
   const [editingProject, setEditingProject] = useState<any>(null);
   const [editingFormData, setEditingFormData] = useState<any>(null);
@@ -100,14 +101,15 @@ const CPanel: React.FC = () => {
     try {
       const listFn = httpsCallable(functions, 'listAllProjectsAdmin');
       const res: any = await listFn({});
-      const allProjects = Array.isArray(res.data?.projects) ? res.data.projects : [];
-      // Ordenar por data de criação (se houver) decrescente
-      setProjects(allProjects.sort((a,b) => (b.createdAt?._seconds || 0) - (a.createdAt?._seconds || 0)));
+      const fetchedProjects = Array.isArray(res.data?.projects) ? res.data.projects : [];
+      const fetchedUsers = Array.isArray(res.data?.users) ? res.data.users : [];
+      
+      setProjects(fetchedProjects.sort((a: any, b: any) => (b.createdAt?._seconds || 0) - (a.createdAt?._seconds || 0)));
+      setAllUsers(fetchedUsers);
 
       let revenue = 0;
-      allProjects.forEach((p: any) => {
+      fetchedProjects.forEach((p: any) => {
         if (!p) return;
-        // Considerar tanto status de publicação quanto status de pagamento/assinatura
         if (p.status === 'active' || p.status === 'published' || p.subscriptionStatus === 'active' || p.paymentStatus === 'paid') {
           const plan = p.planSelected?.toLowerCase() || p.plan?.toLowerCase() || '';
           if (plan === 'mensal' || p.stripePlanId?.includes('monthly')) revenue += 49.90;
@@ -116,9 +118,10 @@ const CPanel: React.FC = () => {
       });
       
       setStats({
-        totalSites: allProjects.length,
+        totalSites: fetchedProjects.length,
         totalRevenue: revenue,
-        activeSites: allProjects.filter((p: any) => p && (p.status === 'active' || p.status === 'published')).length
+        activeSites: fetchedProjects.filter((p: any) => p && (p.status === 'active' || p.status === 'published')).length,
+        totalUsers: fetchedUsers.length
       });
     } catch (err: any) {
       console.error("Erro fetchAdminData:", err);
@@ -179,8 +182,8 @@ const CPanel: React.FC = () => {
     p.id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const uniqueUsers = Array.from(new Set(projects.map(p => p.accountEmail))).map(email => {
-    const userProjects = projects.filter(p => p.accountEmail === email);
+  const uniqueUsers = allUsers.map(user => {
+    const userProjects = projects.filter(p => p.uid === user.uid || p.accountEmail === user.email);
     let userRevenue = 0;
     userProjects.forEach(p => {
       if (p.status === 'active' || p.status === 'published' || p.subscriptionStatus === 'active' || p.paymentStatus === 'paid') {
@@ -191,7 +194,8 @@ const CPanel: React.FC = () => {
     });
 
     return {
-      email: email || 'Anônimo',
+      email: user.email || 'Anônimo',
+      uid: user.uid,
       count: userProjects.length,
       active: userProjects.filter(p => p.status === 'active' || p.status === 'published').length,
       revenue: userRevenue
@@ -326,8 +330,8 @@ const CPanel: React.FC = () => {
                   <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Users size={48} className="text-blue-500" /></div>
                     <p className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-1">Total de Clientes</p>
-                    <h3 className="text-3xl font-black text-stone-900">{uniqueUsers.length}</h3>
-                    <p className="text-[11px] text-blue-600 font-bold mt-2">Média {(stats.totalSites / (uniqueUsers.length || 1)).toFixed(1)} sites/usuário</p>
+                    <h3 className="text-3xl font-black text-stone-900">{stats.totalUsers}</h3>
+                    <p className="text-[11px] text-blue-600 font-bold mt-2">Média {(stats.totalSites / (stats.totalUsers || 1)).toFixed(1)} sites/usuário</p>
                   </div>
                 </div>
 
