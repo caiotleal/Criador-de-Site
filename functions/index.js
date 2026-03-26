@@ -651,7 +651,8 @@ exports.getPlatformConfigsPublic = onCall({ cors: true }, async (request) => {
     // NÃO RETORNA STRIPE KEYS OU LEGAL EM CONFIG PÚBLICA (Segurança)
     return {
       pricing: data.pricing || { mensal: 49.90, anual: 499.00 },
-      marketing: data.marketing || { bannerActive: false, bannerText: "", bannerType: "info" }
+      marketing: data.marketing || { bannerActive: false, bannerText: "", bannerType: "info" },
+      reviews: data.reviews || []
     };
   } catch (error) {
     return { pricing: { mensal: 49.90, anual: 499.00 }, marketing: { bannerActive: false } };

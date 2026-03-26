@@ -505,15 +505,6 @@ const CPanel: React.FC = () => {
                       className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none" 
                     />
                   </div>
-                  <div>
-                    <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Cupom de Boas-vindas</label>
-                    <input 
-                      type="text" value={platformConfigs.marketing.couponCode || ''} 
-                      onChange={e => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, couponCode: e.target.value.toUpperCase()}})}
-                      className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none placeholder:text-stone-300"
-                      placeholder="EX: SITEZING10"
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -561,50 +552,98 @@ const CPanel: React.FC = () => {
               </div>
 
               {/* Marketing e Banners */}
-              <div className="bg-white rounded-[2.5rem] p-8 border border-stone-200 shadow-sm md:col-span-2">
+              <div className="bg-white rounded-[2.5rem] p-8 border border-stone-200 shadow-sm md:col-span-1">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Megaphone size={24} /></div>
-                    <h3 className="font-black italic uppercase text-lg">Campanhas e Banners</h3>
+                    <h3 className="font-black italic uppercase text-lg">Campanhas</h3>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-widest">Ativar Banner</span>
-                    <button 
-                      onClick={() => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerActive: !platformConfigs.marketing.bannerActive}})}
-                      className={`w-12 h-6 rounded-full relative transition-all ${platformConfigs.marketing.bannerActive ? 'bg-orange-500' : 'bg-stone-200'}`}
-                    >
-                      <motion.div 
-                        initial={false}
-                        animate={{ x: platformConfigs.marketing.bannerActive ? 24 : 4 }}
-                        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm" 
-                      />
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerActive: !platformConfigs.marketing.bannerActive}})}
+                    className={`w-12 h-6 rounded-full relative transition-all ${platformConfigs.marketing.bannerActive ? 'bg-orange-500' : 'bg-stone-200'}`}
+                  >
+                    <motion.div 
+                      initial={false}
+                      animate={{ x: platformConfigs.marketing.bannerActive ? 24 : 4 }}
+                      className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm" 
+                    />
+                  </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Texto do Banner Digital</label>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Texto do Banner</label>
                     <textarea 
                       value={platformConfigs.marketing.bannerText}
                       onChange={e => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerText: e.target.value}})}
-                      className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-3xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none h-32"
-                      placeholder="Ex: Oferta Limitada! Use o cupom BLACK60 para 60% de desconto no plano anual."
+                      className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-orange-500 outline-none h-24"
+                      placeholder="Ex: Oferta Limitada!"
                     />
                   </div>
-                  <div className="space-y-4">
-                    <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Estilo Visual da Campanha</label>
-                    <div className="grid grid-cols-2 gap-4">
-                      {['info', 'christmas', 'black-friday', 'warning'].map(type => (
-                        <button 
-                          key={type}
-                          onClick={() => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerType: type}})}
-                          className={`p-4 rounded-2xl border-2 transition-all font-black text-[10px] uppercase tracking-widest ${platformConfigs.marketing.bannerType === type ? 'border-stone-900 bg-stone-900 text-white' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200'}`}
-                        >
-                          {type.replace('-', ' ')}
-                        </button>
-                      ))}
+                  <div className="grid grid-cols-2 gap-2">
+                    {['info', 'christmas', 'black-friday', 'warning'].map(type => (
+                      <button 
+                        key={type}
+                        onClick={() => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerType: type}})}
+                        className={`p-3 rounded-xl border-2 transition-all font-black text-[9px] uppercase tracking-widest ${platformConfigs.marketing.bannerType === type ? 'border-stone-900 bg-stone-900 text-white' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200'}`}
+                      >
+                        {type.replace('-', ' ')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Prova Social (Google Reviews) */}
+              <div className="bg-white rounded-[2.5rem] p-8 border border-stone-200 shadow-sm md:col-span-1">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl"><Star size={24} /></div>
+                    <h3 className="font-black italic uppercase text-lg">Prova Social</h3>
+                  </div>
+                  <div className="p-2 bg-stone-50 rounded-lg text-[9px] font-black uppercase text-stone-400">Google Business</div>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Busca da sua Empresa no Google</label>
+                    <div className="flex gap-2">
+                      <input 
+                        className="flex-1 px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-orange-500 outline-none" 
+                        placeholder="Ex: SiteZing São Paulo" 
+                        value={platformConfigs?.marketing?.googleSearchQuery || ''} 
+                        onChange={e => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, googleSearchQuery: e.target.value}})} 
+                      />
+                      <button 
+                        onClick={async () => {
+                          if(!platformConfigs?.marketing?.googleSearchQuery) return;
+                          try {
+                            const fetchFn = httpsCallable(functions, 'fetchGoogleBusiness');
+                            const res: any = await fetchFn({ query: platformConfigs.marketing.googleSearchQuery });
+                            if(res.data?.reviews) {
+                              setPlatformConfigs({ ...platformConfigs, reviews: res.data.reviews });
+                              alert(`${res.data.reviews.length} avaliações capturadas!`);
+                            }
+                          } catch(e: any) {
+                            alert("Erro ao buscar: " + e.message);
+                          }
+                        }}
+                        className="bg-amber-500 hover:bg-amber-600 text-white px-4 rounded-xl transition-all"
+                        title="Buscar Avaliações"
+                      >
+                         <RefreshCw size={16}/>
+                      </button>
                     </div>
                   </div>
+                  {platformConfigs?.reviews && platformConfigs.reviews.length > 0 ? (
+                    <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
+                       <p className="text-[10px] text-emerald-800 font-black uppercase tracking-widest flex items-center gap-2">
+                         <CheckCircle2 size={12}/> {platformConfigs.reviews.length} depoimentos ativos
+                       </p>
+                    </div>
+                  ) : (
+                    <div className="bg-stone-50 border border-stone-100 p-4 rounded-2xl">
+                       <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">Nenhuma avaliação carregada</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -612,25 +651,25 @@ const CPanel: React.FC = () => {
               <div className="bg-white rounded-[2.5rem] p-8 border border-stone-200 shadow-sm md:col-span-2">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="p-3 bg-stone-50 text-stone-600 rounded-2xl"><FileText size={24} /></div>
-                  <h3 className="font-black italic uppercase text-lg">Termos e Políticas</h3>
+                  <h3 className="font-black italic uppercase text-lg">Políticas do Site</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
+                  <div className="space-y-4">
                     <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Termos de Uso</label>
                     <textarea 
-                      value={platformConfigs.legal.termsOfUse}
+                      value={platformConfigs?.legal?.termsOfUse || ''}
                       onChange={e => setPlatformConfigs({...platformConfigs, legal: {...platformConfigs.legal, termsOfUse: e.target.value}})}
-                      className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-3xl text-[10px] font-normal focus:ring-2 focus:ring-orange-500 outline-none h-64 overflow-y-auto"
-                      placeholder="Cole aqui os termos de uso da sua plataforma..."
+                      className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-3xl text-[10px] font-normal focus:ring-2 focus:ring-orange-500 outline-none h-48 overflow-y-auto"
+                      placeholder="Termos de uso..."
                     />
                   </div>
-                  <div>
+                  <div className="space-y-4">
                     <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Política de Privacidade</label>
                     <textarea 
-                      value={platformConfigs.legal.privacyPolicy}
+                      value={platformConfigs?.legal?.privacyPolicy || ''}
                       onChange={e => setPlatformConfigs({...platformConfigs, legal: {...platformConfigs.legal, privacyPolicy: e.target.value}})}
-                      className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-3xl text-[10px] font-normal focus:ring-2 focus:ring-orange-500 outline-none h-64 overflow-y-auto"
-                      placeholder="Cole aqui a política de privacidade..."
+                      className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-3xl text-[10px] font-normal focus:ring-2 focus:ring-orange-500 outline-none h-48 overflow-y-auto"
+                      placeholder="Política de privacidade..."
                     />
                   </div>
                 </div>

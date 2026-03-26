@@ -183,6 +183,54 @@ const PROMO_HTML = `
         <div class="mt-6 text-[10px] text-stone-400/80 text-center uppercase tracking-widest font-bold group-hover:text-orange-600 transition-colors">Clique para ver regras</div>
       </div>
     </div>
+
+    <!-- Seção de Depoimentos (Google Reviews) -->
+    <div id="google-reviews-section" class="mt-20 relative z-10 animate-up opacity-0" style="animation-delay: 0.4s;">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl font-black text-stone-900 uppercase italic">O que dizem sobre nós</h2>
+        <div class="flex items-center justify-center gap-1 mt-2">
+          <i class="fas fa-star text-amber-400"></i>
+          <i class="fas fa-star text-amber-400"></i>
+          <i class="fas fa-star text-amber-400"></i>
+          <i class="fas fa-star text-amber-400"></i>
+          <i class="fas fa-star text-amber-400"></i>
+          <span class="ml-2 text-sm font-bold text-stone-500">Avaliações Reais no Google</span>
+        </div>
+      </div>
+      <div id="reviews-grid" class="grid md:grid-cols-3 gap-6">
+        <!-- Reviews serão injetados aqui -->
+        <div class="glass-card p-6 rounded-2xl border-stone-200/40 text-left">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-400"><i class="fas fa-user"></i></div>
+            <div>
+              <div class="font-bold text-sm text-stone-800">Cliente Satisfeito</div>
+              <div class="flex text-[10px] text-amber-400"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500 leading-relaxed italic">"A SiteZing facilitou muito a criação do meu site. Em poucos minutos estava tudo pronto e online!"</p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border-stone-200/40 text-left">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-400"><i class="fas fa-user"></i></div>
+            <div>
+              <div class="font-bold text-sm text-stone-800">Empreendedor Digital</div>
+              <div class="flex text-[10px] text-amber-400"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500 leading-relaxed italic">"Incrível como a IA entende o que a gente precisa. O design ficou profissional e muito rápido."</p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border-stone-200/40 text-left hidden md:block">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-400"><i class="fas fa-user"></i></div>
+            <div>
+              <div class="font-bold text-sm text-stone-800">Loja Local</div>
+              <div class="flex text-[10px] text-amber-400"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500 leading-relaxed italic">"O suporte é excelente e a plataforma é muito intuitiva. Recomendo para todos os meus parceiros."</p>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer class="footer-commercial bg-white border-t border-stone-200 py-6 px-6 md:px-12 relative z-50">
@@ -298,6 +346,27 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
     `;
     html = html.replace(/<\/head>/i, `${bannerStyles}</head>`);
     html = html.replace(/<body[^>]*>/i, (match) => `${match}${decoHtml}`);
+  }
+
+  // Injeção de Reviews Reais
+  if (platformConfigs.reviews && platformConfigs.reviews.length > 0) {
+    const reviewsHtml = platformConfigs.reviews.slice(0, 3).map((r: any) => `
+      <div class="glass-card p-6 rounded-2xl border-stone-200/40 text-left">
+        <div class="flex items-center gap-3 mb-4">
+          <img src="${r.profile_photo_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full border border-stone-100" />
+          <div>
+            <div class="font-bold text-sm text-stone-800">${r.author_name}</div>
+            <div class="flex text-[10px] text-amber-400">
+              ${Array(Math.floor(r.rating || 5)).fill('<i class="fas fa-star"></i>').join('')}
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-stone-500 leading-relaxed italic">"${r.text}"</p>
+        <div class="mt-3 text-[9px] font-bold text-stone-300 uppercase tracking-widest">${r.relative_time_description || ''}</div>
+      </div>
+    `).join('');
+    
+    html = html.replace(/<div id="reviews-grid"[^>]*>([\s\S]*?)<\/div>/i, `<div id="reviews-grid" class="grid md:grid-cols-3 gap-6">${reviewsHtml}</div>`);
   }
 
   return html;
@@ -575,7 +644,7 @@ const App: React.FC = () => {
 
   const [loggedUserEmail, setLoggedUserEmail] = useState<string | null>(auth.currentUser?.email || null);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'geral' | 'dominio' | 'assinatura'>('geral');
+  const [activeTab, setActiveTab] = useState<'geral' | 'dominio' | 'assinatura' | 'plataforma'>('geral');
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
