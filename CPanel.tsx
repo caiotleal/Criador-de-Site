@@ -32,6 +32,11 @@ const CPanel: React.FC = () => {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState('');
+  const [couponType, setCouponType] = useState<'percent' | 'fixed'>('percent');
+  const [isCreatingCoupon, setIsCreatingCoupon] = useState(false);
+
   const fetchPlatformConfigs = async () => {
     try {
       const getConfigs = httpsCallable(functions, 'getPlatformConfigs');
@@ -140,6 +145,38 @@ const CPanel: React.FC = () => {
       alert("Projeto apagado com sucesso.");
     } catch (err: any) {
       alert("Erro ao apagar: " + err.message);
+    }
+  };
+
+  const handleCreateCoupon = async () => {
+    if (!couponCode || !couponDiscount) return alert("Preencha todos os campos do cupom.");
+    setIsCreatingCoupon(true);
+    try {
+      const createFn = httpsCallable(functions, 'createStripeCouponAdmin');
+      await createFn({ 
+        code: couponCode, 
+        percent_off: couponType === 'percent' ? couponDiscount : null,
+        amount_off: couponType === 'fixed' ? couponDiscount : null
+      });
+      alert("Cupom criado com sucesso!");
+      setCouponCode('');
+      setCouponDiscount('');
+      fetchPlatformConfigs();
+    } catch (err: any) {
+      alert("Erro ao criar cupom: " + err.message);
+    } finally {
+      setIsCreatingCoupon(false);
+    }
+  };
+
+  const handleDeleteCoupon = async (coupon: any) => {
+    if (!confirm(`Deseja remover o cupom ${coupon.code}?`)) return;
+    try {
+      const deleteFn = httpsCallable(functions, 'deleteStripeCouponAdmin');
+      await deleteFn({ couponId: coupon.id, promoId: coupon.promoId, index: projects.indexOf(coupon), code: coupon.code });
+      fetchPlatformConfigs();
+    } catch (err: any) {
+      alert("Erro ao remover: " + err.message);
     }
   };
 
@@ -693,6 +730,74 @@ const CPanel: React.FC = () => {
                       placeholder="Política de privacidade..."
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Gestão de Cupons */}
+              <div className="bg-white rounded-[2.5rem] p-8 border border-stone-200 shadow-sm md:col-span-1">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl"><Star size={24} /></div>
+                  <h3 className="font-black italic uppercase text-lg">Cupons de Desconto</h3>
+                </div>
+                
+                <div className="space-y-4 mb-8">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Código do Cupom</label>
+                      <input 
+                        type="text" value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                        className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-xs font-black focus:ring-2 focus:ring-purple-500 outline-none uppercase"
+                        placeholder="EX: PROMO10"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Valor</label>
+                      <input 
+                        type="number" value={couponDiscount} onChange={e => setCouponDiscount(e.target.value)}
+                        className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                        placeholder="10"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Tipo</label>
+                      <select 
+                        value={couponType} onChange={e => setCouponType(e.target.value as any)}
+                        className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-purple-500 outline-none"
+                      >
+                        <option value="percent">% Porcentagem</option>
+                        <option value="fixed">R$ Valor Fixo</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleCreateCoupon}
+                    disabled={isCreatingCoupon || !couponCode || !couponDiscount}
+                    className="w-full bg-purple-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 disabled:opacity-50"
+                  >
+                    {isCreatingCoupon ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : 'Criar Cupom Estratégico'}
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-3">Cupons Ativos</p>
+                  {platformConfigs.activeCoupons && platformConfigs.activeCoupons.length > 0 ? (
+                    platformConfigs.activeCoupons.map((c: any) => (
+                      <div key={c.code} className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                        <div>
+                          <p className="text-xs font-black text-stone-900">{c.code}</p>
+                          <p className="text-[9px] font-bold text-purple-600 uppercase tracking-widest">Desconto: {c.discount}</p>
+                        </div>
+                        <button 
+                          onClick={() => handleDeleteCoupon(c)}
+                          className="p-2 text-stone-300 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-[10px] text-stone-400 italic">Nenhum cupom ativo no momento.</p>
+                  )}
                 </div>
               </div>
             </div>

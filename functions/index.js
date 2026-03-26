@@ -230,10 +230,19 @@ exports.publishUserProject = onCall({ cors: true }, async (request) => {
     const isPaidProject = project.paymentStatus === "paid";
     let nextExpiresAt = project.expiresAt || null;
 
+    // Se NÃO for pago e NÃO tiver data de expiração, gera os 7 dias de teste
     if (!isPaidProject && !nextExpiresAt) {
       const trialExpiration = new Date();
       trialExpiration.setDate(trialExpiration.getDate() + 7);
       nextExpiresAt = admin.firestore.Timestamp.fromDate(trialExpiration);
+    }
+
+    // SE O TESTE JÁ VENCEU E NÃO FOI PAGO, NÃO PODE PUBLICAR
+    if (!isPaidProject && nextExpiresAt) {
+      const now = new Date();
+      if (nextExpiresAt.toDate() < now) {
+        throw new HttpsError("permission-denied", "Seu período de teste expirou. Por favor, realize o pagamento para manter seu site online.");
+      }
     }
 
     await ref.set({
@@ -414,6 +423,7 @@ exports.createStripeCheckoutSession = onCall({ cors: true }, async (request) => 
       quantity: 1
     }],
     metadata: { planType: isAnual ? 'anual' : 'mensal' }, locale: "pt-BR", client_reference_id: projectId,
+    allow_promotion_codes: true, // Habilita campo de cupom no Checkout
     success_url: `${safeOrigin}?payment=success&project=${projectId}`, cancel_url: `${safeOrigin}?payment=cancelled&project=${projectId}`
   });
 
@@ -723,6 +733,83 @@ exports.updatePlatformConfigs = onCall({ cors: true }, async (request) => {
       ...configs,
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
+    return { success: true };
+  } catch (error) {
+    throw new HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * CRIAR CUPOM NO STRIPE (ADMIN)
+ */
+exports.createStripeCouponAdmin = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
+  }
+
+  const { code, percent_off, amount_off, duration = "once" } = request.data;
+  if (!code) throw new HttpsError("invalid-argument", "O código do cupom é obrigatório.");
+
+  const stripeConfig = await getStripeConfig();
+  const stripe = getStripeInstance(stripeConfig);
+
+  try {
+    // 1. Criar o Cupom (Lógica do Desconto)
+    const coupon = await stripe.coupons.create({
+      percent_off: percent_off ? parseFloat(percent_off) : undefined,
+      amount_off: amount_off ? Math.round(parseFloat(amount_off) * 100) : undefined,
+      currency: amount_off ? "brl" : undefined,
+      duration: duration,
+      name: `Cupom: ${code}`,
+    });
+
+    // 2. Criar o Código de Promoção vinculado (O que o cliente digita)
+    const promoCode = await stripe.promotionCodes.create({
+      coupon: coupon.id,
+      code: code.toUpperCase(),
+    });
+
+    // 3. Registrar no Firestore para exibição no cPanel
+    const db = admin.firestore();
+    await db.collection("configs").doc("platform").update({
+      activeCoupons: admin.firestore.FieldValue.arrayUnion({
+        id: coupon.id,
+        promoId: promoCode.id,
+        code: code.toUpperCase(),
+        discount: percent_off ? `${percent_off}%` : `R$ ${amount_off}`,
+        createdAt: new Date().toISOString()
+      })
+    });
+
+    return { success: true, couponId: coupon.id, promoId: promoCode.id };
+  } catch (error) {
+    console.error("Erro ao criar cupom no Stripe:", error);
+    throw new HttpsError("internal", `Erro no Stripe: ${error.message}`);
+  }
+});
+
+exports.deleteStripeCouponAdmin = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
+  }
+
+  const { couponId, promoId, code } = request.data;
+  const stripeConfig = await getStripeConfig();
+  const stripe = getStripeInstance(stripeConfig);
+
+  try {
+    // Tenta desativar no Stripe
+    if (promoId) await stripe.promotionCodes.update(promoId, { active: false });
+    
+    // Remove do Firestore
+    const db = admin.firestore();
+    const configDoc = await db.collection("configs").doc("platform").get();
+    if (configDoc.exists) {
+      const activeCoupons = configDoc.data().activeCoupons || [];
+      const updatedCoupons = activeCoupons.filter(c => c.code !== code);
+      await db.collection("configs").doc("platform").update({ activeCoupons: updatedCoupons });
+    }
+
     return { success: true };
   } catch (error) {
     throw new HttpsError("internal", error.message);

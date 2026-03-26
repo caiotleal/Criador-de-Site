@@ -9,7 +9,7 @@ import {
 import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
 const DomainChecker = lazy(() => import('./components/DomainChecker'));
-import { useIframeEditor } from './components/useIframeEditor'; 
+import { useIframeEditor } from './components/useIframeEditor';
 
 import { BRAND_LOGO } from './components/brand';
 
@@ -280,7 +280,7 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
   if (platformConfigs.pricing?.anual) {
     html = html.replace(/R\$ 499/g, `R$ ${platformConfigs.pricing.anual}`);
   }
-  
+
   // Banner e Decorações Temáticas
   if (platformConfigs.marketing?.bannerActive) {
     const type = platformConfigs.marketing.bannerType || 'info';
@@ -313,8 +313,8 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
         .christmas-light:nth-child(2n) { animation-delay: 0.5s; }
       `;
     } else if (type === 'black-friday') {
-       // Fita Neon e Badge
-       decoHtml = `
+      // Fita Neon e Badge
+      decoHtml = `
         <div style="position: fixed; top: 96px; left: 0; width: 100%; height: 32px; z-index: 70; pointer-events: none; display: flex; align-items: center; justify-content: center;">
           <div style="height: 2px; width: 100%; background: #f97316; position: absolute; box-shadow: 0 0 15px #f97316; opacity: 0.5;"></div>
           <span class="bf-badge" style="background: #000; color: #f97316; border: 1px solid #f97316; padding: 4px 20px; border-radius: 4px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 20px rgba(249,115,22,0.4); position: relative; z-index: 2;">
@@ -322,7 +322,7 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
           </span>
         </div>
        `;
-       extraCss = `
+      extraCss = `
         @keyframes bfPulse { 0%, 100% { box-shadow: 0 0 10px #f97316; transform: scale(1); } 50% { box-shadow: 0 0 25px #f97316; transform: scale(1.05); } }
         .bf-badge { animation: bfPulse 2s infinite ease-in-out; }
        `;
@@ -368,7 +368,7 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
         <div class="text-[9px] font-bold text-stone-300 uppercase tracking-widest">${r.relative_time_description || ''}</div>
       </div>
     `).join('');
-    
+
     html = html.replace(/<div id="google-reviews-section"[^>]*class="[^"]*opacity-0[^"]*"/i, (match) => match.replace('opacity-0', 'opacity-100'));
     html = html.replace(/<!-- REVIEWS_START -->([\s\S]*?)<!-- REVIEWS_END -->/i, `<!-- REVIEWS_START -->${reviewsHtml}<!-- REVIEWS_END -->`);
   }
@@ -386,7 +386,7 @@ const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false
   const imgTb = doc.querySelector('#image-toolbar'); if (imgTb) imgTb.remove();
   const sc = doc.querySelector('#editor-script'); if (sc) sc.remove();
   const st = doc.querySelector('#editor-style'); if (st) st.remove();
-  
+
   doc.querySelectorAll('.editable-element').forEach(el => {
     el.removeAttribute('contenteditable');
     el.classList.remove('editable-element');
@@ -408,14 +408,14 @@ const cleanHtmlForPublishing = (rawHtml: string | null, preserveEditable = false
       }
     });
   }
-  
+
   return doc.documentElement.outerHTML;
 };
 
 const getPreviewHtml = (baseHtml: string | null) => {
   if (!baseHtml) return '';
   const clean = cleanHtmlForPublishing(baseHtml, true);
-  
+
   const editorScript = `
     <style id="editor-style">
       html, body { -ms-overflow-style: none; scrollbar-width: none; }
@@ -603,17 +603,17 @@ const extractCustomImages = (html: string | null) => {
 };
 
 const GuidedTip: React.FC<{
-  step: number; 
-  currentStep: number; 
-  text: string; 
+  step: number;
+  currentStep: number;
+  text: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
   targetRef?: React.RefObject<HTMLElement>;
 }> = ({ step, currentStep, text }) => {
   if (step !== currentStep) return null;
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.8, y: 10 }} 
-      animate={{ opacity: 1, scale: 1, y: 0 }} 
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
       className="absolute z-[100] bg-orange-600 text-white px-4 py-3 rounded-2xl shadow-xl border-2 border-orange-400 font-bold text-xs flex items-center gap-2 max-w-[200px] text-center"
       style={{ left: '50%', transform: 'translateX(-50%)', bottom: '110%' }}
     >
@@ -636,7 +636,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const host = window.location.hostname.toLowerCase();
-    
+
     // Se a URL acessada NÃO for a plataforma principal, é o site de um cliente
     if (!BUILDER_DOMAINS.includes(host)) {
       setIsClientSiteView(true);
@@ -649,7 +649,7 @@ const App: React.FC = () => {
             document.write(res.data.html);
             document.close();
           }
-        } catch(error: any) {
+        } catch (error: any) {
           document.body.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:sans-serif; background:#FAFAF9; color:#1C1917;">
               <h1 style="font-size: 2.5rem; margin-bottom: 10px; font-weight: 900;">Site Indisponível</h1>
@@ -664,12 +664,12 @@ const App: React.FC = () => {
 
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [aiContent, setAiContent] = useState<any>(null);
-  
+
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedPlanModal, setSelectedPlanModal] = useState<'free' | 'monthly' | 'annual' | null>(null);
-  const [checkoutDetailsModal, setCheckoutDetailsModal] = useState<{projectId: string, planType: 'mensal' | 'anual'} | null>(null);
+  const [checkoutDetailsModal, setCheckoutDetailsModal] = useState<{ projectId: string, planType: 'mensal' | 'anual' } | null>(null);
   const [checkoutTermsAccepted, setCheckoutTermsAccepted] = useState(false);
   const [cancelModalProject, setCancelModalProject] = useState<string | null>(null);
   const [cancelTermsAccepted, setCancelTermsAccepted] = useState(false);
@@ -682,7 +682,7 @@ const App: React.FC = () => {
   const [currentProjectSlug, setCurrentProjectSlug] = useState<string | null>(null);
   const [isSavingProject, setIsSavingProject] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isUpdatePublish, setIsUpdatePublish] = useState(false); 
+  const [isUpdatePublish, setIsUpdatePublish] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [publishModalUrl, setPublishModalUrl] = useState<string | null>(null);
   const [officialDomain, setOfficialDomain] = useState('');
@@ -695,13 +695,13 @@ const App: React.FC = () => {
   const [platformConfigs, setPlatformConfigs] = useState<any>(null);
   const [isDnsModalOpen, setIsDnsModalOpen] = useState(false);
 
-  const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'info'|'warning'} | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState<{title: string, message: string, onConfirm: () => void} | null>(null);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ title: string, message: string, onConfirm: () => void } | null>(null);
 
   const [formData, setFormData] = useState({
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
     ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true,
-    showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', 
+    showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa',
     logoBase64: '', logoSize: 40, segment: '', googlePlaceUrl: '', showReviews: false, reviews: [] as any[], editorialSummary: '',
     customSlug: '', isCustomSlugEdited: false, googlePhotos: [] as string[],
     headerLayout: 'logo_left_icons_right',
@@ -714,7 +714,7 @@ const App: React.FC = () => {
   const floatCheckTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isFetchingGoogle, setIsFetchingGoogle] = useState(false);
-  const [googleStatus, setGoogleStatus] = useState<{type: 'success'|'error', msg: string}|null>(null);
+  const [googleStatus, setGoogleStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
   const [pendingGoogleData, setPendingGoogleData] = useState<any>(null);
   const [guideStep, setGuideStep] = useState(0);
 
@@ -752,17 +752,17 @@ const App: React.FC = () => {
     }
     if (d.photos && d.photos.length > 0) updates.googlePhotos = d.photos;
     if (d.editorialSummary) {
-       updates.editorialSummary = d.editorialSummary;
-       updates.description = d.editorialSummary;
+      updates.editorialSummary = d.editorialSummary;
+      updates.description = d.editorialSummary;
     }
-    
+
     setFormData(prev => {
-        const nextState = { ...prev, ...updates };
-        if (!nextState.isCustomSlugEdited && updates.businessName) {
-            nextState.customSlug = slugify(updates.businessName).slice(0, 30);
-            checkDomainDebounced(nextState.customSlug);
-        }
-        return nextState;
+      const nextState = { ...prev, ...updates };
+      if (!nextState.isCustomSlugEdited && updates.businessName) {
+        nextState.customSlug = slugify(updates.businessName).slice(0, 30);
+        checkDomainDebounced(nextState.customSlug);
+      }
+      return nextState;
     });
     setHasUnsavedChanges(true);
     setGoogleStatus({ type: 'success', msg: 'Google Inteligência ativada!' });
@@ -814,8 +814,8 @@ const App: React.FC = () => {
           setFloatDomainStatus({ loading: false, available: true, slug: res.data.checkedSlug });
         } else if (res.data && res.data.available === false) {
           const slug = res.data.checkedSlug || slugToCheck.toLowerCase().replace(/[^a-z0-9]/g, '');
-          setFloatDomainStatus({ 
-            loading: false, available: false, slug, 
+          setFloatDomainStatus({
+            loading: false, available: false, slug,
             alternatives: [`${slug}-br`, `${slug}-oficial`, `site-${slug}`]
           });
         }
@@ -829,8 +829,8 @@ const App: React.FC = () => {
     setFormData(p => {
       let nextSlug = p.customSlug;
       if (!p.isCustomSlugEdited) {
-         nextSlug = slugify(val).slice(0, 30);
-         checkDomainDebounced(nextSlug);
+        nextSlug = slugify(val).slice(0, 30);
+        checkDomainDebounced(nextSlug);
       }
       return { ...p, businessName: val, customSlug: nextSlug };
     });
@@ -861,7 +861,7 @@ const App: React.FC = () => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data.type === 'OPEN_PLAN_MODAL') {
         setSelectedPlanModal(e.data.plan);
-        setCheckoutTermsAccepted(false); 
+        setCheckoutTermsAccepted(false);
       }
     };
     window.addEventListener('message', handleMessage);
@@ -922,14 +922,14 @@ const App: React.FC = () => {
     };
     try {
       if (navigator.share) { await navigator.share(shareData); }
-      else { 
+      else {
         navigator.clipboard.writeText(window.location.origin);
         showToast('Link da SiteZing copiado!', 'success');
       }
     } catch (err) { console.log('Erro ao compartilhar:', err); }
   };
 
-  const showToast = (message: string, type: 'success'|'error'|'info'|'warning' = 'info') => {
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
     setToast({ message, type });
   };
 
@@ -968,11 +968,11 @@ const App: React.FC = () => {
     replaceAll('{{ABOUT_TITLE}}', content.aboutTitle || 'Quem Somos');
     replaceAll('{{ABOUT_TEXT}}', content.aboutText || 'Nossa história e serviços.');
     replaceAll('{{CONTACT_CALL}}', content.contactCall || 'Fale conosco');
-    
+
     replaceAll('{{COLOR_1}}', colors.c1); replaceAll('{{COLOR_2}}', colors.c2); replaceAll('{{COLOR_3}}', colors.c3);
     replaceAll('{{COLOR_4}}', colors.c4); replaceAll('{{COLOR_5}}', colors.c5); replaceAll('{{COLOR_6}}', colors.c6);
     replaceAll('{{COLOR_7}}', colors.c7); replaceAll('{{COLOR_LIGHT}}', colors.light); replaceAll('{{COLOR_DARK}}', colors.dark);
-    
+
     replaceAll('{{ADDRESS}}', data.region ? `${data.address || 'Endereço não informado'} - ${data.region}` : (data.address || 'Endereço não informado'));
     replaceAll('{{PHONE}}', data.phone || data.whatsapp || 'Telefone não informado');
     replaceAll('{{EMAIL}}', data.email || 'Email não informado');
@@ -1008,7 +1008,7 @@ const App: React.FC = () => {
         }
       </script>
     `;
-    
+
     const logoHeight = data.logoSize || 40;
     if (data.logoBase64) {
       headInjection += `<link rel="icon" type="image/png" href="${data.logoBase64}">`;
@@ -1044,7 +1044,7 @@ const App: React.FC = () => {
     replaceAll('[[HEADER_LAYOUT_CLASS]]', data.headerLayout || 'logo_left_icons_right');
 
     const footerBrand = `<div style="text-align:center; padding: 24px; font-size: 12px; opacity: 0.5; width: 100%; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px;">Criado por <a href="https://sitezing.com.br" target="_blank" style="text-decoration: none; font-weight: 900; display: flex; align-items: center; gap: 4px; color: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"><img src="${BRAND_LOGO}" style="height: 16px; width: auto;" alt="SiteZing"/> SiteZing.com.br</a></div>`;
-    
+
     const floatingContactHtml = data.showFloatingContact ? `
       <style>
         .glass-contact-float { position: fixed; bottom: 30px; right: 30px; z-index: 9999; background: color-mix(in srgb, ${colors.c1} 60%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid ${colors.c3}; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${colors.c4}; box-shadow: 0 8px 32px rgba(0,0,0,0.15); cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; transform: translateY(20px) scale(0.8); pointer-events: none; text-decoration: none; }
@@ -1081,10 +1081,10 @@ const App: React.FC = () => {
         const isLongText = r.text && r.text.length > 150;
         const textCssId = `review-text-${idx}`;
         const inputCssId = `toggle-review-${idx}`;
-        
+
         let textHtml = `<p style="font-size: 0.875rem; opacity: 0.8; font-style: italic; flex: 1; line-height: 1.6; margin-bottom: 0;" class="${isLongText ? textCssId : ''}">"${r.text}"</p>`;
         if (isLongText) {
-            textHtml = `
+          textHtml = `
             <style>
               .${textCssId} { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; transition: all 0.3s ease; }
               #${inputCssId}:checked ~ .${textCssId} { -webkit-line-clamp: unset; }
@@ -1118,12 +1118,12 @@ const App: React.FC = () => {
       const renderPhotos = () => data.googlePhotos.map((url: string) => `<div class="gallery-img-container" style="border-color: ${colors.c3}"><img src="${url}" loading="lazy" alt="Galeria"/></div>`).join('');
       photosHtml += renderPhotos() + renderPhotos();
       photosHtml += `</div></section>`;
-      
+
       reviewsAndPhotosHtml += photosHtml;
     }
 
     replaceAll('[[REVIEWS_AREA]]', reviewsAndPhotosHtml);
-    
+
     const formAction = data.email ? `action="https://formsubmit.co/ajax/${data.email}"` : '';
     const hiddenInputs = data.email ? `<input type="hidden" name="_subject" value="[Contato do seu Site] Nova mensagem de um cliente"><input type="hidden" name="_language" value="pt-BR"><input type="hidden" name="_template" value="box"><input type="hidden" name="_captcha" value="false">` : '';
 
@@ -1180,9 +1180,9 @@ const App: React.FC = () => {
       setSavedProjects(listRes.data?.projects || []);
     } catch (error: any) {
       if (error.message.includes('already-exists') || error.message.includes('já está em uso')) {
-         showToast('Este domínio já está em uso por outro site.', 'error');
+        showToast('Este domínio já está em uso por outro site.', 'error');
       } else {
-         showToast('Erro ao vincular domínio: ' + error.message, 'error');
+        showToast('Erro ao vincular domínio: ' + error.message, 'error');
       }
     } finally {
       setIsLinkingDomain(false);
@@ -1200,7 +1200,7 @@ const App: React.FC = () => {
           const removeFn = httpsCallable(functions, 'removeCustomDomain');
           await removeFn({ projectId: currentProjectSlug, domain: domainToRemove });
           showToast('Domínio removido com sucesso.', 'success');
-          
+
           const listFn = httpsCallable(functions, 'listUserProjects');
           const listRes: any = await listFn({});
           setSavedProjects(listRes.data?.projects || []);
@@ -1221,7 +1221,7 @@ const App: React.FC = () => {
       } else {
         showToast('Ainda aguardando propagação no provedor.', 'warning');
       }
-      
+
       const listFn = httpsCallable(functions, 'listUserProjects');
       const listRes: any = await listFn({});
       setSavedProjects(listRes.data?.projects || []);
@@ -1247,9 +1247,9 @@ const App: React.FC = () => {
       }
       console.log("Chamando generateSite...");
       const generateFn = httpsCallable(functions, 'generateSite');
-      const result: any = await generateFn({ 
-        businessName: formData.businessName, 
-        description: formData.description, 
+      const result: any = await generateFn({
+        businessName: formData.businessName,
+        description: formData.description,
         region: formData.region,
         googleContext: formData.showReviews ? JSON.stringify({ summary: formData.editorialSummary, reviews: formData.reviews }) : ''
       });
@@ -1262,13 +1262,13 @@ const App: React.FC = () => {
       setHasUnsavedChanges(true);
       showToast('Site gerado com inteligência artificial!', 'success');
       nextGuideStep(1); // Passo 1: Minimizar para ver
-    } catch (error: any) { 
+    } catch (error: any) {
       console.error("Erro Crítico na Geração:", error);
-      showToast('Erro na geração: ' + error.message, 'error'); 
-    } 
-    finally { 
+      showToast('Erro na geração: ' + error.message, 'error');
+    }
+    finally {
       console.log("Finalizando estado de geração.");
-      setIsGenerating(false); 
+      setIsGenerating(false);
     }
   };
 
@@ -1287,7 +1287,7 @@ const App: React.FC = () => {
       setPendingSave(true);
       return setIsLoginOpen(true);
     }
-    
+
     if (!formData.businessName) return showToast('Preencha o Nome do Negócio antes de salvar.', 'warning');
 
     setIsSavingProject(true);
@@ -1301,39 +1301,39 @@ const App: React.FC = () => {
         const targetSlug = formData.customSlug || slugify(formData.businessName).slice(0, 30);
         const checkFn = httpsCallable(functions, 'checkDomainAvailability');
         const checkRes: any = await checkFn({ projectSlug: targetSlug });
-        
+
         if (checkRes.data?.error) {
-           console.warn("Aviso ao checar domínio:", checkRes.data.error);
-           // Continua a execução e deixa o save tratar se der ruim
+          console.warn("Aviso ao checar domínio:", checkRes.data.error);
+          // Continua a execução e deixa o save tratar se der ruim
         } else if (checkRes.data && checkRes.data.available === false) {
-           throw new Error('already-exists');
+          throw new Error('already-exists');
         }
 
         const saveFn = httpsCallable(functions, 'saveSiteProject');
-        const res: any = await saveFn({ 
-            businessName: formData.businessName, 
-            internalDomain: targetSlug,
-            officialDomain: officialDomain || "Pendente", 
-            generatedHtml: htmlToSave, 
-            formData, 
-            aiContent 
+        const res: any = await saveFn({
+          businessName: formData.businessName,
+          internalDomain: targetSlug,
+          officialDomain: officialDomain || "Pendente",
+          generatedHtml: htmlToSave,
+          formData,
+          aiContent
         });
         if (res.data?.projectSlug) setCurrentProjectSlug(res.data.projectSlug);
         showToast('Projeto criado e salvo!', 'success');
         nextGuideStep(3); // Passo 3: Publicar
       }
       setHasUnsavedChanges(false);
-      
+
       const listFn = httpsCallable(functions, 'listUserProjects');
       const listRes: any = await listFn({});
       setSavedProjects(listRes.data?.projects || []);
-    } catch (err: any) { 
+    } catch (err: any) {
       if (err.message.includes('já está em uso') || err.message.includes('already-exists')) {
-         showToast('Este nome de negócio já está em uso por outro site. Por favor, adicione um diferencial ao nome.', 'error'); 
+        showToast('Este nome de negócio já está em uso por outro site. Por favor, adicione um diferencial ao nome.', 'error');
       } else {
-         showToast('Erro ao salvar o site: ' + err.message, 'error'); 
+        showToast('Erro ao salvar o site: ' + err.message, 'error');
       }
-    } 
+    }
     finally { setIsSavingProject(false); }
   };
 
@@ -1347,17 +1347,24 @@ const App: React.FC = () => {
 
       const publishFn = httpsCallable(functions, 'publishUserProject');
       const res: any = await publishFn({ targetId: currentProjectSlug });
-      
+
       let publicUrl = res.data?.publishUrl;
       if (publicUrl && !publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
-      
+
       const listFn = httpsCallable(functions, 'listUserProjects');
       const listRes: any = await listFn({});
       setSavedProjects(listRes.data?.projects || []);
 
       setPublishModalUrl(publicUrl);
       nextGuideStep(4); // Passo 4: Pagamento
-    } catch (err: any) { showToast('Erro ao publicar: ' + err.message, 'error'); } 
+    } catch (err: any) { 
+      if (err.code === 'permission-denied' || err.message?.includes('expirou') || err.message?.includes('pagamento')) {
+        showToast('Seu período de teste expirou. Escolha um plano para manter seu site online!', 'warning');
+        setSelectedPlanModal('monthly');
+      } else {
+        showToast('Erro ao publicar: ' + err.message, 'error'); 
+      }
+    } 
     finally { setIsPublishing(false); }
   };
 
@@ -1374,7 +1381,7 @@ const App: React.FC = () => {
             setGeneratedHtml(null); setCurrentProjectSlug(null); setHasUnsavedChanges(false); setActiveTab('geral');
             setFormData({ businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '', ifood: '', noveNove: '', keeta: '', phone: '', email: '', address: '', showMap: true, showForm: true, showFloatingContact: true, layoutStyle: 'layout_modern_center', colorId: 'caribe_turquesa', logoBase64: '', logoSize: 40, segment: '', googlePlaceUrl: '', showReviews: false, reviews: [], editorialSummary: '', customSlug: '', isCustomSlugEdited: false, googlePhotos: [], headerLayout: 'logo_left_icons_right', manualCss: '' });
           }
-          
+
           const listFn = httpsCallable(functions, 'listUserProjects');
           const listRes: any = await listFn({});
           setSavedProjects(listRes.data?.projects || []);
@@ -1392,23 +1399,23 @@ const App: React.FC = () => {
       const res: any = await createCheckoutFn({ projectId, origin: window.location.origin, planType });
       if (res.data?.url) { window.location.href = res.data.url; return; }
       throw new Error('URL de checkout inválida.');
-    } catch (error: any) { showToast('Erro ao iniciar pagamento.', 'error'); } 
+    } catch (error: any) { showToast('Erro ao iniciar pagamento.', 'error'); }
     finally { setCheckoutLoading(null); }
   };
-  
+
   const handleConfirmCancel = async (projectId: string) => {
     setIsCanceling(true);
     try {
       const cancelFn = httpsCallable(functions, 'cancelStripeSubscription');
       await cancelFn({ projectId });
       showToast("Assinatura programada para cancelamento.", "success");
-      
+
       const listFn = httpsCallable(functions, 'listUserProjects');
       const listRes: any = await listFn({});
       setSavedProjects(listRes.data?.projects || []);
 
       setCancelModalProject(null);
-    } catch (error: any) { showToast("Erro ao cancelar: " + error.message, "error"); } 
+    } catch (error: any) { showToast("Erro ao cancelar: " + error.message, "error"); }
     finally { setIsCanceling(false); }
   };
 
@@ -1418,7 +1425,7 @@ const App: React.FC = () => {
       const resumeFn = httpsCallable(functions, 'resumeStripeSubscription');
       await resumeFn({ projectId });
       showToast("Assinatura reativada com sucesso!", "success");
-      
+
       const listFn = httpsCallable(functions, 'listUserProjects');
       const listRes: any = await listFn({});
       setSavedProjects(listRes.data?.projects || []);
@@ -1428,12 +1435,12 @@ const App: React.FC = () => {
       setIsResuming(false);
     }
   };
-  
+
   const handleLoadProject = (project: any) => {
     if (!project) return;
     setFormData((prev) => ({ ...prev, ...(project.formData || {}) }));
     setAiContent(project.aiContent || null);
-    setGeneratedHtml(cleanHtmlForPublishing(project.generatedHtml)); 
+    setGeneratedHtml(cleanHtmlForPublishing(project.generatedHtml));
     setCurrentProjectSlug(project.projectSlug || project.id || null);
     setOfficialDomain(project.officialDomain || '');
     setRegisterLater(project.officialDomain === 'Pendente');
@@ -1455,11 +1462,11 @@ const App: React.FC = () => {
   };
 
   const handleLoginSubmit = async (email: string, password: string) => {
-    try { 
-      await signInWithEmailAndPassword(auth, email, password); 
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       showToast('Bem-vindo de volta!', 'success');
-    } catch { 
-      await createUserWithEmailAndPassword(auth, email, password); 
+    } catch {
+      await createUserWithEmailAndPassword(auth, email, password);
       showToast('Conta criada com sucesso!', 'success');
     }
     setIsLoginOpen(false);
@@ -1468,13 +1475,13 @@ const App: React.FC = () => {
   const getStatusBadge = (project: any) => {
     if (!project) return null;
     if (project.status === 'frozen') return <span className="text-[9px] bg-red-500/20 text-red-600 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">CONGELADO</span>;
-    
+
     if (project.expiresAt) {
       const expirationDate = project.expiresAt._seconds ? project.expiresAt._seconds * 1000 : project.expiresAt.seconds * 1000;
       const daysLeft = Math.ceil((new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-      
+
       if (daysLeft <= 0) return <span className="text-[9px] bg-red-500/20 text-red-600 px-2 py-0.5 rounded-full font-bold ml-2 border border-red-500/30">VENCIDO</span>;
-      
+
       if (project.paymentStatus === 'paid') {
         return <span className="text-[9px] bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-bold ml-2 border border-emerald-200" title="Plano Ativo">ATIVO ({daysLeft} dias restantes)</span>;
       } else {
@@ -1515,7 +1522,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {confirmDialog && (
           <div className="fixed inset-0 z-[300] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl"
             >
@@ -1559,7 +1566,7 @@ const App: React.FC = () => {
                 <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-6">
                   <p className="text-sm text-orange-800 leading-relaxed font-medium mb-4">
                     Acesse o painel do seu provedor de domínio (ex: Registro.br, HostGator, Locaweb) e procure pela opção <strong>"Editar Zona DNS"</strong>. Em seguida, adicione as linhas abaixo <strong>exatamente</strong> como são apresentadas.
-                    <br/><span className="text-xs text-orange-600 italic block mt-1">* Dica de Ouro: Se o painel já possuir apontamentos do tipo "A" ou "CNAME" conflitantes, exclua os antigos primeiro.</span>
+                    <br /><span className="text-xs text-orange-600 italic block mt-1">* Dica de Ouro: Se o painel já possuir apontamentos do tipo "A" ou "CNAME" conflitantes, exclua os antigos primeiro.</span>
                   </p>
 
                   <div className="border border-stone-300 rounded-xl overflow-hidden bg-white shadow-sm">
@@ -1576,7 +1583,7 @@ const App: React.FC = () => {
                       <div className="col-span-2 font-black text-stone-800">A</div>
                       <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
                         <span className="font-mono text-teal-700 font-bold select-all">199.36.158.100</span>
-                        <button onClick={() => { navigator.clipboard.writeText('199.36.158.100'); showToast('IP copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100"><Copy size={14}/> Copiar</button>
+                        <button onClick={() => { navigator.clipboard.writeText('199.36.158.100'); showToast('IP copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100"><Copy size={14} /> Copiar</button>
                       </div>
                     </div>
 
@@ -1586,7 +1593,7 @@ const App: React.FC = () => {
                       <div className="col-span-2 font-black text-stone-800">CNAME</div>
                       <div className="col-span-6 flex justify-between items-center bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
                         <span className="font-mono text-teal-700 font-bold select-all truncate">sitezing.com.br</span>
-                        <button onClick={() => { navigator.clipboard.writeText(`sitezing.com.br`); showToast('Destino copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14}/> Copiar</button>
+                        <button onClick={() => { navigator.clipboard.writeText(`sitezing.com.br`); showToast('Destino copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14} /> Copiar</button>
                       </div>
                     </div>
 
@@ -1599,7 +1606,7 @@ const App: React.FC = () => {
                           <span className="font-mono text-xs text-teal-700 font-bold select-all truncate" title={domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}>
                             {domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`}
                           </span>
-                          <button onClick={() => { navigator.clipboard.writeText(domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`); showToast('TXT copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14}/> Copiar</button>
+                          <button onClick={() => { navigator.clipboard.writeText(domainRecords[0]?.records[0]?.text || `firebase-site-verification=${currentProjectSlug}-app`); showToast('TXT copiado!', 'success'); }} className="text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1.5 text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border border-teal-100 shrink-0 ml-2"><Copy size={14} /> Copiar</button>
                         </div>
                       </div>
                     )}
@@ -1617,43 +1624,43 @@ const App: React.FC = () => {
 
       <AnimatePresence>
         {isGenerating && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[9999] bg-stone-900/95 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden"
           >
             <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="flex flex-col items-center">
-               <div className="w-24 h-24 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl mb-8 relative">
-                  <Rocket className="w-12 h-12 text-orange-500 animate-bounce relative z-10" />
-                  <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-orange-500/40 to-transparent blur-xl rounded-full animate-pulse"></div>
-               </div>
-               <img src={BRAND_LOGO} alt="SiteZing" className="h-8 mb-4 opacity-50 block" />
-               <h2 className="text-3xl font-black text-white px-6 text-center tracking-tight">Criando sua Mágica...</h2>
-               <p className="text-stone-400 mt-3 text-sm font-medium animate-pulse text-center max-w-sm px-6">A Inteligência Artificial está escrevendo e montando o layout do seu novo site profissional em segundos.</p>
+              <div className="w-24 h-24 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl mb-8 relative">
+                <Rocket className="w-12 h-12 text-orange-500 animate-bounce relative z-10" />
+                <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-orange-500/40 to-transparent blur-xl rounded-full animate-pulse"></div>
+              </div>
+              <img src={BRAND_LOGO} alt="SiteZing" className="h-8 mb-4 opacity-50 block" />
+              <h2 className="text-3xl font-black text-white px-6 text-center tracking-tight">Criando sua Mágica...</h2>
+              <p className="text-stone-400 mt-3 text-sm font-medium animate-pulse text-center max-w-sm px-6">A Inteligência Artificial está escrevendo e montando o layout do seu novo site profissional em segundos.</p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="w-full h-screen bg-[#FAFAF9] overflow-hidden font-sans text-stone-900 flex flex-col md:flex-row">
-        
+
         <div className="flex-1 relative h-full overflow-hidden bg-[#FAFAF9]">
-          <iframe 
-            srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : getDynamicPromoHtml(platformConfigs)} 
-            className="w-full h-full border-none bg-transparent" 
-            title="Visão Principal" 
+          <iframe
+            srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : getDynamicPromoHtml(platformConfigs)}
+            className="w-full h-full border-none bg-transparent"
+            title="Visão Principal"
           />
 
           <AnimatePresence>
             {!isMenuOpen && (
-              <div 
-                className={`absolute top-6 right-6 z-[90] flex items-center cursor-pointer group ${!generatedHtml ? 'animate-guide-pulse' : ''}`} 
+              <div
+                className={`absolute top-6 right-6 z-[90] flex items-center cursor-pointer group ${!generatedHtml ? 'animate-guide-pulse' : ''}`}
                 onClick={() => setIsMenuOpen(true)}
               >
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="relative flex items-center justify-center">
-                  <motion.div 
-                    animate={{ scale: [1, 2], opacity: [0.6, 0] }} 
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }} 
-                    className="absolute w-12 h-12 bg-orange-400 rounded-full" 
+                  <motion.div
+                    animate={{ scale: [1, 2], opacity: [0.6, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                    className="absolute w-12 h-12 bg-orange-400 rounded-full"
                   />
                   <div className="relative flex items-center gap-2 bg-white px-5 py-3 rounded-full border border-orange-200 shadow-lg group-hover:shadow-orange-500/20 transition-all group-hover:border-orange-400">
                     <Rocket size={18} className="text-orange-500" />
@@ -1672,14 +1679,14 @@ const App: React.FC = () => {
 
         <AnimatePresence initial={false}>
           {isMenuOpen && (
-            <motion.div 
-              initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
-              animate={{ width: window.innerWidth < 768 ? '100%' : 420, paddingLeft: 16, paddingRight: 16 }} 
-              exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }} 
+            <motion.div
+              initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }}
+              animate={{ width: window.innerWidth < 768 ? '100%' : 420, paddingLeft: 16, paddingRight: 16 }}
+              exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }}
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
               className="flex-shrink-0 h-full flex flex-col justify-center overflow-hidden relative z-50 bg-[#FAFAF9] w-full md:w-[420px] py-4"
             >
-              <motion.div 
+              <motion.div
                 initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} transition={{ delay: 0.1 }}
                 className="w-full h-full lg:aspect-[16/9] lg:max-h-[min(90vh,900px)] lg:mx-auto lg:my-auto bg-[#F8FAFC] border border-stone-200 lg:rounded-[2rem] rounded-none shadow-xl flex flex-col overflow-hidden relative"
               >
@@ -1725,10 +1732,10 @@ const App: React.FC = () => {
                         )}
                       </button>
                       {currentProjectSlug && (
-                      <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3 sm:py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/50' : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50'} ${guideStep === 4 ? 'animate-guide-pulse' : ''}`}>
-                        Pagamento
-                        <GuidedTip step={4} currentStep={guideStep} text="Tudo pronto! Ative seu plano para manter seu site online." />
-                        {!isPaid && (
+                        <button onClick={() => setActiveTab('assinatura')} className={`flex-1 py-3 sm:py-3.5 text-center transition-colors relative ${activeTab === 'assinatura' ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/50' : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50'} ${guideStep === 4 ? 'animate-guide-pulse' : ''}`}>
+                          Pagamento
+                          <GuidedTip step={4} currentStep={guideStep} text="Tudo pronto! Ative seu plano para manter seu site online." />
+                          {!isPaid && (
                             <span className="absolute top-3 right-2 flex h-2 w-2"><span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${daysLeft > 0 ? 'bg-yellow-400' : 'bg-red-400'}`}></span><span className={`relative inline-flex rounded-full h-2 w-2 ${daysLeft > 0 ? 'bg-yellow-500' : 'bg-red-500'}`}></span></span>
                           )}
                         </button>
@@ -1761,14 +1768,14 @@ const App: React.FC = () => {
                             <CheckCircle className="w-4 h-4" /> Importação Mágica (Google)
                           </label>
                           <div className="flex flex-col gap-2 relative z-10 w-full shrink-0">
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               placeholder="Link do Maps ou Nome do Local..."
                               className="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2.5 text-[11px] font-medium focus:outline-none focus:border-emerald-500 transition-all placeholder:text-stone-400 text-stone-800 min-w-0"
                               value={formData.googlePlaceUrl || ''}
-                              onChange={(e) => {setFormData({ ...formData, googlePlaceUrl: e.target.value }); setHasUnsavedChanges(true)}}
+                              onChange={(e) => { setFormData({ ...formData, googlePlaceUrl: e.target.value }); setHasUnsavedChanges(true) }}
                             />
-                            <button 
+                            <button
                               type="button"
                               onClick={fetchGoogleData}
                               disabled={isFetchingGoogle || !formData.googlePlaceUrl}
@@ -1779,11 +1786,11 @@ const App: React.FC = () => {
                           </div>
                           {pendingGoogleData && (
                             <div className="mt-3 bg-white border border-emerald-200 p-3.5 rounded-xl shadow-[0_4px_20px_-4px_rgba(16,185,129,0.3)] text-center relative z-20 overflow-hidden before:absolute before:inset-0 before:bg-emerald-500/5">
-                              <p className="text-[11px] font-black justify-center text-emerald-800 uppercase flex items-center gap-1.5 mb-1.5"><CheckCircle size={14}/> É esta a empresa?</p>
+                              <p className="text-[11px] font-black justify-center text-emerald-800 uppercase flex items-center gap-1.5 mb-1.5"><CheckCircle size={14} /> É esta a empresa?</p>
                               <p className="text-[10px] text-stone-600 mb-3 font-medium px-2 leading-relaxed h-10 line-clamp-2"><span className="font-bold">{pendingGoogleData.name}</span> - {pendingGoogleData.address}</p>
                               <div className="flex gap-2 relative z-10">
-                                 <button type="button" onClick={() => setPendingGoogleData(null)} className="flex-1 py-2.5 bg-stone-100 text-stone-500 rounded-lg text-[9px] uppercase font-black tracking-wider hover:bg-stone-200 transition-colors">Voltar</button>
-                                 <button type="button" onClick={confirmGoogleInjection} className="flex-[2] py-2.5 px-3 bg-emerald-600 text-white rounded-lg text-[10px] uppercase font-black tracking-widest hover:bg-emerald-500 shadow-md transition-all flex items-center justify-center gap-1.5"><Rocket size={12}/> Confirmar</button>
+                                <button type="button" onClick={() => setPendingGoogleData(null)} className="flex-1 py-2.5 bg-stone-100 text-stone-500 rounded-lg text-[9px] uppercase font-black tracking-wider hover:bg-stone-200 transition-colors">Voltar</button>
+                                <button type="button" onClick={confirmGoogleInjection} className="flex-[2] py-2.5 px-3 bg-emerald-600 text-white rounded-lg text-[10px] uppercase font-black tracking-widest hover:bg-emerald-500 shadow-md transition-all flex items-center justify-center gap-1.5"><Rocket size={12} /> Confirmar</button>
                               </div>
                             </div>
                           )}
@@ -1797,26 +1804,26 @@ const App: React.FC = () => {
                         <div className="relative">
                           <label className="text-[11px] font-black text-stone-500 uppercase flex items-center gap-1.5 mb-1.5"><Briefcase size={12} /> Nome do Negócio</label>
                           <input className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-[12px] font-bold text-stone-800 focus:border-teal-500 outline-none transition-colors mb-3" placeholder="Ex: Eletricista Silva" value={formData.businessName} onChange={e => handleFloatNameChange(e.target.value)} />
-                          
+
                           <label className="text-[11px] font-black text-stone-500 uppercase flex items-center gap-1.5 mb-1.5"><Globe size={12} /> Seu Link Oficial</label>
                           <div className="flex bg-stone-50 border border-stone-200 rounded-xl overflow-hidden focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-                             <input className="flex-1 bg-transparent px-3 py-2.5 text-[12px] font-mono font-bold text-blue-600 outline-none w-full text-right" placeholder="meu-site" value={formData.customSlug} onChange={e => handleCustomSlugChange(e.target.value)} />
-                             <span className="bg-stone-100 border-l border-stone-200 px-3 py-2.5 text-[11px] font-bold text-stone-400 flex items-center select-none shadow-inner">.sitezing.com.br</span>
+                            <input className="flex-1 bg-transparent px-3 py-2.5 text-[12px] font-mono font-bold text-blue-600 outline-none w-full text-right" placeholder="meu-site" value={formData.customSlug} onChange={e => handleCustomSlugChange(e.target.value)} />
+                            <span className="bg-stone-100 border-l border-stone-200 px-3 py-2.5 text-[11px] font-bold text-stone-400 flex items-center select-none shadow-inner">.sitezing.com.br</span>
                           </div>
 
                           <div className="mt-1.5 min-h-[16px]">
-                             {floatDomainStatus.loading && (
-                                <div className="text-[10px] text-stone-400 flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin"/> Validando domínio...</div>
-                             )}
-                             {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available === false && (
-                                <div className="text-[10px] text-red-500 font-bold flex items-center gap-1"><AlertCircle size={10}/> "{floatDomainStatus.slug}" já está em uso! Tente modificar.</div>
-                             )}
-                             {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available && floatDomainStatus.slug && (
-                                <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle size={10}/> Liberado!</div>
-                             )}
+                            {floatDomainStatus.loading && (
+                              <div className="text-[10px] text-stone-400 flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Validando domínio...</div>
+                            )}
+                            {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available === false && (
+                              <div className="text-[10px] text-red-500 font-bold flex items-center gap-1"><AlertCircle size={10} /> "{floatDomainStatus.slug}" já está em uso! Tente modificar.</div>
+                            )}
+                            {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available && floatDomainStatus.slug && (
+                              <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle size={10} /> Liberado!</div>
+                            )}
                           </div>
                         </div>
-                        <div><label className="text-[11px] font-black text-stone-500 uppercase flex items-center gap-1.5 mb-1.5"><FileText size={12} /> Ideia Principal</label><textarea className="w-full h-20 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-[12px] resize-none focus:border-teal-500 outline-none transition-colors text-stone-800" placeholder="Descreva os serviços..." value={formData.description} onChange={e => {setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true)}} /></div>
+                        <div><label className="text-[11px] font-black text-stone-500 uppercase flex items-center gap-1.5 mb-1.5"><FileText size={12} /> Ideia Principal</label><textarea className="w-full h-20 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-[12px] resize-none focus:border-teal-500 outline-none transition-colors text-stone-800" placeholder="Descreva os serviços..." value={formData.description} onChange={e => { setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true) }} /></div>
                       </div>
 
                       <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-stone-700 transition-colors shadow-md">
@@ -1828,12 +1835,12 @@ const App: React.FC = () => {
                           <div className="space-y-4">
                             <div className="space-y-2.5">
                               <label className="text-xs font-bold text-stone-500 uppercase">Estilo do Site</label>
-                              <select className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => {setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true)}}>{LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}</select>
+                              <select className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm outline-none" value={formData.layoutStyle} onChange={e => { setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true) }}>{LAYOUT_STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}</select>
                             </div>
 
                             <div className="space-y-2.5">
                               <label className="text-xs font-bold text-stone-500 uppercase">Layout do Cabeçalho</label>
-                              <select className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm outline-none font-medium" value={formData.headerLayout} onChange={e => {setFormData({ ...formData, headerLayout: e.target.value }); setHasUnsavedChanges(true)}}>
+                              <select className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm outline-none font-medium" value={formData.headerLayout} onChange={e => { setFormData({ ...formData, headerLayout: e.target.value }); setHasUnsavedChanges(true) }}>
                                 <option value="logo_left_icons_right">Logo Esquerda / Ícones Direita</option>
                                 <option value="logo_right_icons_left">Logo Direita / Ícones Esquerda</option>
                                 <option value="logo_center_icons_right">Logo Centro / Ícones Direita</option>
@@ -1841,10 +1848,10 @@ const App: React.FC = () => {
                               </select>
                             </div>
                           </div>
-                          
+
                           <div className="space-y-4">
                             <label className="text-xs font-bold text-stone-500 uppercase block border-b border-stone-100 pb-2">Temas (Cores)</label>
-                            
+
                             <div className="space-y-2">
                               <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">1. Essenciais da Marca</span>
                               <div className="grid grid-cols-5 gap-3">
@@ -1903,7 +1910,7 @@ const App: React.FC = () => {
                                 </div>
                                 <div className="space-y-1 mt-2">
                                   <label className="flex justify-between text-[10px] font-bold text-stone-500 uppercase"><span>Tamanho da Logo</span><span>{formData.logoSize || 40}px</span></label>
-                                  <input type="range" min="20" max="100" value={formData.logoSize || 40} onChange={e => {setFormData({ ...formData, logoSize: parseInt(e.target.value) }); setHasUnsavedChanges(true)}} className="w-full accent-teal-500" />
+                                  <input type="range" min="20" max="100" value={formData.logoSize || 40} onChange={e => { setFormData({ ...formData, logoSize: parseInt(e.target.value) }); setHasUnsavedChanges(true) }} className="w-full accent-teal-500" />
                                 </div>
                               </div>
                             )}
@@ -1912,31 +1919,31 @@ const App: React.FC = () => {
                           <div className="space-y-3 pt-5 border-t border-stone-100">
                             <label className="text-xs font-bold text-stone-500 uppercase flex gap-1.5"><Globe size={14} /> Redes Sociais & Delivery</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => {setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => {setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => {setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="LinkedIn (Link)" value={formData.linkedin} onChange={e => {setFormData({ ...formData, linkedin: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="TikTok (Link ou @)" value={formData.tiktok} onChange={e => {setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="iFood (Link)" value={formData.ifood} onChange={e => {setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => {setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => {setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="WhatsApp (só números)" value={formData.whatsapp} onChange={e => { setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Instagram (@usuario)" value={formData.instagram} onChange={e => { setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Facebook (Link)" value={formData.facebook} onChange={e => { setFormData({ ...formData, facebook: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="LinkedIn (Link)" value={formData.linkedin} onChange={e => { setFormData({ ...formData, linkedin: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="TikTok (Link ou @)" value={formData.tiktok} onChange={e => { setFormData({ ...formData, tiktok: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="iFood (Link)" value={formData.ifood} onChange={e => { setFormData({ ...formData, ifood: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="99 Food (Link)" value={formData.noveNove} onChange={e => { setFormData({ ...formData, noveNove: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Keeta (Link)" value={formData.keeta} onChange={e => { setFormData({ ...formData, keeta: e.target.value }); setHasUnsavedChanges(true) }} />
                             </div>
                           </div>
 
                           <div className="space-y-3 pt-5 border-t border-stone-100">
                             <label className="text-xs font-bold text-stone-500 uppercase flex gap-1.5"><MapPin size={14} /> Contato e Localização</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => {setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true)}} />
-                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => {setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true)}} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Telefone" value={formData.phone} onChange={e => { setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true) }} />
+                              <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="E-mail" value={formData.email} onChange={e => { setFormData({ ...formData, email: e.target.value }); setHasUnsavedChanges(true) }} />
                             </div>
-                            <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => {setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true)}} />
-                            
-                            <label className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-600"><span>Exibir Mapa do Google</span><input type="checkbox" checked={formData.showMap} onChange={e => {setFormData({ ...formData, showMap: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-teal-500" /></label>
-                            <label className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-600"><span>Exibir formulário de contato</span><input type="checkbox" checked={formData.showForm} onChange={e => {setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-teal-500" /></label>
+                            <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs focus:border-teal-500 outline-none" placeholder="Endereço Físico" value={formData.address} onChange={e => { setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true) }} />
+
+                            <label className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-600"><span>Exibir Mapa do Google</span><input type="checkbox" checked={formData.showMap} onChange={e => { setFormData({ ...formData, showMap: e.target.checked }); setHasUnsavedChanges(true) }} className="accent-teal-500" /></label>
+                            <label className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-600"><span>Exibir formulário de contato</span><input type="checkbox" checked={formData.showForm} onChange={e => { setFormData({ ...formData, showForm: e.target.checked }); setHasUnsavedChanges(true) }} className="accent-teal-500" /></label>
                             {formData.reviews && formData.reviews.length > 0 && (
                               <label className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-stone-600 font-bold mt-2">
                                 <span className="flex items-center gap-1.5"><Star className="w-3 h-3 text-emerald-500" /> Exibir Galeria de Avaliações Google</span>
-                                <input type="checkbox" checked={formData.showReviews} onChange={e => {setFormData({ ...formData, showReviews: e.target.checked }); setHasUnsavedChanges(true)}} className="accent-emerald-500" />
+                                <input type="checkbox" checked={formData.showReviews} onChange={e => { setFormData({ ...formData, showReviews: e.target.checked }); setHasUnsavedChanges(true) }} className="accent-emerald-500" />
                               </label>
                             )}
                           </div>
@@ -1949,7 +1956,7 @@ const App: React.FC = () => {
                     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                       {!currentProjectSlug ? (
                         <div className="bg-teal-50/50 p-5 rounded-2xl border border-teal-100">
-                          <h4 className="text-sm font-bold text-teal-700 flex items-center gap-2"><Globe size={16}/> Qual será o endereço?</h4>
+                          <h4 className="text-sm font-bold text-teal-700 flex items-center gap-2"><Globe size={16} /> Qual será o endereço?</h4>
                           <p className="text-xs text-teal-600/80 mb-5 leading-relaxed">Antes de salvar, precisamos saber se você vai usar um domínio oficial (Ex: Registro.br).</p>
                           <Suspense fallback={null}><DomainChecker onDomainChange={(domain, isLater) => { setOfficialDomain(domain); setRegisterLater(isLater); }} /></Suspense>
                         </div>
@@ -1974,14 +1981,14 @@ const App: React.FC = () => {
                                   {/* PASSO 1: Obter Domínio */}
                                   <div className="bg-white border border-stone-200 p-5 rounded-2xl shadow-sm relative overflow-hidden">
                                     <div className="absolute top-0 right-0 bg-orange-100 text-orange-700 text-[9px] font-black uppercase px-3 py-1.5 rounded-bl-lg">Passo 1</div>
-                                    <h4 className="text-sm font-bold text-stone-900 mb-2 flex items-center gap-2"><Star size={16} className="text-orange-500"/> Obtenha seu endereço oficial</h4>
+                                    <h4 className="text-sm font-bold text-stone-900 mb-2 flex items-center gap-2"><Star size={16} className="text-orange-500" /> Obtenha seu endereço oficial</h4>
                                     <p className="text-xs text-stone-600 leading-relaxed mb-4">
                                       Para passar credibilidade, seu site precisa de um endereço profissional (ex: <b>suaempresa.com.br</b>). Recomendamos registrar o seu domínio diretamente no órgão oficial do Brasil, o Registro.br (custa apenas R$ 40,00 por ano).
                                     </p>
-                                    <a 
-                                      href="https://registro.br" 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
+                                    <a
+                                      href="https://registro.br"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
                                       className="inline-flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-800 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors"
                                     >
                                       <ExternalLink size={14} /> Abrir Registro.br
@@ -1993,22 +2000,22 @@ const App: React.FC = () => {
                                     <div className="absolute top-0 right-0 bg-teal-100 text-teal-700 text-[9px] font-black uppercase px-3 py-1.5 rounded-bl-lg">Passo 2</div>
                                     <h4 className="text-sm font-bold text-stone-900 mb-2">Já tenho um domínio. Conectar agora:</h4>
                                     <p className="text-[10px] text-stone-500 mb-4">Digite apenas o endereço raiz. O nosso sistema já configura o "www" automaticamente para você.</p>
-                                    
+
                                     <div className="flex flex-col sm:flex-row gap-2 relative">
                                       <div className="relative flex-1">
-                                        <input 
-                                          className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 pl-12 text-sm focus:border-teal-500 outline-none transition-colors font-mono text-stone-700 h-12" 
-                                          placeholder="suamarca.com.br" 
-                                          value={customDomainInput} 
+                                        <input
+                                          className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 pl-12 text-sm focus:border-teal-500 outline-none transition-colors font-mono text-stone-700 h-12"
+                                          placeholder="suamarca.com.br"
+                                          value={customDomainInput}
                                           onChange={e => {
                                             let val = e.target.value.toLowerCase().trim();
                                             val = val.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
                                             setCustomDomainInput(val);
-                                          }} 
+                                          }}
                                         />
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-mono text-sm pointer-events-none">www.</span>
                                       </div>
-                                      <button 
+                                      <button
                                         onClick={handleAddCustomDomain}
                                         disabled={isLinkingDomain || !customDomainInput}
                                         className="bg-stone-900 hover:bg-stone-800 disabled:bg-stone-300 text-white px-6 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 h-12 shrink-0"
@@ -2030,9 +2037,9 @@ const App: React.FC = () => {
                                         {isDomainActive ? 'Propagado' : 'Pendente'}
                                       </span>
                                       {/* BOTÃO PARA DESCONECTAR O DOMÍNIO */}
-                                      <button 
-                                        onClick={() => handleRemoveDomain(currentProject.officialDomain)} 
-                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors border border-transparent hover:border-red-100" 
+                                      <button
+                                        onClick={() => handleRemoveDomain(currentProject.officialDomain)}
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors border border-transparent hover:border-red-100"
                                         title="Desconectar Domínio"
                                       >
                                         <Trash2 size={16} />
@@ -2047,7 +2054,7 @@ const App: React.FC = () => {
                                         <h4 className="text-sm font-black text-orange-800">Finalize a Configuração DNS</h4>
                                         <p className="text-[11px] text-orange-700/80 mt-1">Para o site funcionar, você precisa adicionar alguns dados no seu provedor de domínio.</p>
                                       </div>
-                                      <button 
+                                      <button
                                         onClick={() => setIsDnsModalOpen(true)}
                                         className="mt-2 bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-orange-500/20"
                                       >
@@ -2056,7 +2063,7 @@ const App: React.FC = () => {
                                     </div>
                                   )}
 
-                                  <button 
+                                  <button
                                     onClick={() => handleVerifyDomain(currentProject.officialDomain)}
                                     disabled={isVerifyingDomain || isDomainActive}
                                     className={`w-full py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${isDomainActive ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-500/20'}`}
@@ -2083,58 +2090,58 @@ const App: React.FC = () => {
                         <div className="space-y-5 relative z-10">
                           {/* PREÇOS */}
                           <div className="space-y-3">
-                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><CreditCard size={12}/> Tabela de Preços (Stripe)</label>
+                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><CreditCard size={12} /> Tabela de Preços (Stripe)</label>
                             <div className="grid grid-cols-2 gap-3">
                               <div className="space-y-1">
                                 <span className="text-[9px] font-extrabold text-stone-500 uppercase">Mensal (R$)</span>
-                                <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm font-black text-stone-800 focus:border-purple-400 outline-none" value={platformConfigs?.pricing?.mensal || ''} onChange={e => setPlatformConfigs({...platformConfigs, pricing: {...platformConfigs.pricing, mensal: e.target.value}})} />
+                                <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm font-black text-stone-800 focus:border-purple-400 outline-none" value={platformConfigs?.pricing?.mensal || ''} onChange={e => setPlatformConfigs({ ...platformConfigs, pricing: { ...platformConfigs.pricing, mensal: e.target.value } })} />
                               </div>
                               <div className="space-y-1">
                                 <span className="text-[9px] font-extrabold text-stone-500 uppercase">Anual (R$)</span>
-                                <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm font-black text-stone-800 focus:border-purple-400 outline-none" value={platformConfigs?.pricing?.anual || ''} onChange={e => setPlatformConfigs({...platformConfigs, pricing: {...platformConfigs.pricing, anual: e.target.value}})} />
+                                <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm font-black text-stone-800 focus:border-purple-400 outline-none" value={platformConfigs?.pricing?.anual || ''} onChange={e => setPlatformConfigs({ ...platformConfigs, pricing: { ...platformConfigs.pricing, anual: e.target.value } })} />
                               </div>
                             </div>
                           </div>
 
                           {/* BANNERS */}
                           <div className="space-y-3 pt-4 border-t border-purple-100">
-                             <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><Zap size={12}/> Banner de Marketing (Topo)</label>
-                             <div className="bg-white border border-stone-200 rounded-xl p-4 space-y-4">
-                                <label className="flex items-center justify-between text-xs font-bold text-stone-600">
-                                   <span>Banner Ativo?</span>
-                                   <input type="checkbox" checked={platformConfigs?.marketing?.bannerActive || false} onChange={e => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerActive: e.target.checked}})} className="accent-purple-500 w-4 h-4" />
-                                </label>
-                                <div className="space-y-1">
-                                   <span className="text-[9px] font-extrabold text-stone-500 uppercase">Texto do Banner</span>
-                                   <input className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-xs text-stone-700 focus:border-purple-400 outline-none" placeholder="Ex: Black Friday: 50% OFF!" value={platformConfigs?.marketing?.bannerText || ''} onChange={e => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerText: e.target.value}})} />
-                                </div>
-                                <div className="space-y-1">
-                                   <span className="text-[9px] font-extrabold text-stone-500 uppercase">Tipo / Cor</span>
-                                   <select className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-xs text-stone-700 outline-none" value={platformConfigs?.marketing?.bannerType || 'info'} onChange={e => setPlatformConfigs({...platformConfigs, marketing: {...platformConfigs.marketing, bannerType: e.target.value}})}>
-                                      <option value="info">Azul (Informação)</option>
-                                      <option value="warning">Laranja (Destaque)</option>
-                                   </select>
-                                </div>
-                             </div>
+                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><Zap size={12} /> Banner de Marketing (Topo)</label>
+                            <div className="bg-white border border-stone-200 rounded-xl p-4 space-y-4">
+                              <label className="flex items-center justify-between text-xs font-bold text-stone-600">
+                                <span>Banner Ativo?</span>
+                                <input type="checkbox" checked={platformConfigs?.marketing?.bannerActive || false} onChange={e => setPlatformConfigs({ ...platformConfigs, marketing: { ...platformConfigs.marketing, bannerActive: e.target.checked } })} className="accent-purple-500 w-4 h-4" />
+                              </label>
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-extrabold text-stone-500 uppercase">Texto do Banner</span>
+                                <input className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-xs text-stone-700 focus:border-purple-400 outline-none" placeholder="Ex: Black Friday: 50% OFF!" value={platformConfigs?.marketing?.bannerText || ''} onChange={e => setPlatformConfigs({ ...platformConfigs, marketing: { ...platformConfigs.marketing, bannerText: e.target.value } })} />
+                              </div>
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-extrabold text-stone-500 uppercase">Tipo / Cor</span>
+                                <select className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-xs text-stone-700 outline-none" value={platformConfigs?.marketing?.bannerType || 'info'} onChange={e => setPlatformConfigs({ ...platformConfigs, marketing: { ...platformConfigs.marketing, bannerType: e.target.value } })}>
+                                  <option value="info">Azul (Informação)</option>
+                                  <option value="warning">Laranja (Destaque)</option>
+                                </select>
+                              </div>
+                            </div>
                           </div>
 
                           {/* CHAVES DE CONEXÃO */}
                           <div className="space-y-3 pt-4 border-t border-purple-100">
-                             <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><ShieldCheck size={12}/> Chave Stripe Production</label>
-                             <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-[10px] font-mono text-stone-500 focus:border-purple-400 outline-none" placeholder="sk_live_..." type="password" value={platformConfigs?.stripe?.secretKey || ''} onChange={e => setPlatformConfigs({...platformConfigs, stripe: {...platformConfigs.stripe, secretKey: e.target.value}})} />
-                             <p className="text-[9px] text-stone-400 italic">Cuidado: Alterar esta chave pode quebrar os pagamentos atuais.</p>
+                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><ShieldCheck size={12} /> Chave Stripe Production</label>
+                            <input className="w-full bg-white border border-stone-200 rounded-xl p-3 text-[10px] font-mono text-stone-500 focus:border-purple-400 outline-none" placeholder="sk_live_..." type="password" value={platformConfigs?.stripe?.secretKey || ''} onChange={e => setPlatformConfigs({ ...platformConfigs, stripe: { ...platformConfigs.stripe, secretKey: e.target.value } })} />
+                            <p className="text-[9px] text-stone-400 italic">Cuidado: Alterar esta chave pode quebrar os pagamentos atuais.</p>
                           </div>
 
                           {/* TERMOS E LEGAL */}
                           <div className="space-y-3 pt-4 border-t border-purple-100">
-                             <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><FileText size={12}/> Conteúdo Institucional</label>
-                             <div className="space-y-1">
-                                <span className="text-[9px] font-extrabold text-stone-500 uppercase">Termos de Uso (Texto)</span>
-                                <textarea className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs text-stone-700 h-24 resize-none outline-none focus:border-purple-400" placeholder="Digite os termos de uso aqui..." value={platformConfigs?.legal?.terms || ''} onChange={e => setPlatformConfigs({...platformConfigs, legal: {...platformConfigs.legal, terms: e.target.value}})} />
-                             </div>
+                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2"><FileText size={12} /> Conteúdo Institucional</label>
+                            <div className="space-y-1">
+                              <span className="text-[9px] font-extrabold text-stone-500 uppercase">Termos de Uso (Texto)</span>
+                              <textarea className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs text-stone-700 h-24 resize-none outline-none focus:border-purple-400" placeholder="Digite os termos de uso aqui..." value={platformConfigs?.legal?.terms || ''} onChange={e => setPlatformConfigs({ ...platformConfigs, legal: { ...platformConfigs.legal, terms: e.target.value } })} />
+                            </div>
                           </div>
 
-                          <button 
+                          <button
                             onClick={async () => {
                               try {
                                 setIsSavingProject(true);
@@ -2150,7 +2157,7 @@ const App: React.FC = () => {
                             }}
                             className="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2"
                           >
-                             {isSavingProject ? <Loader2 className="animate-spin w-4 h-4" /> : <Save size={16}/>} Salvar Alterações Globais
+                            {isSavingProject ? <Loader2 className="animate-spin w-4 h-4" /> : <Save size={16} />} Salvar Alterações Globais
                           </button>
                         </div>
                       </div>
@@ -2159,13 +2166,13 @@ const App: React.FC = () => {
 
                   {activeTab === 'assinatura' && currentProjectSlug && (() => {
                     const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
-                    
+
                     const expirationDate = currentProject?.expiresAt ? (currentProject.expiresAt._seconds ? currentProject.expiresAt._seconds * 1000 : currentProject.expiresAt.seconds * 1000) : null;
                     const daysLeft = expirationDate ? Math.ceil((new Date(expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
-                    
+
                     const isPaid = currentProject?.paymentStatus === 'paid';
                     const isCanceled = currentProject?.cancelAtPeriodEnd === true || currentProject?.subscriptionStatus === 'canceled';
-                    
+
                     let isExpired = false;
                     if (expirationDate && expirationDate < Date.now() && !isPaid) {
                       isExpired = true;
@@ -2180,30 +2187,30 @@ const App: React.FC = () => {
                           <p className="text-xs text-stone-500 mb-6">Gerencie o plano do projeto <span className="text-orange-500 font-mono">{currentProjectSlug}</span></p>
 
                           <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 mb-6 relative z-10 shadow-inner">
-                              <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Resumo da Conta</h4>
-                              <div className="space-y-4">
-                                  <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-                                      <span className="text-xs text-stone-500 font-medium">Status do Site</span>
-                                      <span className={`text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md ${daysLeft > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                        {daysLeft > 0 ? 'Online (Ativo)' : 'Offline (Congelado)'}
-                                      </span>
-                                  </div>
-                                  <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-                                      <span className="text-xs text-stone-500 font-medium">Situação do Plano</span>
-                                      <span className="text-xs font-bold text-stone-800">
-                                          {isPaid ? (isCanceled ? 'Cancelada' : 'Assinatura Ativa') : 'Teste Gratuito (Trial)'}
-                                      </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                      <span className="text-xs text-stone-500 font-medium">Tempo / Vencimento</span>
-                                      <span className="text-xs font-bold text-stone-800 text-right">
-                                          {!isPaid && daysLeft > 0 && `Faltam ${daysLeft} dias para acabar`}
-                                          {!isPaid && daysLeft <= 0 && `Teste encerrado`}
-                                          {isPaid && !isCanceled && expirationDate && `Próxima renovação em ${new Date(expirationDate).toLocaleDateString('pt-BR')}`}
-                                          {isPaid && isCanceled && expirationDate && `No ar até ${new Date(expirationDate).toLocaleDateString('pt-BR')}`}
-                                      </span>
-                                  </div>
+                            <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Resumo da Conta</h4>
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center border-b border-stone-200 pb-3">
+                                <span className="text-xs text-stone-500 font-medium">Status do Site</span>
+                                <span className={`text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md ${daysLeft > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                  {daysLeft > 0 ? 'Online (Ativo)' : 'Offline (Congelado)'}
+                                </span>
                               </div>
+                              <div className="flex justify-between items-center border-b border-stone-200 pb-3">
+                                <span className="text-xs text-stone-500 font-medium">Situação do Plano</span>
+                                <span className="text-xs font-bold text-stone-800">
+                                  {isPaid ? (isCanceled ? 'Cancelada' : 'Assinatura Ativa') : 'Teste Gratuito (Trial)'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-stone-500 font-medium">Tempo / Vencimento</span>
+                                <span className="text-xs font-bold text-stone-800 text-right">
+                                  {!isPaid && daysLeft > 0 && `Faltam ${daysLeft} dias para acabar`}
+                                  {!isPaid && daysLeft <= 0 && `Teste encerrado`}
+                                  {isPaid && !isCanceled && expirationDate && `Próxima renovação em ${new Date(expirationDate).toLocaleDateString('pt-BR')}`}
+                                  {isPaid && isCanceled && expirationDate && `No ar até ${new Date(expirationDate).toLocaleDateString('pt-BR')}`}
+                                </span>
+                              </div>
+                            </div>
                           </div>
 
                           {isPaid && isCanceled && daysLeft > 0 ? (
@@ -2211,12 +2218,12 @@ const App: React.FC = () => {
                               <h4 className="font-black text-orange-700 text-lg uppercase tracking-wider">Assinatura Cancelada</h4>
                               <p className="text-xs text-orange-600/80 mb-2">Seu site continuará no ar, recebendo visitas e contatos normalmente até o cumprimento total do período que você já pagou. Nenhum valor retroativo será cobrado ou estornado.</p>
                               <p className="text-[11px] text-orange-700/60 font-medium">Após o vencimento, o site entrará em estado de Congelamento por 5 dias e, após isso, será definitivamente suspenso. Deseja reativar a renovação automática para não perdê-lo?</p>
-                              <button 
-                                onClick={() => handleResumeSubscription(currentProjectSlug)} 
-                                disabled={isResuming} 
+                              <button
+                                onClick={() => handleResumeSubscription(currentProjectSlug)}
+                                disabled={isResuming}
                                 className="bg-orange-500 text-white px-6 py-3.5 rounded-xl font-bold text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-colors w-full"
                               >
-                                {isResuming ? <Loader2 className="animate-spin inline mr-2"/> : <RefreshCw className="inline mr-2" size={16}/>} Reativar Assinatura
+                                {isResuming ? <Loader2 className="animate-spin inline mr-2" /> : <RefreshCw className="inline mr-2" size={16} />} Reativar Assinatura
                               </button>
                             </div>
                           ) : isPaid && !isCanceled ? (
@@ -2224,8 +2231,8 @@ const App: React.FC = () => {
                               <h4 className="font-black text-emerald-700 text-lg uppercase tracking-wider">Plano Operacional</h4>
                               <p className="text-xs text-emerald-600/70">Seu ambiente está operando com potência máxima e sem restrições.</p>
                               <div className="pt-2">
-                                <button 
-                                  onClick={() => { setSelectedPlanModal(currentProject.planSelected === 'anual' ? 'monthly' : 'annual'); setCheckoutTermsAccepted(false); }} 
+                                <button
+                                  onClick={() => { setSelectedPlanModal(currentProject.planSelected === 'anual' ? 'monthly' : 'annual'); setCheckoutTermsAccepted(false); }}
                                   className="bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-100 px-6 py-3 rounded-xl text-xs font-bold transition-colors shadow-sm w-full uppercase tracking-wider"
                                 >
                                   Mudar de Plano
@@ -2241,11 +2248,11 @@ const App: React.FC = () => {
                                   <h4 className="text-teal-600 font-bold mb-2 uppercase tracking-wide text-xs">Plano Mensal</h4>
                                   <div className="flex items-end gap-1 mb-4"><span className="text-3xl font-black text-stone-950">R$ {platformConfigs?.pricing?.mensal || '49,90'}</span><span className="text-xs text-stone-500 font-medium pb-1">/mês</span></div>
                                   <ul className="space-y-2 text-xs text-stone-600 mb-6 flex-1 relative z-10">
-                                    <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5"/> Domínio próprio & Suporte</li>
+                                    <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5" /> Domínio próprio & Suporte</li>
                                     <li className="flex items-start gap-2 text-[10px] text-stone-500 mt-4 italic">Sem multa de cancelamento. Sem devoluções de períodos já utilizados. Ao cancelar, o site expira no último dia pago.</li>
                                   </ul>
-                                  <button 
-                                    onClick={() => setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'mensal' })} 
+                                  <button
+                                    onClick={() => setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'mensal' })}
                                     disabled={checkoutLoading === `${currentProjectSlug}-mensal`}
                                     className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors relative z-10 shadow-lg shadow-teal-500/20"
                                   >
@@ -2259,11 +2266,11 @@ const App: React.FC = () => {
                                   <h4 className="text-orange-500 font-bold mb-2 uppercase tracking-wide text-xs">Plano Anual</h4>
                                   <div className="flex items-end gap-1 mb-4"><span className="text-3xl font-black text-stone-950">R$ {platformConfigs?.pricing?.anual || '499'}</span><span className="text-xs text-stone-500 font-medium pb-1">/ano</span></div>
                                   <ul className="space-y-2 text-xs text-stone-600 mb-6 flex-1 relative z-10">
-                                    <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5"/> 2 meses grátis equivalentes</li>
+                                    <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5" /> 2 meses grátis equivalentes</li>
                                     <li className="flex items-start gap-2 text-[10px] text-stone-500 mt-4 italic">Maior economia a longo prazo. Regras de cancelamento sem devolução proporcional aplicáveis. Site online pelos 12 meses inteiros.</li>
                                   </ul>
-                                  <button 
-                                    onClick={() => setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'anual' })} 
+                                  <button
+                                    onClick={() => setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'anual' })}
                                     disabled={checkoutLoading === `${currentProjectSlug}-anual`}
                                     className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20 relative z-10"
                                   >
@@ -2273,39 +2280,39 @@ const App: React.FC = () => {
                               </div>
                             </div>
                           )}
-                          
+
                           <div className="mt-8 pt-6 border-t border-stone-100 relative z-10">
-                             <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Ações da Conta</h4>
-                             {isPaid && !isCanceled ? (
-                               <button 
-                                 onClick={() => {setCancelModalProject(currentProjectSlug); setCancelTermsAccepted(false)}} 
-                                 className="w-full bg-white border border-red-200 text-red-600 hover:bg-red-50 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
-                               >
-                                 Cancelar Assinatura
-                               </button>
-                             ) : (
-                               <button 
-                                 onClick={() => showToast("Sua assinatura já encontra-se inativa ou em período de teste gratuito.", "info")}
-                                 className="w-full bg-stone-100 border border-stone-200 text-stone-400 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-not-allowed"
-                               >
-                                 Cancelar Assinatura
-                               </button>
-                             )}
+                            <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Ações da Conta</h4>
+                            {isPaid && !isCanceled ? (
+                              <button
+                                onClick={() => { setCancelModalProject(currentProjectSlug); setCancelTermsAccepted(false) }}
+                                className="w-full bg-white border border-red-200 text-red-600 hover:bg-red-50 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+                              >
+                                Cancelar Assinatura
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => showToast("Sua assinatura já encontra-se inativa ou em período de teste gratuito.", "info")}
+                                className="w-full bg-stone-100 border border-stone-200 text-stone-400 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-not-allowed"
+                              >
+                                Cancelar Assinatura
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
                     );
                   })()}
-                  
+
                   {loggedUserEmail && (
                     <div className="mt-8 border-t border-stone-200 pt-6 space-y-4">
-                      <div className="flex items-center justify-between"><p className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-600"/>Meus Projetos</p><button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase bg-red-50 px-2.5 py-1 rounded-lg">Sair</button></div>
+                      <div className="flex items-center justify-between"><p className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-2"><LayoutDashboard size={14} className="text-emerald-600" />Meus Projetos</p><button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase bg-red-50 px-2.5 py-1 rounded-lg">Sair</button></div>
                       <div className="max-h-52 overflow-y-auto space-y-2">
                         {savedProjects.length === 0 ? <p className="text-xs text-stone-400 italic text-center py-4">Nenhum projeto ainda.</p> : (
                           savedProjects.map((p: any) => (
                             <div key={p.id} className="flex gap-1 sm:gap-1.5 bg-white border border-stone-200 rounded-xl p-2 sm:p-2.5 shadow-sm max-w-full overflow-hidden">
-                                <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left bg-stone-50 hover:bg-stone-100 rounded-lg p-2 sm:p-3 flex items-center transition-all min-w-0 ${currentProjectSlug === p.id ? 'ring-1 ring-teal-400' : ''}`}><div className="flex flex-col min-w-0 w-full pr-1.5"><div className="flex items-center gap-1.5 w-full"><span className="font-bold text-[10px] sm:text-xs text-stone-800 truncate leading-tight">{p.businessName || 'Sem Nome'}</span>{getStatusBadge(p)}</div><span className="text-[8px] sm:text-[9px] text-stone-400 font-mono mt-0.5 truncate w-full block">{p.publishUrl?.replace('https://', '') || 'Sem link público'}</span></div></button>
-                                <button onClick={() => handleDeleteSite(p.id)} className="w-8 sm:w-10 flex-shrink-0 bg-stone-50 hover:bg-red-50 text-stone-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all min-h-full"><Trash2 size={14} /></button>
+                              <button onClick={() => handleLoadProject(p)} className={`flex-1 text-left bg-stone-50 hover:bg-stone-100 rounded-lg p-2 sm:p-3 flex items-center transition-all min-w-0 ${currentProjectSlug === p.id ? 'ring-1 ring-teal-400' : ''}`}><div className="flex flex-col min-w-0 w-full pr-1.5"><div className="flex items-center gap-1.5 w-full"><span className="font-bold text-[10px] sm:text-xs text-stone-800 truncate leading-tight">{p.businessName || 'Sem Nome'}</span>{getStatusBadge(p)}</div><span className="text-[8px] sm:text-[9px] text-stone-400 font-mono mt-0.5 truncate w-full block">{p.publishUrl?.replace('https://', '') || 'Sem link público'}</span></div></button>
+                              <button onClick={() => handleDeleteSite(p.id)} className="w-8 sm:w-10 flex-shrink-0 bg-stone-50 hover:bg-red-50 text-stone-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all min-h-full"><Trash2 size={14} /></button>
                             </div>
                           ))
                         )}
@@ -2317,7 +2324,7 @@ const App: React.FC = () => {
                 {generatedHtml && (() => {
                   const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
                   const isPublished = Boolean(currentProject?.publishUrl || currentProject?.status === 'active' || currentProject?.status === 'published');
-                  
+
                   let isExpired = false;
                   if (currentProject?.expiresAt) {
                     const expDate = currentProject.expiresAt._seconds ? currentProject.expiresAt._seconds * 1000 : currentProject.expiresAt.seconds * 1000;
@@ -2325,39 +2332,39 @@ const App: React.FC = () => {
                       isExpired = true;
                     }
                   }
-                  
+
                   const needsPayment = currentProject?.status === 'frozen' || isExpired;
 
                   return (
                     <div className="p-4 border-t border-stone-200 bg-white flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
-                      <button 
-                        onClick={handleSaveOrUpdateSite} 
-                        disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)} 
+                      <button
+                        onClick={handleSaveOrUpdateSite}
+                        disabled={isSavingProject || (!hasUnsavedChanges && currentProjectSlug !== null)}
                         className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 relative ${hasUnsavedChanges || !currentProjectSlug ? (guideStep === 2 ? 'bg-orange-500 animate-guide-pulse text-white shadow-lg' : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md') : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}
                       >
-                        {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />} 
+                        {isSavingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={14} />}
                         {currentProjectSlug ? 'Salvar Alterações' : 'Salvar Projeto'}
                         <GuidedTip step={2} currentStep={guideStep} text="Salve seu projeto para garantir seu link oficial!" />
                       </button>
-                      
+
                       {needsPayment ? (
-                        <button 
+                        <button
                           onClick={() => {
                             setActiveTab('assinatura');
                             showToast('Seu site expirou. Ative um plano para reativá-lo e poder publicar as alterações!', 'warning');
-                          }} 
+                          }}
                           className="w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20"
                         >
-                          <Zap size={14} /> 
+                          <Zap size={14} />
                           Reativar Assinatura
                         </button>
                       ) : (
-                        <button 
-                          onClick={handlePublishSite} 
-                          disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug} 
+                        <button
+                          onClick={handlePublishSite}
+                          disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
                           className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 relative ${!hasUnsavedChanges && currentProjectSlug ? (guideStep === 3 ? 'bg-orange-500 animate-guide-pulse text-white shadow-lg' : (isPublished ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20')) : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}
                         >
-                          {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : (isPublished ? <RefreshCw size={14} /> : <Globe size={14} />)} 
+                          {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : (isPublished ? <RefreshCw size={14} /> : <Globe size={14} />)}
                           {isPublished ? 'Atualizar Publicação' : 'Publicar Site'}
                           <GuidedTip step={3} currentStep={guideStep} text="Clique aqui para colocar seu site no ar!" />
                         </button>
@@ -2374,7 +2381,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {selectedPlanModal && (
           <div className="fixed inset-0 z-[400] bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white rounded-3xl overflow-hidden max-w-lg w-full shadow-2xl relative"
             >
@@ -2382,16 +2389,15 @@ const App: React.FC = () => {
                 <X size={20} />
               </button>
 
-              <div className={`p-8 pb-10 text-center relative ${
-                selectedPlanModal === 'free' ? 'bg-stone-100' :
-                selectedPlanModal === 'monthly' ? 'bg-teal-600 text-white' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
-              }`}>
+              <div className={`p-8 pb-10 text-center relative ${selectedPlanModal === 'free' ? 'bg-stone-100' :
+                  selectedPlanModal === 'monthly' ? 'bg-teal-600 text-white' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
+                }`}>
                 {selectedPlanModal !== 'free' && <div className="absolute inset-0 opacity-10"><img src={BRAND_LOGO} className="w-full h-full object-cover filter blur-sm" alt="" /></div>}
-                
+
                 <h2 className="text-3xl font-black uppercase tracking-tight italic relative z-10">
                   {selectedPlanModal === 'free' ? 'Plano Turbo Teste' : selectedPlanModal === 'monthly' ? 'Plano Mensal' : 'Plano Anual Start'}
                 </h2>
-                
+
                 <div className="mt-4 flex items-center justify-center gap-2 relative z-10">
                   <span className="text-[10px] uppercase tracking-widest font-bold opacity-80 border border-current px-3 py-1 rounded-full">
                     {selectedPlanModal === 'free' ? 'Sem Compromisso' : 'Liberação Imediata'}
@@ -2428,17 +2434,16 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={() => {
                     setSelectedPlanModal(null);
                     setIsMenuOpen(true);
                   }}
-                  className={`w-full py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg hover:translate-y-[-2px] ${
-                    selectedPlanModal === 'free' 
-                      ? 'bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20' 
+                  className={`w-full py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg hover:translate-y-[-2px] ${selectedPlanModal === 'free'
+                      ? 'bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20'
                       : selectedPlanModal === 'monthly' ? 'bg-teal-600 text-white hover:bg-teal-500 shadow-teal-500/30'
-                      : 'bg-orange-500 text-white hover:bg-orange-400 shadow-orange-500/30'
-                  }`}
+                        : 'bg-orange-500 text-white hover:bg-orange-400 shadow-orange-500/30'
+                    }`}
                 >
                   🚀 Criar seu site agora
                 </button>
@@ -2452,7 +2457,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {cancelModalProject && (
           <div className="fixed inset-0 z-[500] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.95 }}
               className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl border border-red-100"
             >
@@ -2464,28 +2469,28 @@ const App: React.FC = () => {
                 <h3 className="text-lg font-black text-red-900 mb-1 uppercase tracking-wider">Cancelar Assinatura?</h3>
                 <p className="text-xs text-red-700/80 font-medium">Você perderá os benefícios ao final do ciclo atual.</p>
               </div>
-              
+
               <div className="p-6 bg-white space-y-4">
                 <div className="bg-red-50/50 p-4 border border-red-100 rounded-xl space-y-2">
                   <p className="text-[11px] text-stone-600 uppercase font-black">Atenção:</p>
                   <ul className="text-xs text-stone-500 list-none space-y-1.5">
-                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"/>O site continuará online até o fim do período já pago.</li>
-                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"/>Após o vencimento, o site será <strong className="text-stone-700">Congelado</strong>.</li>
-                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"/>Você não será mais cobrado nos próximos meses.</li>
+                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />O site continuará online até o fim do período já pago.</li>
+                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />Após o vencimento, o site será <strong className="text-stone-700">Congelado</strong>.</li>
+                    <li className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />Você não será mais cobrado nos próximos meses.</li>
                   </ul>
                 </div>
-                
+
                 <label className="flex items-start gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-100 transition-colors">
                   <input type="checkbox" className="mt-0.5 w-4 h-4 text-red-600 rounded border-stone-300 focus:ring-red-500" checked={cancelTermsAccepted} onChange={(e) => setCancelTermsAccepted(e.target.checked)} />
                   <span className="text-[11px] font-bold text-stone-600 leading-relaxed">Estou ciente de que meu site será suspenso ao fim do ciclo atual.</span>
                 </label>
               </div>
-              
+
               <div className="p-4 bg-stone-50 border-t border-stone-100 flex gap-2">
                 <button onClick={() => setCancelModalProject(null)} className="flex-1 py-3 px-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-stone-50 transition-colors">Voltar</button>
-                <button 
-                  onClick={() => handleConfirmCancel(cancelModalProject)} 
-                  disabled={!cancelTermsAccepted || isCanceling} 
+                <button
+                  onClick={() => handleConfirmCancel(cancelModalProject)}
+                  disabled={!cancelTermsAccepted || isCanceling}
                   className="flex-1 py-3 px-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
                 >
                   {isCanceling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Confirmar Cancelamento'}
@@ -2500,7 +2505,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {showFloatModal && !isMenuOpen && !generatedHtml && !currentProjectSlug && (
           <div className="fixed inset-0 z-[500] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.95 }}
               className="w-full max-w-[380px] bg-white border border-stone-200 shadow-2xl rounded-3xl overflow-hidden relative"
             >
@@ -2519,20 +2524,20 @@ const App: React.FC = () => {
               <div className="p-6">
                 <div className="space-y-5">
                   <div className="bg-blue-50/50 p-4 border border-blue-100 rounded-2xl relative overflow-hidden ring-1 ring-blue-500/10">
-                    <label className="text-[10px] uppercase tracking-widest font-black text-blue-800 mb-3 flex items-center justify-center gap-1.5"><MapPin size={14} className="text-blue-600"/> Importação Mágica do Google</label>
+                    <label className="text-[10px] uppercase tracking-widest font-black text-blue-800 mb-3 flex items-center justify-center gap-1.5"><MapPin size={14} className="text-blue-600" /> Importação Mágica do Google</label>
                     <div className="flex flex-col gap-2 relative z-10 w-full">
-                      <input 
+                      <input
                         type="text" placeholder="Cole de onde achar: Maps, Link ou Nome..."
                         className="w-full bg-white border border-blue-200 rounded-xl text-center px-3 py-3.5 text-[11px] font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-stone-800 shadow-sm transition-all"
                         value={formData.googlePlaceUrl || ''}
                         onChange={(e) => setFormData(p => ({ ...p, googlePlaceUrl: e.target.value }))}
                       />
-                      <button 
-                         onClick={async () => fetchGoogleData()}
-                         disabled={isFetchingGoogle || !formData.googlePlaceUrl}
-                         className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 mt-1"
+                      <button
+                        onClick={async () => fetchGoogleData()}
+                        disabled={isFetchingGoogle || !formData.googlePlaceUrl}
+                        className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 mt-1"
                       >
-                         {isFetchingGoogle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Trazer Meu Negócio'}
+                        {isFetchingGoogle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Trazer Meu Negócio'}
                       </button>
                     </div>
 
@@ -2544,14 +2549,14 @@ const App: React.FC = () => {
                           <p className="text-[9px] text-stone-500 font-medium mb-3 h-6 line-clamp-2 leading-tight">{pendingGoogleData.address}</p>
                           <div className="flex gap-2 w-full">
                             <button type="button" onClick={() => setPendingGoogleData(null)} className="flex-1 py-2 bg-stone-100 text-stone-500 rounded-lg text-[9px] uppercase font-black hover:bg-stone-200 transition-colors">Tentar Outro</button>
-                            <button type="button" onClick={confirmGoogleInjection} className="flex-[1.5] py-2 bg-emerald-600 text-white rounded-lg text-[9px] uppercase font-black shadow-md hover:bg-emerald-500 transition-all flex justify-center items-center gap-1">Puxar Tudo <Rocket size={10}/></button>
+                            <button type="button" onClick={confirmGoogleInjection} className="flex-[1.5] py-2 bg-emerald-600 text-white rounded-lg text-[9px] uppercase font-black shadow-md hover:bg-emerald-500 transition-all flex justify-center items-center gap-1">Puxar Tudo <Rocket size={10} /></button>
                           </div>
                         </div>
                       </div>
                     )}
-                    
+
                     {!pendingGoogleData && googleStatus && googleStatus.type === 'error' && (
-                       <div className="mt-3 text-[9px] text-center font-bold text-red-500">{googleStatus.msg}</div>
+                      <div className="mt-3 text-[9px] text-center font-bold text-red-500">{googleStatus.msg}</div>
                     )}
                   </div>
 
@@ -2561,39 +2566,39 @@ const App: React.FC = () => {
 
                   <div>
                     <label className="text-[10px] uppercase tracking-widest font-bold text-stone-500 mb-2 block text-center">Qual o Nome do Seu Negócio?</label>
-                    <input 
+                    <input
                       type="text" placeholder="Ex: Studio da Beleza"
                       className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-4 text-center text-[12px] focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none text-stone-800 font-bold"
                       value={formData.businessName}
                       onChange={(e) => handleFloatNameChange(e.target.value)}
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="text-[10px] uppercase tracking-widest font-black text-stone-500 mb-2.5 flex items-center justify-center gap-1.5"><Globe size={12}/> Seu Link Oficial</label>
+                    <label className="text-[10px] uppercase tracking-widest font-black text-stone-500 mb-2.5 flex items-center justify-center gap-1.5"><Globe size={12} /> Seu Link Oficial</label>
                     <div className="flex bg-white border border-stone-200 rounded-xl overflow-hidden focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 transition-all shadow-sm">
-                       <input className="flex-1 bg-transparent px-3 py-3.5 text-[12px] font-mono font-bold text-teal-600 outline-none w-full text-right placeholder:text-stone-300" placeholder="meu-site" value={formData.customSlug} onChange={e => handleCustomSlugChange(e.target.value)} />
-                       <span className="bg-stone-50 border-l border-stone-200 px-3 py-3.5 text-[11px] font-bold text-stone-400 flex items-center select-none shadow-inner">.sitezing.com.br</span>
+                      <input className="flex-1 bg-transparent px-3 py-3.5 text-[12px] font-mono font-bold text-teal-600 outline-none w-full text-right placeholder:text-stone-300" placeholder="meu-site" value={formData.customSlug} onChange={e => handleCustomSlugChange(e.target.value)} />
+                      <span className="bg-stone-50 border-l border-stone-200 px-3 py-3.5 text-[11px] font-bold text-stone-400 flex items-center select-none shadow-inner">.sitezing.com.br</span>
                     </div>
 
                     <div className="mt-2 min-h-[16px] text-center">
-                       {floatDomainStatus.loading && (
-                          <div className="text-[10px] text-stone-400 flex items-center justify-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin"/> Mapeando domínio...</div>
-                       )}
-                       {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available === false && (
-                          <div className="text-[10px] text-red-500 font-bold flex items-center justify-center gap-1"><AlertCircle size={10}/> Indisponível. Altere acima!</div>
-                       )}
-                       {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available && floatDomainStatus.slug && (
-                          <div className="text-[10px] text-emerald-600 font-bold flex items-center justify-center gap-1"><CheckCircle size={10}/> Domínio liberado!</div>
-                       )}
+                      {floatDomainStatus.loading && (
+                        <div className="text-[10px] text-stone-400 flex items-center justify-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Mapeando domínio...</div>
+                      )}
+                      {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available === false && (
+                        <div className="text-[10px] text-red-500 font-bold flex items-center justify-center gap-1"><AlertCircle size={10} /> Indisponível. Altere acima!</div>
+                      )}
+                      {!floatDomainStatus.loading && formData.customSlug.length >= 3 && floatDomainStatus.available && floatDomainStatus.slug && (
+                        <div className="text-[10px] text-emerald-600 font-bold flex items-center justify-center gap-1"><CheckCircle size={10} /> Domínio liberado!</div>
+                      )}
                     </div>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => {
-                       if (!formData.businessName || floatDomainStatus.available === false) return;
-                       setFormData(p => ({ ...p, segment: "Negócios / Geral", description: `Uma empresa moderna e inovadora chamada ${p.businessName}.` }));
-                       setTimeout(() => handleGenerate(), 100);
+                      if (!formData.businessName || floatDomainStatus.available === false) return;
+                      setFormData(p => ({ ...p, segment: "Negócios / Geral", description: `Uma empresa moderna e inovadora chamada ${p.businessName}.` }));
+                      setTimeout(() => handleGenerate(), 100);
                     }}
                     disabled={isGenerating || !formData.businessName || floatDomainStatus.available === false}
                     className="w-full bg-[#18181b] hover:bg-black text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-50 shadow-xl shadow-black/10"
@@ -2611,7 +2616,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {publishModalUrl && (
           <div className="fixed inset-0 z-[500] bg-stone-900/80 backdrop-blur-md flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white rounded-[2rem] overflow-hidden max-w-md w-full shadow-2xl relative"
             >
@@ -2625,7 +2630,7 @@ const App: React.FC = () => {
                 </div>
                 <h2 className="text-2xl font-black uppercase tracking-tight text-stone-900 mb-2">Seu Site está no Ar!</h2>
                 <p className="text-sm text-stone-500 font-medium">Parabéns! O projeto foi implantado e já pode ser acessado em todo o mundo através do link abaixo:</p>
-                
+
                 <div className="mt-6 bg-stone-100 border border-stone-200 rounded-xl p-4 flex items-center justify-between gap-3 relative overflow-hidden group">
                   <div className="absolute left-0 top-0 w-1 h-full bg-emerald-500"></div>
                   <span className="font-mono text-emerald-700 font-bold truncate flex-1 text-left select-all">{publishModalUrl}</span>
@@ -2637,12 +2642,12 @@ const App: React.FC = () => {
 
               <div className="px-8 pb-8 bg-white">
                 <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 mb-6">
-                  <h4 className="flex items-center gap-2 text-orange-800 font-black text-sm uppercase mb-2"><AlertCircle size={16}/> Aviso Importante</h4>
+                  <h4 className="flex items-center gap-2 text-orange-800 font-black text-sm uppercase mb-2"><AlertCircle size={16} /> Aviso Importante</h4>
                   <p className="text-xs text-orange-700/80 leading-relaxed font-medium">Você está operando atualmente no <span className="font-bold">Plano Turbo Teste (7 Dias)</span>. Caso não possua uma assinatura ativa ao término deste período, seu site será gentilmente congelado para visitantes externos.</p>
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <button 
+                  <button
                     onClick={() => {
                       setPublishModalUrl(null);
                       setActiveTab('assinatura');
@@ -2652,7 +2657,7 @@ const App: React.FC = () => {
                   >
                     Garantir Hospedagem e Domínio
                   </button>
-                  <button 
+                  <button
                     onClick={() => setPublishModalUrl(null)}
                     className="w-full bg-stone-100 hover:bg-stone-200 text-stone-600 py-3 rounded-xl font-bold uppercase tracking-wider transition-colors text-xs"
                   >
@@ -2669,7 +2674,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {checkoutDetailsModal && (
           <div className="fixed inset-0 z-[500] bg-stone-900/80 backdrop-blur-md flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white rounded-3xl overflow-hidden max-w-[400px] w-full shadow-2xl relative flex flex-col max-h-[90vh]"
             >
@@ -2691,7 +2696,7 @@ const App: React.FC = () => {
                 <h4 className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-4 flex items-center gap-2">
                   <div className="flex-1 h-px bg-stone-100"></div>Entenda Como Funciona<div className="flex-1 h-px bg-stone-100"></div>
                 </h4>
-                
+
                 <ul className="space-y-4">
                   <li className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-200 mt-0.5"><CheckCircle size={14} className="text-emerald-600" /></div>
@@ -2718,17 +2723,17 @@ const App: React.FC = () => {
               </div>
 
               <div className="p-6 border-t border-stone-100 bg-stone-50 mt-auto">
-                <button 
+                <button
                   onClick={() => {
-                     const { projectId, planType } = checkoutDetailsModal;
-                     setCheckoutDetailsModal(null);
-                     handleStripeCheckout(projectId, planType);
+                    const { projectId, planType } = checkoutDetailsModal;
+                    setCheckoutDetailsModal(null);
+                    handleStripeCheckout(projectId, planType);
                   }}
                   className="w-full bg-stone-900 hover:bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-xl shadow-stone-900/20 text-xs flex items-center justify-center gap-2"
                 >
                   ✅ Concordar e ir para o Stripe
                 </button>
-                <div className="flex items-center justify-center gap-2 mt-4 text-[9px] font-bold text-stone-400 uppercase tracking-widest"><CreditCard size={12}/> Pagamento 100% Seguro</div>
+                <div className="flex items-center justify-center gap-2 mt-4 text-[9px] font-bold text-stone-400 uppercase tracking-widest"><CreditCard size={12} /> Pagamento 100% Seguro</div>
               </div>
             </motion.div>
           </div>
