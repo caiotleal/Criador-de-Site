@@ -1,12 +1,12 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { onRequest } = require("firebase-functions/v2/https"); // <- AQUI ESTÁ A CORREÇÃO!
+const { onRequest } = require("firebase-functions/v2/https"); 
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
 
-const stripe = require("stripe")("sk_test_51T3iV5LK0sp6cEMAbpSV1cM4MGESQ9s3EOffFfpUuiU0cbinuy64HCekpoyfAuWZy1gemNFcSpgF1cKPgHDM3pf500vcGP7tGW");
+const Stripe = require("stripe");
 
 if (!admin.apps.length) admin.initializeApp();
 
@@ -375,12 +375,33 @@ exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, asy
 });
 
 // ==============================================================================
+// UTILITÁRIOS INTERNOS PARA STRIPE DINÂMICO
+// ==============================================================================
+async function getStripeConfig() {
+  const db = admin.firestore();
+  const snap = await db.collection("configs").doc("platform").get();
+  if (!snap.exists) return null;
+  return snap.data().stripe;
+}
+
+function getStripeInstance(stripeConfig) {
+  if (!stripeConfig) throw new Error("Configuração do Stripe ausente no Banco de Dados.");
+  const isProd = stripeConfig.mode === "prod";
+  const key = isProd ? stripeConfig.prodSecretKey : stripeConfig.testSecretKey;
+  if (!key) throw new Error(`Chave Secreta do Stripe (${isProd ? "PROD" : "TEST"}) não configurada.`);
+  return new Stripe(key);
+}
+
+// ==============================================================================
 // STRIPE CHECKOUT E MENSALIDADE
 // ==============================================================================
 exports.createStripeCheckoutSession = onCall({ cors: true }, async (request) => {
   ensureAuthed(request);
   const { projectId, origin, planType } = request.data || {};
   if (!projectId) throw new HttpsError("invalid-argument", "projectId é obrigatório.");
+
+  const stripeConfig = await getStripeConfig();
+  const stripe = getStripeInstance(stripeConfig);
 
   const safeOrigin = origin && /^https?:\/\//.test(origin) ? origin : "https://sitezing.com.br";
   const isAnual = planType === 'anual';
@@ -401,7 +422,14 @@ exports.createStripeCheckoutSession = onCall({ cors: true }, async (request) => 
 
 exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
   const sig = req.headers["stripe-signature"];
-  const endpointSecret = "whsec_s0sKkzYh75uyzOgD7j2N9AKJ6BogsUum";
+  const stripeConfig = await getStripeConfig();
+  if (!stripeConfig) return res.status(500).send("Critial: No Stripe configuration found.");
+  
+  const isProd = stripeConfig.mode === "prod";
+  const endpointSecret = isProd ? stripeConfig.prodWebhookSecret : stripeConfig.testWebhookSecret;
+  if (!endpointSecret) return res.status(500).send(`Critical: Webhook Secret (${isProd ? "PROD" : "TEST"}) not configured.`);
+
+  const stripe = getStripeInstance(stripeConfig);
 
   let event;
   try { event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret); } 
@@ -451,6 +479,10 @@ exports.cancelStripeSubscription = onCall({ cors: true }, async (request) => {
   const project = snap.data();
 
   if (!project?.stripeSubscriptionId) throw new HttpsError("failed-precondition", "Assinatura não vinculada.");
+
+  const stripeConfig = await getStripeConfig();
+  const stripe = getStripeInstance(stripeConfig);
+
   try {
     await stripe.subscriptions.update(project.stripeSubscriptionId, { cancel_at_period_end: true });
     await projectRef.update({ cancelAtPeriodEnd: true, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
@@ -466,6 +498,10 @@ exports.resumeStripeSubscription = onCall({ cors: true }, async (request) => {
   const project = snap.data();
 
   if (!project?.stripeSubscriptionId) throw new HttpsError("failed-precondition", "Sem assinatura ativa.");
+
+  const stripeConfig = await getStripeConfig();
+  const stripe = getStripeInstance(stripeConfig);
+
   try {
     await stripe.subscriptions.update(project.stripeSubscriptionId, { cancel_at_period_end: false });
     await projectRef.update({ cancelAtPeriodEnd: false, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
@@ -618,10 +654,6 @@ exports.updateProjectAdminManual = onCall({ cors: true }, async (request) => {
   
   // Mesclar formData se enviado, senão usa o atual
   const updatedFormData = formData ? { ...(currentData.formData || {}), ...formData, manualCss } : { ...(currentData.formData || {}), manualCss };
-
-  // O HTML não é atualizado aqui porque o site do cliente renderiza o formData dinamicamente na visita ou no preview
-  // Se o usuário quiser regenerar o HTML estático, precisaria chamar as outras funções, 
-  // mas como o preview do cliente usa formData, carregar os novos dados já "resolve".
 
   await docRef.update({ 
     manualCss, 

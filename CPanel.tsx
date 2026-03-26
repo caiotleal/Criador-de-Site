@@ -535,6 +535,10 @@ const CPanel: React.FC = () => {
                         <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Test Secret Key</label>
                         <input type="password" value={platformConfigs.stripe.testSecretKey} onChange={e => setPlatformConfigs({...platformConfigs, stripe: {...platformConfigs.stripe, testSecretKey: e.target.value}})} className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-orange-500 outline-none" />
                       </div>
+                      <div>
+                        <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Test Webhook Secret</label>
+                        <input type="password" value={platformConfigs.stripe.testWebhookSecret || ''} onChange={e => setPlatformConfigs({...platformConfigs, stripe: {...platformConfigs.stripe, testWebhookSecret: e.target.value}})} className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-orange-500 outline-none" placeholder="whsec_..." />
+                      </div>
                     </>
                   ) : (
                     <>
@@ -545,6 +549,10 @@ const CPanel: React.FC = () => {
                       <div>
                         <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Production Secret Key</label>
                         <input type="password" value={platformConfigs.stripe.prodSecretKey} onChange={e => setPlatformConfigs({...platformConfigs, stripe: {...platformConfigs.stripe, prodSecretKey: e.target.value}})} className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-orange-500 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Production Webhook Secret</label>
+                        <input type="password" value={platformConfigs.stripe.prodWebhookSecret || ''} onChange={e => setPlatformConfigs({...platformConfigs, stripe: {...platformConfigs.stripe, prodWebhookSecret: e.target.value}})} className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-orange-500 outline-none" placeholder="whsec_..." />
                       </div>
                     </>
                   )}
