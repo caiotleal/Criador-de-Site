@@ -113,8 +113,8 @@ const PROMO_HTML = `
     <i class="fas fa-share-alt text-2xl"></i>
   </div>
 
-  <header class="fixed top-0 left-0 w-full z-[80] bg-[#FAFAF9]/80 backdrop-blur-md border-b border-stone-200/60 h-24 flex items-center px-6 md:px-12 transition-all">
-    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+  <header class="fixed top-0 left-0 w-full z-[80] bg-[#FAFAF9]/80 backdrop-blur-md border-b border-stone-200/60 h-24 flex items-center px-6 md:px-20 transition-all">
+    <div class="w-full mx-auto flex items-center justify-between">
        <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-12 md:h-16 w-auto drop-shadow-sm" />
        <div onclick="zingShare()" class="cursor-pointer bg-white border border-stone-200 w-12 h-12 rounded-full flex items-center justify-center text-stone-500 hover:text-orange-500 hover:border-orange-500 transition-all shadow-sm">
          <i class="fas fa-share-alt"></i>
@@ -122,12 +122,12 @@ const PROMO_HTML = `
     </div>
   </header>
 
-  <main class="pt-44 pb-12 px-6 md:px-12 max-w-7xl mx-auto flex flex-col justify-center min-h-[calc(100vh-160px)] relative">
+  <main class="pt-64 pb-12 px-6 md:px-20 w-full mx-auto flex flex-col justify-center min-h-[calc(100vh-160px)] relative">
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
 
-    <div class="relative z-10 animate-up text-center md:text-left max-w-3xl mb-12">
-      <h1 class="text-[3.5rem] md:text-[6rem] font-black leading-[0.9] tracking-tighter mb-6 uppercase italic text-stone-900">
+    <div class="relative z-10 animate-up text-center md:text-left max-w-6xl mb-12">
+      <h1 class="text-[3.5rem] md:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-6 uppercase italic text-stone-900">
         Seu site pronto em um <span class="text-orange-500 pr-10 inline-block drop-shadow-sm">ZING!!!</span>
       </h1>
       <p class="text-lg md:text-xl text-stone-500 font-light leading-relaxed">
