@@ -108,73 +108,76 @@ const PROMO_HTML = `
     }
 
     // Hero Creation Form Communication
-    window.addEventListener('message', (e) => {
-      if (e.data.type === 'SYNC_STATE') {
-        const { domainStatus, isFetchingGoogle, googleStatus, formData } = e.data;
-        
-        // Update Google Feedback
-        const gFeed = document.getElementById('google-feedback');
-        if (gFeed) {
-          if (isFetchingGoogle) {
-            gFeed.style.display = 'block';
-            gFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-orange-500 animate-pulse';
-            gFeed.innerText = 'Buscando no Google...';
-          } else if (googleStatus) {
-            gFeed.style.display = 'block';
-            gFeed.className = 'text-[10px] mt-1 ml-1 font-bold ' + (googleStatus.type === 'success' ? 'text-emerald-500' : 'text-red-500');
-            gFeed.innerText = googleStatus.msg;
-          }
+    window.addEventListener('message', function(e) {
+      if (!e.data || e.data.type !== 'SYNC_STATE') return;
+      
+      var data = e.data;
+      var domainStatus = data.domainStatus;
+      var isFetchingGoogle = data.isFetchingGoogle;
+      var googleStatus = data.googleStatus;
+      var formData = data.formData;
+      
+      // Update Google Feedback
+      var gFeed = document.getElementById('google-feedback');
+      if (gFeed) {
+        if (isFetchingGoogle) {
+          gFeed.style.display = 'block';
+          gFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-orange-500 animate-pulse';
+          gFeed.innerText = 'Buscando no Google...';
+        } else if (googleStatus) {
+          gFeed.style.display = 'block';
+          gFeed.className = 'text-[10px] mt-1 ml-1 font-bold ' + (googleStatus.type === 'success' ? 'text-emerald-500' : 'text-red-500');
+          gFeed.innerText = googleStatus.msg;
         }
+      }
 
-        // Update Inputs
-        const nameInput = document.getElementById('hero-business-name');
-        if (nameInput && formData.businessName && !nameInput.value) nameInput.value = formData.businessName;
-        
-        const slugInput = document.getElementById('hero-custom-slug');
-        if (slugInput && formData.customSlug && !slugInput.value) slugInput.value = formData.customSlug;
+      // Update Inputs
+      var nameInput = document.getElementById('hero-business-name');
+      if (nameInput && formData.businessName && !nameInput.value) nameInput.value = formData.businessName;
+      
+      var slugInput = document.getElementById('hero-custom-slug');
+      if (slugInput && formData.customSlug && !slugInput.value) slugInput.value = formData.customSlug;
 
-        // Update Slug Feedback
-        const sFeed = document.getElementById('slug-feedback');
-        if (sFeed) {
-          if (domainStatus.loading) {
-            sFeed.innerText = 'Validando endereço...';
-            sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-stone-400 animate-pulse italic';
-          } else if (domainStatus.available === true) {
-            sFeed.innerText = '✓ Endereço disponível!';
-            sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-emerald-500 italic';
-          } else if (domainStatus.available === false) {
-            sFeed.innerText = '✗ Indisponível. Sugestão: ' + (domainStatus.slug || '');
-            sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-red-500 italic';
-          }
+      // Update Slug Feedback
+      var sFeed = document.getElementById('slug-feedback');
+      if (sFeed) {
+        if (domainStatus.loading) {
+          sFeed.innerText = 'Validando endereço...';
+          sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-stone-400 animate-pulse italic';
+        } else if (domainStatus.available === true) {
+          sFeed.innerText = '✓ Endereço disponível!';
+          sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-emerald-500 italic';
+        } else if (domainStatus.available === false) {
+          sFeed.innerText = '✗ Indisponível. Sugestão: ' + (domainStatus.slug || '');
+          sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-red-500 italic';
         }
       }
     });
 
-    // Event Listeners for inputs
-    document.addEventListener('DOMContentLoaded', () => {
-      const busName = document.getElementById('hero-business-name');
-      if (busName) busName.addEventListener('input', (e) => {
+    document.addEventListener('DOMContentLoaded', function() {
+      var busName = document.getElementById('hero-business-name');
+      if (busName) busName.addEventListener('input', function(e) {
         window.parent.postMessage({ type: 'SET_BUSINESS_NAME', value: e.target.value }, '*');
       });
 
-      const custSlug = document.getElementById('hero-custom-slug');
-      if (custSlug) custSlug.addEventListener('input', (e) => {
+      var custSlug = document.getElementById('hero-custom-slug');
+      if (custSlug) custSlug.addEventListener('input', function(e) {
         window.parent.postMessage({ type: 'SET_CUSTOM_SLUG', value: e.target.value }, '*');
       });
 
-      const googSearch = document.getElementById('hero-google-search');
-      if (googSearch) googSearch.addEventListener('change', (e) => {
+      var googSearch = document.getElementById('hero-google-search');
+      if (googSearch) googSearch.addEventListener('change', function(e) {
         window.parent.postMessage({ type: 'SET_GOOGLE_URL', value: e.target.value }, '*');
       });
 
-      const googBtn = document.getElementById('hero-google-btn');
-      if (googBtn) googBtn.addEventListener('click', () => {
-        const val = document.getElementById('hero-google-search').value;
+      var googBtn = document.getElementById('hero-google-btn');
+      if (googBtn) googBtn.addEventListener('click', function() {
+        var val = document.getElementById('hero-google-search').value;
         window.parent.postMessage({ type: 'TRIGGER_FETCH_GOOGLE', value: val }, '*');
       });
 
-      const subBtn = document.getElementById('hero-submit-btn');
-      if (subBtn) subBtn.addEventListener('click', () => {
+      var subBtn = document.getElementById('hero-submit-btn');
+      if (subBtn) subBtn.addEventListener('click', function() {
         window.parent.postMessage({ type: 'ACTION_START_MAGIC' }, '*');
       });
     });
