@@ -226,16 +226,16 @@ const PROMO_HTML = `
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     
-    <div class="grid md:grid-cols-2 gap-8 items-center relative z-10 animate-up mb-12 mt-8 md:mt-0">
+    <div class="grid md:grid-cols-2 gap-8 items-center relative z-10 animate-up mb-12 mt-6 md:mt-2">
       <div class="text-center md:text-left">
-        <h1 class="text-[2.2rem] md:text-[4.5rem] font-black leading-[0.85] tracking-tighter mb-4 uppercase italic text-stone-900">
+        <h1 class="text-[2.2rem] md:text-[4.2rem] font-black leading-[0.85] tracking-tighter mb-4 uppercase italic text-stone-900">
           Seu site pronto em um <span class="text-orange-500 pr-10 inline-block drop-shadow-sm">ZING!!!</span>
         </h1>
-        <p class="text-sm md:text-base text-stone-500 font-light leading-relaxed max-w-md">
+        <p class="text-sm md:text-base text-stone-500 font-light leading-relaxed max-w-md hidden md:block">
           A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha e veja a mágica acontecer.
         </p>
         
-        <div class="flex items-center gap-3 bg-white/50 border border-stone-200 p-2.5 rounded-2xl mt-6 max-w-fit mx-auto md:mx-0 shadow-sm">
+        <div class="flex items-center gap-3 bg-white/50 border border-stone-200 p-2.5 rounded-2xl mt-4 max-w-fit mx-auto md:mx-0 shadow-sm">
           <div class="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-md">
             <i class="fas fa-gift text-xs"></i>
           </div>
@@ -246,59 +246,59 @@ const PROMO_HTML = `
         </div>
       </div>
 
-      <!-- Formulário de Criação (Compacto) -->
-      <div class="glass-card p-5 md:p-6 rounded-[1.8rem] border-stone-200 shadow-xl bg-white/80 backdrop-blur-xl relative overflow-hidden max-w-sm mx-auto md:ml-auto md:mr-0">
-        <div class="relative z-10">
-          <h2 class="text-base font-black text-stone-900 uppercase italic mb-4 flex items-center gap-2">
-            <i class="fas fa-wand-magic-sparkles text-orange-500"></i>
-            Comece sua Mágica
-          </h2>
-          
+      <!-- Formulário de Criação (Zing Style Compacto) -->
+      <div class="w-full max-w-[340px] bg-white border border-stone-200 shadow-2xl rounded-[2.5rem] overflow-hidden relative mx-auto md:ml-auto md:mr-0 animate-up" style="animation-delay: 0.1s;">
+        <div class="bg-gradient-to-r from-teal-600 to-indigo-600 p-3 pt-4 relative text-center">
+          <div class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-1.5 backdrop-blur-md border border-white/20">
+            <i class="fas fa-rocket text-yellow-300 text-xs"></i>
+          </div>
+          <h3 class="text-xs font-black text-white italic uppercase tracking-wider">Crie em 30 Segundos</h3>
+        </div>
+        
+        <div class="p-5 pb-6">
           <div class="space-y-3">
             <!-- Passo 1: Google -->
-            <div>
-              <label class="block text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1 ml-1 text-center md:text-left">1. Importar do Google</label>
-              <div class="relative">
-                <input type="text" id="hero-google-search" placeholder="Nome da empresa ou Maps" 
-                       class="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-16" />
-                <button id="hero-google-btn" class="absolute right-1 top-1/2 -translate-y-1/2 bg-orange-500 text-white hover:bg-orange-600 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase transition-all shadow-sm">Puxar</button>
-              </div>
-              <div id="google-feedback" class="text-[9px] mt-1 ml-1 font-bold hidden"></div>
-              
-              <!-- Confirmation Box (Zing Style) -->
-              <div id="google-confirm-box" class="mt-3 hidden animate-up">
-                <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex flex-col items-center text-center">
-                  <i class="fas fa-check-circle text-emerald-500 mb-1 text-sm"></i>
-                  <p id="conf-name" class="text-[10px] text-stone-800 font-bold mb-0.5 truncate w-full"></p>
-                  <p id="conf-addr" class="text-[8px] text-stone-500 font-medium mb-3 line-clamp-1 leading-tight"></p>
-                  <div class="flex gap-2 w-full">
-                    <button id="hero-google-reset" class="flex-1 py-1.5 bg-white border border-stone-200 text-stone-500 rounded-lg text-[8px] uppercase font-black hover:bg-stone-50 transition-colors">Trocar</button>
-                    <button id="hero-google-confirm" class="flex-[1.5] py-1.5 bg-emerald-600 text-white rounded-lg text-[8px] uppercase font-black shadow-sm hover:bg-emerald-500 transition-all">Confirmar</button>
+            <div class="bg-blue-50/40 p-3 border border-blue-100 rounded-2xl relative overflow-hidden">
+              <label class="text-[8px] uppercase tracking-widest font-black text-blue-800 mb-2 flex items-center justify-center gap-1.5"><i class="fas fa-map-marker-alt"></i> Importar do Google</label>
+              <div class="flex flex-col gap-1.5 relative z-10">
+                <div class="relative">
+                  <input type="text" id="hero-google-search" placeholder="Maps ou Nome da Empresa" 
+                         class="w-full bg-white border border-blue-200 rounded-xl text-center px-3 py-2 text-[10px] font-bold focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 outline-none text-stone-800 shadow-sm" />
+                  <button id="hero-google-btn" class="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-500 text-white p-1.5 rounded-lg transition-all shadow-md"><i class="fas fa-search text-[10px]"></i></button>
+                </div>
+                <div id="google-feedback" class="text-[8px] mt-1 text-center font-bold hidden"></div>
+                
+                <!-- Confirmation Box (Zing Style) -->
+                <div id="google-confirm-box" class="mt-2 hidden animate-up">
+                  <div class="bg-white p-2.5 rounded-xl shadow-sm border border-emerald-100 flex flex-col items-center text-center">
+                    <i class="fas fa-check-circle text-emerald-500 mb-1 text-xs"></i>
+                    <p id="conf-name" class="text-[9px] text-stone-800 font-bold mb-0.5 truncate w-full"></p>
+                    <p id="conf-addr" class="text-[8px] text-stone-500 font-medium mb-2 line-clamp-1 leading-tight"></p>
+                    <div class="flex gap-1.5 w-full">
+                      <button id="hero-google-reset" class="flex-1 py-1 bg-stone-100 text-stone-500 rounded-lg text-[8px] uppercase font-black hover:bg-stone-200 transition-colors">Trocar</button>
+                      <button id="hero-google-confirm" class="flex-[1.5] py-1 bg-emerald-600 text-white rounded-lg text-[8px] uppercase font-black shadow-md hover:bg-emerald-500">Puxar Tudo</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Passo 2: Nome -->
+            <!-- Manual Inputs -->
             <div>
-              <label class="block text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1 ml-1 text-center md:text-left">2. Nome do Negócio</label>
-              <input type="text" id="hero-business-name" placeholder="Como quer ser chamado?" 
-                     class="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-bold" />
+              <input type="text" id="hero-business-name" placeholder="Qual o Nome do Seu Negócio?" 
+                     class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-center text-[11px] focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 outline-none text-stone-800 font-bold" />
             </div>
 
-            <!-- Passo 3: URL -->
             <div>
-              <label class="block text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1 ml-1 text-center md:text-left">3. Seu site</label>
-              <div class="relative">
-                <input type="text" id="hero-custom-slug" placeholder="meusite" 
-                       class="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-24 font-mono font-bold text-orange-600" />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] text-stone-400 font-black">.sitezing.com.br</span>
+              <div class="flex bg-white border border-stone-200 rounded-xl overflow-hidden focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500/20 transition-all shadow-sm">
+                <input id="hero-custom-slug" class="flex-1 bg-transparent px-3 py-3 text-[11px] font-mono font-bold text-teal-600 outline-none w-full text-right placeholder:text-stone-300" placeholder="meu-site" />
+                <span class="bg-stone-50 border-l border-stone-200 px-2 py-3 text-[10px] font-bold text-stone-400 flex items-center select-none shadow-inner">.sitezing.com.br</span>
               </div>
-              <div id="slug-feedback" class="text-[9px] mt-1 ml-1 font-bold italic"></div>
+              <div id="slug-feedback" class="text-[9px] mt-1 text-center font-bold italic"></div>
             </div>
 
-            <button id="hero-submit-btn" class="w-full bg-stone-900 hover:bg-stone-800 text-white py-3.5 rounded-xl font-black uppercase tracking-[0.1em] text-[10px] transition-all shadow-lg hover:translate-y-[-1px] mt-2 flex items-center justify-center gap-2">
-              Gerar Site Agora <i class="fas fa-magic text-[9px]"></i>
+            <button id="hero-submit-btn" class="w-full bg-[#18181b] hover:bg-black text-white py-3.5 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all shadow-xl hover:translate-y-[-1px] mt-1 flex items-center justify-center gap-2">
+              Gerar My Site ✨
             </button>
           </div>
         </div>
