@@ -113,39 +113,39 @@ const PROMO_HTML = `
     <i class="fas fa-share-alt text-2xl"></i>
   </div>
 
-  <header class="fixed top-0 left-0 w-full z-[80] bg-[#FAFAF9]/80 backdrop-blur-md border-b border-stone-200/60 h-24 flex items-center px-6 md:px-20 transition-all">
+  <header class="fixed top-0 left-0 w-full z-[80] bg-[#FAFAF9]/80 backdrop-blur-md border-b border-stone-200/60 h-20 flex items-center px-6 md:px-20 transition-all">
     <div class="w-full mx-auto flex items-center justify-between">
-       <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-12 md:h-16 w-auto drop-shadow-sm" />
-       <div onclick="zingShare()" class="cursor-pointer bg-white border border-stone-200 w-12 h-12 rounded-full flex items-center justify-center text-stone-500 hover:text-orange-500 hover:border-orange-500 transition-all shadow-sm">
+       <img src="${BRAND_LOGO}" alt="SiteZing Logo" class="h-10 md:h-14 w-auto drop-shadow-sm" />
+       <div onclick="zingShare()" class="cursor-pointer bg-white border border-stone-200 w-10 h-10 rounded-full flex items-center justify-center text-stone-500 hover:text-orange-500 hover:border-orange-500 transition-all shadow-sm">
          <i class="fas fa-share-alt"></i>
        </div>
     </div>
   </header>
 
-  <main class="pt-12 pb-12 px-6 md:px-20 w-full mx-auto flex flex-col min-h-screen relative">
-    <div class="h-24 md:h-32 w-full"></div>
+  <main class="pt-8 pb-8 px-6 md:px-20 w-full mx-auto flex flex-col min-h-screen relative">
+    <div class="h-16 md:h-20 w-full"></div>
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
-
-    <div class="relative z-10 animate-up text-center md:text-left max-w-6xl mb-12 mt-12 md:mt-0">
-      <h1 class="text-[3.5rem] md:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-6 uppercase italic text-stone-900">
+    
+    <div class="relative z-10 animate-up text-center md:text-left max-w-6xl mb-8 mt-6 md:mt-0">
+      <h1 class="text-[2.5rem] md:text-[5rem] font-black leading-[0.85] tracking-tighter mb-4 uppercase italic text-stone-900">
         Seu site pronto em um <span class="text-orange-500 pr-10 inline-block drop-shadow-sm">ZING!!!</span>
       </h1>
-      <p class="text-lg md:text-xl text-stone-500 font-light leading-relaxed">
+      <p class="text-base md:text-lg text-stone-500 font-light leading-relaxed">
         Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
       </p>
     </div>
 
     <!-- Destaque 7 dias grátis -->
-    <div class="relative z-10 animate-up flex flex-col md:flex-row items-center gap-4 bg-orange-50 border border-orange-100 p-6 rounded-3xl mb-12 max-w-6xl mx-auto md:mx-0 shadow-sm" style="animation-delay: 0.1s;">
-      <div class="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-200">
-        <i class="fas fa-gift text-xl"></i>
+    <div class="relative z-10 animate-up flex flex-col md:flex-row items-center gap-4 bg-orange-50 border border-orange-100 p-4 rounded-3xl mb-8 max-w-6xl mx-auto md:mx-0 shadow-sm" style="animation-delay: 0.1s;">
+      <div class="w-10 h-10 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-200">
+        <i class="fas fa-gift text-lg"></i>
       </div>
       <div class="text-center md:text-left flex-1">
-        <h3 class="text-lg font-black text-stone-800 uppercase italic leading-tight">Crie seu site e tenha 7 dias grátis para testar</h3>
-        <p class="text-xs text-stone-500 font-medium">Sem compromisso. Experimente todos os recursos da plataforma agora mesmo.</p>
+        <h3 class="text-base font-black text-stone-800 uppercase italic leading-tight">Crie seu site e tenha 7 dias grátis para testar</h3>
+        <p class="text-[10px] text-stone-500 font-medium">Sem compromisso. Experimente todos os recursos da plataforma agora mesmo.</p>
       </div>
-      <button onclick="document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })" class="px-8 py-3 bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-stone-800 transition-all shadow-lg">
+      <button onclick="document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })" class="px-6 py-2.5 bg-stone-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-stone-800 transition-all shadow-lg">
         Saiba Mais
       </button>
     </div>
@@ -256,21 +256,21 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
     const decimal = p.price.toString().split('.')[1] || '00';
     
     cardsHtml += `
-      <div class="glass-card p-8 rounded-[2rem] overflow-hidden group ${isAnual ? 'border-orange-300' : 'border-teal-200'}" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', priceId: '${p.priceId}', plan: '${p.name.toLowerCase()}' }, '*')">
+      <div class="glass-card p-6 rounded-[1.5rem] overflow-hidden group ${isAnual ? 'border-orange-300' : 'border-teal-200'}" onclick="window.parent.postMessage({ type: 'OPEN_PLAN_MODAL', priceId: '${p.priceId}', plan: '${p.name.toLowerCase()}' }, '*')">
         <div class="card-share-btn" onclick="sharePlan('${p.name.toLowerCase()}')" title="Compartilhar este plano"><i class="fas fa-share-alt"></i></div>
         <img src="${BRAND_LOGO}" class="plan-bg-logo" />
-        <div class="absolute top-0 right-0 ${p.badge ? 'bg-orange-600' : (isAnual ? 'bg-orange-500' : 'bg-teal-600')} text-white text-[9px] font-black tracking-widest px-4 py-2 rounded-bl-2xl uppercase shadow-md">
+        <div class="absolute top-0 right-0 ${p.badge ? 'bg-orange-600' : (isAnual ? 'bg-orange-500' : 'bg-teal-600')} text-white text-[8px] font-black tracking-widest px-3 py-1.5 rounded-bl-xl uppercase shadow-md">
           ${p.badge || (isAnual ? 'Mais Econômico' : 'Popular')}
         </div>
-        <h3 class="text-2xl font-black mb-1 italic uppercase ${isAnual ? 'text-orange-500' : 'text-teal-600'} mt-2">${p.name}</h3>
-        <p class="text-stone-500 mb-6 text-sm">${p.description || 'Hospedagem profissional SiteZing'}</p>
-        <div class="text-4xl font-black mb-1 text-stone-900">R$ ${integer}<span class="text-2xl">,${decimal}</span> <span class="text-sm text-stone-400 font-normal">/ ${intervalLabel}</span></div>
-        <ul class="space-y-3 text-stone-600 text-sm font-medium mt-6">
+        <h3 class="text-lg font-black mb-1 italic uppercase ${isAnual ? 'text-orange-500' : 'text-teal-600'} mt-1">${p.name}</h3>
+        <p class="text-stone-400 mb-4 text-[11px] leading-tight">${p.description || 'Hospedagem profissional SiteZing'}</p>
+        <div class="text-3xl font-black mb-0 text-stone-900">R$ ${integer}<span class="text-xl">,${decimal}</span> <span class="text-[10px] text-stone-400 font-normal">/ ${intervalLabel}</span></div>
+        <ul class="space-y-2 text-stone-500 text-[11px] font-medium mt-4">
           ${p.features.map((f: string) => `
-            <li class="flex items-center gap-3"><span class="w-5 h-5 rounded-full ${isAnual ? 'bg-orange-100 text-orange-500' : 'bg-teal-100 text-teal-600'} flex items-center justify-center text-[10px]">✔</span> ${f}</li>
+            <li class="flex items-center gap-2"><span class="w-4 h-4 rounded-full ${isAnual ? 'bg-orange-100 text-orange-500' : 'bg-teal-100 text-teal-600'} flex items-center justify-center text-[8px]">✔</span> ${f}</li>
           `).join('')}
         </ul>
-        <div class="mt-6 text-[10px] text-stone-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para contratar</div>
+        <div class="mt-4 text-[9px] text-stone-400 text-center uppercase tracking-widest font-bold group-hover:text-orange-500 transition-colors">Clique para contratar</div>
       </div>
     `;
   });
