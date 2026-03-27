@@ -115,19 +115,33 @@ const PROMO_HTML = `
       var domainStatus = data.domainStatus;
       var isFetchingGoogle = data.isFetchingGoogle;
       var googleStatus = data.googleStatus;
+      var pendingGoogleData = data.pendingGoogleData;
       var formData = data.formData;
       
-      // Update Google Feedback
+      // Update Google Feedback & Confirmation Box
       var gFeed = document.getElementById('google-feedback');
+      var gConfirm = document.getElementById('google-confirm-box');
       if (gFeed) {
         if (isFetchingGoogle) {
           gFeed.style.display = 'block';
           gFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-orange-500 animate-pulse';
           gFeed.innerText = 'Buscando no Google...';
+          if (gConfirm) gConfirm.style.display = 'none';
+        } else if (pendingGoogleData) {
+          gFeed.style.display = 'none';
+          if (gConfirm) {
+            gConfirm.style.display = 'block';
+            document.getElementById('conf-name').innerText = pendingGoogleData.name;
+            document.getElementById('conf-addr').innerText = pendingGoogleData.address;
+          }
         } else if (googleStatus) {
           gFeed.style.display = 'block';
           gFeed.className = 'text-[10px] mt-1 ml-1 font-bold ' + (googleStatus.type === 'success' ? 'text-emerald-500' : 'text-red-500');
           gFeed.innerText = googleStatus.msg;
+          if (gConfirm) gConfirm.style.display = 'none';
+        } else {
+          gFeed.style.display = 'none';
+          if (gConfirm) gConfirm.style.display = 'none';
         }
       }
 
@@ -176,6 +190,16 @@ const PROMO_HTML = `
         window.parent.postMessage({ type: 'TRIGGER_FETCH_GOOGLE', value: val }, '*');
       });
 
+      var confBtn = document.getElementById('hero-google-confirm');
+      if (confBtn) confBtn.addEventListener('click', function() {
+        window.parent.postMessage({ type: 'ACTION_CONFIRM_GOOGLE' }, '*');
+      });
+
+      var resetBtn = document.getElementById('hero-google-reset');
+      if (resetBtn) resetBtn.addEventListener('click', function() {
+        window.parent.postMessage({ type: 'ACTION_RESET_GOOGLE' }, '*');
+      });
+
       var subBtn = document.getElementById('hero-submit-btn');
       if (subBtn) subBtn.addEventListener('click', function() {
         window.parent.postMessage({ type: 'ACTION_START_MAGIC' }, '*');
@@ -202,71 +226,79 @@ const PROMO_HTML = `
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     
-    <div class="grid md:grid-cols-2 gap-12 items-center relative z-10 animate-up mb-12 mt-12 md:mt-0">
+    <div class="grid md:grid-cols-2 gap-8 items-center relative z-10 animate-up mb-12 mt-8 md:mt-0">
       <div class="text-center md:text-left">
-        <h1 class="text-[2.5rem] md:text-[5rem] font-black leading-[0.85] tracking-tighter mb-4 uppercase italic text-stone-900">
+        <h1 class="text-[2.2rem] md:text-[4.5rem] font-black leading-[0.85] tracking-tighter mb-4 uppercase italic text-stone-900">
           Seu site pronto em um <span class="text-orange-500 pr-10 inline-block drop-shadow-sm">ZING!!!</span>
         </h1>
-        <p class="text-base md:text-lg text-stone-500 font-light leading-relaxed">
-          Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o formulário e veja a mágica acontecer.
+        <p class="text-sm md:text-base text-stone-500 font-light leading-relaxed max-w-md">
+          A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha e veja a mágica acontecer.
         </p>
         
-        <!-- Destaque 7 dias grátis (Reduzido para caber ao lado do form) -->
-        <div class="flex items-center gap-3 bg-white/50 border border-stone-200 p-3 rounded-2xl mt-8 max-w-fit mx-auto md:mx-0 shadow-sm">
-          <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-md">
-            <i class="fas fa-gift text-sm"></i>
+        <div class="flex items-center gap-3 bg-white/50 border border-stone-200 p-2.5 rounded-2xl mt-6 max-w-fit mx-auto md:mx-0 shadow-sm">
+          <div class="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-md">
+            <i class="fas fa-gift text-xs"></i>
           </div>
           <div class="text-left">
-            <h3 class="text-[11px] font-black text-stone-800 uppercase italic leading-tight">7 dias grátis para testar</h3>
-            <p class="text-[9px] text-stone-500 font-medium">Sem compromisso. Experimente agora.</p>
+            <h3 class="text-[10px] font-black text-stone-800 uppercase italic leading-tight">7 dias grátis para testar</h3>
+            <p class="text-[8px] text-stone-500 font-medium">Sem compromisso. Experimente agora.</p>
           </div>
         </div>
       </div>
 
-      <!-- Formulário de Criação -->
-      <div class="glass-card p-6 md:p-8 rounded-[2rem] border-stone-200 shadow-xl bg-white/80 backdrop-blur-xl relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full"></div>
+      <!-- Formulário de Criação (Compacto) -->
+      <div class="glass-card p-5 md:p-6 rounded-[1.8rem] border-stone-200 shadow-xl bg-white/80 backdrop-blur-xl relative overflow-hidden max-w-sm mx-auto md:ml-auto md:mr-0">
         <div class="relative z-10">
-          <h2 class="text-xl font-black text-stone-900 uppercase italic mb-6 flex items-center gap-2">
+          <h2 class="text-base font-black text-stone-900 uppercase italic mb-4 flex items-center gap-2">
             <i class="fas fa-wand-magic-sparkles text-orange-500"></i>
             Comece sua Mágica
           </h2>
           
-          <div class="space-y-4">
+          <div class="space-y-3">
             <!-- Passo 1: Google -->
             <div>
-              <label class="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 ml-1">1. Busque sua empresa no Google</label>
-              <div class="relative group">
-                <i class="fab fa-google absolute left-4 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-orange-500 transition-colors"></i>
-                <input type="text" id="hero-google-search" placeholder="Ex: Nome da sua Empresa ou Link do Google Maps" 
-                       class="w-full bg-stone-50 border border-stone-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" />
-                <button id="hero-google-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-stone-200 text-stone-400 hover:text-orange-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all">Validar</button>
+              <label class="block text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1 ml-1 text-center md:text-left">1. Importar do Google</label>
+              <div class="relative">
+                <input type="text" id="hero-google-search" placeholder="Nome da empresa ou Maps" 
+                       class="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-16" />
+                <button id="hero-google-btn" class="absolute right-1 top-1/2 -translate-y-1/2 bg-orange-500 text-white hover:bg-orange-600 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase transition-all shadow-sm">Puxar</button>
               </div>
-              <div id="google-feedback" class="text-[10px] mt-1 ml-1 font-bold hidden"></div>
+              <div id="google-feedback" class="text-[9px] mt-1 ml-1 font-bold hidden"></div>
+              
+              <!-- Confirmation Box (Zing Style) -->
+              <div id="google-confirm-box" class="mt-3 hidden animate-up">
+                <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex flex-col items-center text-center">
+                  <i class="fas fa-check-circle text-emerald-500 mb-1 text-sm"></i>
+                  <p id="conf-name" class="text-[10px] text-stone-800 font-bold mb-0.5 truncate w-full"></p>
+                  <p id="conf-addr" class="text-[8px] text-stone-500 font-medium mb-3 line-clamp-1 leading-tight"></p>
+                  <div class="flex gap-2 w-full">
+                    <button id="hero-google-reset" class="flex-1 py-1.5 bg-white border border-stone-200 text-stone-500 rounded-lg text-[8px] uppercase font-black hover:bg-stone-50 transition-colors">Trocar</button>
+                    <button id="hero-google-confirm" class="flex-[1.5] py-1.5 bg-emerald-600 text-white rounded-lg text-[8px] uppercase font-black shadow-sm hover:bg-emerald-500 transition-all">Confirmar</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Passo 2: Nome -->
             <div>
-              <label class="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 ml-1">2. Nome do seu Negócio</label>
+              <label class="block text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1 ml-1 text-center md:text-left">2. Nome do Negócio</label>
               <input type="text" id="hero-business-name" placeholder="Como quer ser chamado?" 
-                     class="w-full bg-stone-50 border border-stone-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" />
+                     class="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-bold" />
             </div>
 
             <!-- Passo 3: URL -->
             <div>
-              <label class="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 ml-1">3. Seu endereço na web</label>
-              <div class="flex items-center gap-2">
-                <div class="flex-1 relative">
-                  <input type="text" id="hero-custom-slug" placeholder="meusite" 
-                         class="w-full bg-stone-50 border border-stone-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-24" />
-                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-stone-400 font-bold">.sitezing.com.br</span>
-                </div>
+              <label class="block text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1 ml-1 text-center md:text-left">3. Seu site</label>
+              <div class="relative">
+                <input type="text" id="hero-custom-slug" placeholder="meusite" 
+                       class="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-24 font-mono font-bold text-orange-600" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] text-stone-400 font-black">.sitezing.com.br</span>
               </div>
-              <div id="slug-feedback" class="text-[10px] mt-1 ml-1 font-bold italic"></div>
+              <div id="slug-feedback" class="text-[9px] mt-1 ml-1 font-bold italic"></div>
             </div>
 
-            <button id="hero-submit-btn" class="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98] mt-4 flex items-center justify-center gap-3">
-              Comece a Mágica <i class="fas fa-arrow-right text-[10px]"></i>
+            <button id="hero-submit-btn" class="w-full bg-stone-900 hover:bg-stone-800 text-white py-3.5 rounded-xl font-black uppercase tracking-[0.1em] text-[10px] transition-all shadow-lg hover:translate-y-[-1px] mt-2 flex items-center justify-center gap-2">
+              Gerar Site Agora <i class="fas fa-magic text-[9px]"></i>
             </button>
           </div>
         </div>
@@ -933,16 +965,23 @@ const App: React.FC = () => {
         setFormData(p => ({ ...p, googlePlaceUrl: e.data.value }));
         setTimeout(() => fetchGoogleData(), 100);
       }
+      if (e.data?.type === 'ACTION_CONFIRM_GOOGLE') {
+        confirmGoogleInjection();
+      }
+      if (e.data?.type === 'ACTION_RESET_GOOGLE') {
+        setPendingGoogleData(null);
+        setGoogleStatus(null);
+      }
       if (e.data?.type === 'ACTION_START_MAGIC') {
         if (!formData.businessName) return showToast('Digite o nome da sua empresa!', 'warning');
-        if (!floatDomainStatus.available) return showToast('Este endereço não está disponível.', 'warning');
+        if (floatDomainStatus.available === false) return showToast('Este endereço não está disponível.', 'warning');
         setIsMenuOpen(true);
         // Opcional: Trigger generation automatically if desired
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [formData.businessName, floatDomainStatus.available, formData.googlePlaceUrl]);
+  }, [formData.businessName, floatDomainStatus.available, formData.googlePlaceUrl, fetchGoogleData, confirmGoogleInjection, setPendingGoogleData]);
 
   // Sync state to Landing Page Iframe
   useEffect(() => {
@@ -952,6 +991,7 @@ const App: React.FC = () => {
         domainStatus: floatDomainStatus,
         isFetchingGoogle,
         googleStatus,
+        pendingGoogleData, // Added this
         formData: {
           businessName: formData.businessName,
           customSlug: formData.customSlug,
@@ -959,7 +999,7 @@ const App: React.FC = () => {
         }
       }, '*');
     }
-  }, [floatDomainStatus, isFetchingGoogle, googleStatus, formData.businessName, formData.customSlug, formData.googlePlaceUrl]);
+  }, [floatDomainStatus, isFetchingGoogle, googleStatus, pendingGoogleData, formData.businessName, formData.customSlug, formData.googlePlaceUrl]);
 
   useEffect(() => {
     const fetchConfigs = async () => {
