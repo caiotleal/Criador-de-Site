@@ -106,6 +106,78 @@ const PROMO_HTML = `
         }
       } catch (err) { console.log('Erro ao compartilhar:', err); }
     }
+
+    // Hero Creation Form Communication
+    window.addEventListener('message', (e) => {
+      if (e.data.type === 'SYNC_STATE') {
+        const { domainStatus, isFetchingGoogle, googleStatus, formData } = e.data;
+        
+        // Update Google Feedback
+        const gFeed = document.getElementById('google-feedback');
+        if (gFeed) {
+          if (isFetchingGoogle) {
+            gFeed.style.display = 'block';
+            gFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-orange-500 animate-pulse';
+            gFeed.innerText = 'Buscando no Google...';
+          } else if (googleStatus) {
+            gFeed.style.display = 'block';
+            gFeed.className = 'text-[10px] mt-1 ml-1 font-bold ' + (googleStatus.type === 'success' ? 'text-emerald-500' : 'text-red-500');
+            gFeed.innerText = googleStatus.msg;
+          }
+        }
+
+        // Update Inputs
+        const nameInput = document.getElementById('hero-business-name');
+        if (nameInput && formData.businessName && !nameInput.value) nameInput.value = formData.businessName;
+        
+        const slugInput = document.getElementById('hero-custom-slug');
+        if (slugInput && formData.customSlug && !slugInput.value) slugInput.value = formData.customSlug;
+
+        // Update Slug Feedback
+        const sFeed = document.getElementById('slug-feedback');
+        if (sFeed) {
+          if (domainStatus.loading) {
+            sFeed.innerText = 'Validando endereço...';
+            sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-stone-400 animate-pulse italic';
+          } else if (domainStatus.available === true) {
+            sFeed.innerText = '✓ Endereço disponível!';
+            sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-emerald-500 italic';
+          } else if (domainStatus.available === false) {
+            sFeed.innerText = '✗ Indisponível. Sugestão: ' + (domainStatus.slug || '');
+            sFeed.className = 'text-[10px] mt-1 ml-1 font-bold text-red-500 italic';
+          }
+        }
+      }
+    });
+
+    // Event Listeners for inputs
+    document.addEventListener('DOMContentLoaded', () => {
+      const busName = document.getElementById('hero-business-name');
+      if (busName) busName.addEventListener('input', (e) => {
+        window.parent.postMessage({ type: 'SET_BUSINESS_NAME', value: e.target.value }, '*');
+      });
+
+      const custSlug = document.getElementById('hero-custom-slug');
+      if (custSlug) custSlug.addEventListener('input', (e) => {
+        window.parent.postMessage({ type: 'SET_CUSTOM_SLUG', value: e.target.value }, '*');
+      });
+
+      const googSearch = document.getElementById('hero-google-search');
+      if (googSearch) googSearch.addEventListener('change', (e) => {
+        window.parent.postMessage({ type: 'SET_GOOGLE_URL', value: e.target.value }, '*');
+      });
+
+      const googBtn = document.getElementById('hero-google-btn');
+      if (googBtn) googBtn.addEventListener('click', () => {
+        const val = document.getElementById('hero-google-search').value;
+        window.parent.postMessage({ type: 'TRIGGER_FETCH_GOOGLE', value: val }, '*');
+      });
+
+      const subBtn = document.getElementById('hero-submit-btn');
+      if (subBtn) subBtn.addEventListener('click', () => {
+        window.parent.postMessage({ type: 'ACTION_START_MAGIC' }, '*');
+      });
+    });
   </script>
 </head>
 <body class="antialiased selection:bg-orange-500 selection:text-white">
@@ -127,27 +199,75 @@ const PROMO_HTML = `
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-200/30 blur-[150px] rounded-full pointer-events-none"></div>
     
-    <div class="relative z-10 animate-up text-center md:text-left max-w-6xl mb-8 mt-6 md:mt-0">
-      <h1 class="text-[2.5rem] md:text-[5rem] font-black leading-[0.85] tracking-tighter mb-4 uppercase italic text-stone-900">
-        Seu site pronto em um <span class="text-orange-500 pr-10 inline-block drop-shadow-sm">ZING!!!</span>
-      </h1>
-      <p class="text-base md:text-lg text-stone-500 font-light leading-relaxed">
-        Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o menu ao lado e veja a mágica acontecer.
-      </p>
-    </div>
+    <div class="grid md:grid-cols-2 gap-12 items-center relative z-10 animate-up mb-12 mt-12 md:mt-0">
+      <div class="text-center md:text-left">
+        <h1 class="text-[2.5rem] md:text-[5rem] font-black leading-[0.85] tracking-tighter mb-4 uppercase italic text-stone-900">
+          Seu site pronto em um <span class="text-orange-500 pr-10 inline-block drop-shadow-sm">ZING!!!</span>
+        </h1>
+        <p class="text-base md:text-lg text-stone-500 font-light leading-relaxed">
+          Não perca vendas por não estar no Google. A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. Preencha o formulário e veja a mágica acontecer.
+        </p>
+        
+        <!-- Destaque 7 dias grátis (Reduzido para caber ao lado do form) -->
+        <div class="flex items-center gap-3 bg-white/50 border border-stone-200 p-3 rounded-2xl mt-8 max-w-fit mx-auto md:mx-0 shadow-sm">
+          <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-md">
+            <i class="fas fa-gift text-sm"></i>
+          </div>
+          <div class="text-left">
+            <h3 class="text-[11px] font-black text-stone-800 uppercase italic leading-tight">7 dias grátis para testar</h3>
+            <p class="text-[9px] text-stone-500 font-medium">Sem compromisso. Experimente agora.</p>
+          </div>
+        </div>
+      </div>
 
-    <!-- Destaque 7 dias grátis -->
-    <div class="relative z-10 animate-up flex flex-col md:flex-row items-center gap-4 bg-orange-50 border border-orange-100 p-4 rounded-3xl mb-8 max-w-6xl mx-auto md:mx-0 shadow-sm" style="animation-delay: 0.1s;">
-      <div class="w-10 h-10 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-200">
-        <i class="fas fa-gift text-lg"></i>
+      <!-- Formulário de Criação -->
+      <div class="glass-card p-6 md:p-8 rounded-[2rem] border-stone-200 shadow-xl bg-white/80 backdrop-blur-xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full"></div>
+        <div class="relative z-10">
+          <h2 class="text-xl font-black text-stone-900 uppercase italic mb-6 flex items-center gap-2">
+            <i class="fas fa-wand-magic-sparkles text-orange-500"></i>
+            Comece sua Mágica
+          </h2>
+          
+          <div class="space-y-4">
+            <!-- Passo 1: Google -->
+            <div>
+              <label class="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 ml-1">1. Busque sua empresa no Google</label>
+              <div class="relative group">
+                <i class="fab fa-google absolute left-4 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-orange-500 transition-colors"></i>
+                <input type="text" id="hero-google-search" placeholder="Ex: Nome da sua Empresa ou Link do Google Maps" 
+                       class="w-full bg-stone-50 border border-stone-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" />
+                <button id="hero-google-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-stone-200 text-stone-400 hover:text-orange-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all">Validar</button>
+              </div>
+              <div id="google-feedback" class="text-[10px] mt-1 ml-1 font-bold hidden"></div>
+            </div>
+
+            <!-- Passo 2: Nome -->
+            <div>
+              <label class="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 ml-1">2. Nome do seu Negócio</label>
+              <input type="text" id="hero-business-name" placeholder="Como quer ser chamado?" 
+                     class="w-full bg-stone-50 border border-stone-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" />
+            </div>
+
+            <!-- Passo 3: URL -->
+            <div>
+              <label class="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 ml-1">3. Seu endereço na web</label>
+              <div class="flex items-center gap-2">
+                <div class="flex-1 relative">
+                  <input type="text" id="hero-custom-slug" placeholder="meusite" 
+                         class="w-full bg-stone-50 border border-stone-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-24" />
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-stone-400 font-bold">.sitezing.com.br</span>
+                </div>
+              </div>
+              <div id="slug-feedback" class="text-[10px] mt-1 ml-1 font-bold italic"></div>
+            </div>
+
+            <button id="hero-submit-btn" class="w-full bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98] mt-4 flex items-center justify-center gap-3">
+              Comece a Mágica <i class="fas fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="text-center md:text-left flex-1">
-        <h3 class="text-base font-black text-stone-800 uppercase italic leading-tight">Crie seu site e tenha 7 dias grátis para testar</h3>
-        <p class="text-[10px] text-stone-500 font-medium">Sem compromisso. Experimente todos os recursos da plataforma agora mesmo.</p>
-      </div>
-      <button onclick="document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })" class="px-6 py-2.5 bg-stone-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-stone-800 transition-all shadow-lg">
-        Saiba Mais
-      </button>
     </div>
 
     <div id="pricing" class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
@@ -629,6 +749,7 @@ const App: React.FC = () => {
   // INTERCEPTADOR DE SUBDOMÍNIO (WILDCARD) E DOMÍNIO CUSTOMIZADO DO CLIENTE
   // ==============================================================================
   const [isClientSiteView, setIsClientSiteView] = useState(false);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const host = window.location.hostname.toLowerCase();
@@ -773,10 +894,43 @@ const App: React.FC = () => {
         setSelectedPriceId(e.data.priceId || null);
         setCheckoutTermsAccepted(false);
       }
+      if (e.data?.type === 'SET_BUSINESS_NAME') {
+        handleFloatNameChange(e.data.value);
+      }
+      if (e.data?.type === 'SET_CUSTOM_SLUG') {
+        handleCustomSlugChange(e.data.value);
+      }
+      if (e.data?.type === 'TRIGGER_FETCH_GOOGLE') {
+        setFormData(p => ({ ...p, googlePlaceUrl: e.data.value }));
+        setTimeout(() => fetchGoogleData(), 100);
+      }
+      if (e.data?.type === 'ACTION_START_MAGIC') {
+        if (!formData.businessName) return showToast('Digite o nome da sua empresa!', 'warning');
+        if (!floatDomainStatus.available) return showToast('Este endereço não está disponível.', 'warning');
+        setIsMenuOpen(true);
+        // Opcional: Trigger generation automatically if desired
+      }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [formData.businessName, floatDomainStatus.available, formData.googlePlaceUrl]);
+
+  // Sync state to Landing Page Iframe
+  useEffect(() => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'SYNC_STATE',
+        domainStatus: floatDomainStatus,
+        isFetchingGoogle,
+        googleStatus,
+        formData: {
+          businessName: formData.businessName,
+          customSlug: formData.customSlug,
+          googlePlaceUrl: formData.googlePlaceUrl
+        }
+      }, '*');
+    }
+  }, [floatDomainStatus, isFetchingGoogle, googleStatus, formData.businessName, formData.customSlug, formData.googlePlaceUrl]);
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -1640,6 +1794,7 @@ const App: React.FC = () => {
 
         <div className="flex-1 relative h-full overflow-hidden bg-[#FAFAF9]">
           <iframe
+            ref={iframeRef}
             srcDoc={generatedHtml ? getPreviewHtml(generatedHtml) : getDynamicPromoHtml(platformConfigs)}
             className="w-full h-full border-none bg-transparent"
             title="Visão Principal"
