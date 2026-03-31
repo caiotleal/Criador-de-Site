@@ -1,10 +1,10 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from 'firebase/auth';
 import { auth, functions, db } from './firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket, Settings, Upload, Loader2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info, Sparkles
+  Rocket, Settings, Upload, Loader2, RefreshCw, Briefcase, FileText, X, Phone, Globe, CheckCircle, CheckCircle2, Save, Trash2, AlertCircle, LayoutDashboard, MapPin, Copy, ExternalLink, Zap, Star, ShieldCheck, CreditCard, User, LogIn, Info, Sparkles, ChevronRight, Gift, Menu, HelpCircle, Palette, Check, Instagram
 } from 'lucide-react';
 import { TEMPLATES } from './components/templates';
 const LoginPage = lazy(() => import('./components/LoginPage'));
@@ -12,6 +12,8 @@ const DomainChecker = lazy(() => import('./components/DomainChecker'));
 import { useIframeEditor } from './components/useIframeEditor';
 
 import { BRAND_LOGO } from './components/brand';
+import ProfileForm from './components/ProfileForm';
+import SupportModal from './components/SupportModal';
 
 const LAYOUT_STYLES = [
   { id: 'layout_modern_center', label: 'Centro Imponente', desc: 'Hero centralizado, animações verticais' },
@@ -150,6 +152,11 @@ const PROMO_HTML = `
       if (nameInput && formData.businessName && document.activeElement !== nameInput) {
         nameInput.value = formData.businessName;
       }
+
+      var descInput = document.getElementById('hero-business-desc');
+      if (descInput && formData.description && document.activeElement !== descInput) {
+        descInput.value = formData.description;
+      }
       
       var slugInput = document.getElementById('hero-custom-slug');
       if (slugInput && formData.customSlug && document.activeElement !== slugInput) {
@@ -174,8 +181,45 @@ const PROMO_HTML = `
 
     document.addEventListener('DOMContentLoaded', function() {
       var busName = document.getElementById('hero-business-name');
-      if (busName) busName.addEventListener('input', function(e) {
-        window.parent.postMessage({ type: 'SET_BUSINESS_NAME', value: e.target.value }, '*');
+      if (busName) {
+        var phrases = ["Ex: Pizzaria do Chef", "Ex: Clínica Sorriso", "Ex: Advocacia Silva", "Ex: Barbearia Vip"];
+        var idx = 0; var charIdx = 0; var isDeleting = false; var typeTimer;
+        function typePlaceholder() {
+          if (document.activeElement === busName || busName.value !== "") {
+            busName.setAttribute('placeholder', 'Qual o Nome do Seu Negócio?');
+            return;
+          }
+          var currentPhrase = phrases[idx];
+          if (isDeleting) {
+            busName.setAttribute('placeholder', currentPhrase.substring(0, charIdx - 1) + '|');
+            charIdx--;
+            if (charIdx === 0) { isDeleting = false; idx = (idx + 1) % phrases.length; typeTimer = setTimeout(typePlaceholder, 600); }
+            else { typeTimer = setTimeout(typePlaceholder, 40); }
+          } else {
+            busName.setAttribute('placeholder', currentPhrase.substring(0, charIdx + 1) + '|');
+            charIdx++;
+            if (charIdx === currentPhrase.length) { isDeleting = true; typeTimer = setTimeout(typePlaceholder, 1500); }
+            else { typeTimer = setTimeout(typePlaceholder, 80); }
+          }
+        }
+        typeTimer = setTimeout(typePlaceholder, 1000);
+
+        busName.addEventListener('focus', function() {
+          clearTimeout(typeTimer);
+          busName.setAttribute('placeholder', 'Qual o Nome do Seu Negócio?');
+        });
+        busName.addEventListener('blur', function() {
+          if (!busName.value) { idx = 0; charIdx = 0; isDeleting = false; typeTimer = setTimeout(typePlaceholder, 500); }
+        });
+
+        busName.addEventListener('input', function(e) {
+          window.parent.postMessage({ type: 'SET_BUSINESS_NAME', value: e.target.value }, '*');
+        });
+      }
+
+      var busDesc = document.getElementById('hero-business-desc');
+      if (busDesc) busDesc.addEventListener('input', function(e) {
+        window.parent.postMessage({ type: 'SET_BUSINESS_DESC', value: e.target.value }, '*');
       });
 
       var custSlug = document.getElementById('hero-custom-slug');
@@ -239,14 +283,19 @@ const PROMO_HTML = `
           A nossa inteligência artificial cria, escreve e publica o seu site automaticamente. <span class="font-bold text-stone-800 text-lg">Preencha e veja a mágica acontecer agora mesmo.</span>
         </p>
         
-        <div class="flex items-center gap-4 bg-white/60 border-2 border-orange-100 p-4 rounded-3xl mt-6 max-w-fit mx-auto md:mx-0 shadow-lg hover:border-orange-200 transition-all">
-          <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-xl rotate-3">
-            <i class="fas fa-gift text-lg"></i>
+        <div class="flex flex-col md:flex-row items-center gap-6 bg-white/70 border-2 border-orange-100 p-6 md:p-8 rounded-[2.5rem] mt-8 max-w-fit mx-auto md:mx-0 shadow-2xl hover:border-orange-300 transition-all group">
+          <div class="flex items-center gap-5">
+            <div class="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3 group-hover:rotate-6 transition-transform">
+              <i class="fas fa-gift text-2xl"></i>
+            </div>
+            <div class="text-left">
+              <h3 class="text-lg md:text-2xl font-black text-stone-900 uppercase italic leading-tight">7 dias grátis para testar</h3>
+              <p class="text-xs md:text-sm text-stone-500 font-bold uppercase tracking-widest">Sem compromisso • Ativação Imediata</p>
+            </div>
           </div>
-          <div class="text-left">
-            <h3 class="text-[14px] font-black text-stone-800 uppercase italic leading-tight">7 dias grátis para testar</h3>
-            <p class="text-[10px] text-stone-500 font-bold uppercase tracking-widest">Sem compromisso • Teste Imediato</p>
-          </div>
+          <button onclick="window.parent.postMessage({ type: 'OPEN_TRIAL_MODAL' }, '*')" class="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-2xl font-black uppercase italic tracking-wider text-xs shadow-lg hover:shadow-orange-500/30 transition-all flex items-center gap-2">
+            Saber Mais <i class="fas fa-arrow-right text-[10px]"></i>
+          </button>
         </div>
       </div>
 
@@ -294,6 +343,11 @@ const PROMO_HTML = `
             </div>
 
             <div>
+              <textarea id="hero-business-desc" placeholder="Descreva seu negócio (Opcional)" rows="2"
+                     class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-center text-[11px] focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 outline-none text-stone-800 font-bold resize-none"></textarea>
+            </div>
+
+            <div>
               <div class="flex bg-white border border-stone-200 rounded-xl overflow-hidden focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500/20 transition-all shadow-sm">
                 <input id="hero-custom-slug" class="flex-1 bg-transparent px-3 py-3 text-[11px] font-mono font-bold text-teal-600 outline-none w-full text-right placeholder:text-stone-300" placeholder="meu-site" />
                 <span class="bg-stone-50 border-l border-stone-200 px-2 py-3 text-[10px] font-bold text-stone-400 flex items-center select-none shadow-inner">.sitezing.com.br</span>
@@ -309,7 +363,7 @@ const PROMO_HTML = `
       </div>
     </div>
 
-    <div id="pricing" class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
+    <div class="grid md:grid-cols-3 gap-6 relative z-10 animate-up" style="animation-delay: 0.2s;">
       <!-- PRICING_CARDS -->
     </div>
 
@@ -424,6 +478,11 @@ const getDynamicPromoHtml = (platformConfigs: any) => {
         <h3 class="text-lg font-black mb-1 italic uppercase ${isAnual ? 'text-orange-500' : 'text-teal-600'} mt-1">${p.name}</h3>
         <p class="text-stone-400 mb-4 text-[11px] leading-tight">${p.description || 'Hospedagem profissional SiteZing'}</p>
         <div class="text-3xl font-black mb-0 text-stone-900">R$ ${integer}<span class="text-xl">,${decimal}</span> <span class="text-[10px] text-stone-400 font-normal">/ ${intervalLabel}</span></div>
+        ${p.allowInstallments ? `
+          <div style="font-size: 9px; font-weight: 800; color: #10b981; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+            <i class="fas fa-credit-card"></i> Ou em até ${p.maxInstallments || 12}x no cartão
+          </div>
+        ` : '<div style="height: 14px;"></div>'}
         <ul class="space-y-2 text-stone-500 text-[11px] font-medium mt-4">
           ${p.features.map((f: string) => `
             <li class="flex items-center gap-2"><span class="w-4 h-4 rounded-full ${isAnual ? 'bg-orange-100 text-orange-500' : 'bg-teal-100 text-teal-600'} flex items-center justify-center text-[8px]">✔</span> ${f}</li>
@@ -850,6 +909,7 @@ const App: React.FC = () => {
   const [aiContent, setAiContent] = useState<any>(null);
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
   const [selectedPlanModal, setSelectedPlanModal] = useState<'free' | 'monthly' | 'annual' | any | null>(null);
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [checkoutDetailsModal, setCheckoutDetailsModal] = useState<{ projectId: string, planType: string, priceId?: string } | null>(null);
@@ -875,11 +935,24 @@ const App: React.FC = () => {
   const [customDomainInput, setCustomDomainInput] = useState('');
   const [isLinkingDomain, setIsLinkingDomain] = useState(false);
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [platformConfigs, setPlatformConfigs] = useState<any>(null);
   const [isDnsModalOpen, setIsDnsModalOpen] = useState(false);
 
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ title: string, message: string, onConfirm: () => void } | null>(null);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [mobileWizardStep, setMobileWizardStep] = useState(1);
+  const [isMobileWizardOpen, setIsMobileWizardOpen] = useState(true);
+  const [mobileActiveTab, setMobileActiveTab] = useState<'editar' | 'plano'>('editar');
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [formData, setFormData] = useState({
     businessName: '', description: '', region: '', whatsapp: '', instagram: '', facebook: '', linkedin: '', tiktok: '',
@@ -891,8 +964,65 @@ const App: React.FC = () => {
     manualCss: ''
   });
   const [pendingSave, setPendingSave] = useState(false);
+  const [isSaveReminderOpen, setIsSaveReminderOpen] = useState(false);
 
   const [showFloatModal, setShowFloatModal] = useState(false);
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+  const [isPlansBannerOpen, setIsPlansBannerOpen] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+
+  const handleSupportSubmit = async (subject: string, message: string) => {
+    try {
+      const submitFn = httpsCallable(functions, 'submitSupportTicket');
+      await submitFn({
+        subject,
+        message,
+        email: userProfile?.email || loggedUserEmail || '',
+        name: userProfile?.fullName || '',
+        phone: userProfile?.phone || ''
+      });
+      showToast('Mensagem enviada! Retornaremos no seu e-mail em breve.', 'success');
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
+  const [publishMsgIndex, setPublishMsgIndex] = useState(0);
+  const publishMsgs = [
+    "Compilando a nova estrutura do seu site...",
+    "Vinculando certificados de segurança e SSL...",
+    "Propagando conteúdo na rede global do Google Cloud...",
+    "Otimizando a velocidade de carregamento...",
+    "Quase lá! Seu projeto está sendo finalizado..."
+  ];
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPublishing) {
+      setPublishMsgIndex(0);
+      interval = setInterval(() => setPublishMsgIndex(prev => (prev + 1) % publishMsgs.length), 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isPublishing]);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash === '#criarsite') {
+        setShowFloatModal(true); setIsTrialModalOpen(false); setIsPlansBannerOpen(false); setIsHowItWorksOpen(false);
+      } else if (hash === '#vantagens') {
+        setIsTrialModalOpen(true); setShowFloatModal(false); setIsPlansBannerOpen(false); setIsHowItWorksOpen(false);
+      } else if (hash === '#planos') {
+        setIsPlansBannerOpen(true); setShowFloatModal(false); setIsTrialModalOpen(false); setIsHowItWorksOpen(false);
+      } else if (hash === '#comofunciona') {
+        setIsHowItWorksOpen(true); setShowFloatModal(false); setIsTrialModalOpen(false); setIsPlansBannerOpen(false);
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   const [floatDomainStatus, setFloatDomainStatus] = useState<{ loading: boolean; available?: boolean; slug?: string; alternatives?: string[] }>({ loading: false });
   const floatCheckTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -970,6 +1100,74 @@ const App: React.FC = () => {
     }
   }, [floatDomainStatus, isFetchingGoogle, googleStatus, pendingGoogleData, formData.businessName, formData.customSlug, formData.googlePlaceUrl]);
 
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setToast({ message, type });
+  };
+
+  const slugify = (value = "") => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
+
+  async function handleSaveOrUpdateSite() {
+    if (!auth.currentUser || auth.currentUser.isAnonymous) {
+      setPendingSave(true);
+      setIsLoginOpen(true);
+      return false;
+    }
+
+    if (!formData.businessName) return showToast('Preencha o Nome do Negócio antes de salvar.', 'warning');
+
+    setIsSavingProject(true);
+    try {
+      let activeSlug = currentProjectSlug;
+      const htmlToSave = cleanHtmlForPublishing(generatedHtml);
+      if (currentProjectSlug) {
+        const updateFn = httpsCallable(functions, 'updateSiteProject');
+        await updateFn({ targetId: currentProjectSlug, html: htmlToSave, formData, aiContent });
+        showToast('Alterações salvas com sucesso!', 'success');
+      } else {
+        const targetSlug = formData.customSlug || slugify(formData.businessName).slice(0, 30);
+        const checkFn = httpsCallable(functions, 'checkDomainAvailability');
+        const checkRes: any = await checkFn({ projectSlug: targetSlug });
+
+        if (checkRes.data?.error) {
+          console.warn("Aviso ao checar domínio:", checkRes.data.error);
+          // Continua a execução e deixa o save tratar se der ruim
+        } else if (checkRes.data && checkRes.data.available === false) {
+          throw new Error('already-exists');
+        }
+
+        const saveFn = httpsCallable(functions, 'saveSiteProject');
+        const res: any = await saveFn({
+          businessName: formData.businessName,
+          internalDomain: targetSlug,
+          officialDomain: officialDomain || "Pendente",
+          generatedHtml: htmlToSave,
+          formData,
+          aiContent
+        });
+        if (res.data?.projectSlug) {
+          setCurrentProjectSlug(res.data.projectSlug);
+          activeSlug = res.data.projectSlug;
+        }
+        showToast('Projeto criado e salvo!', 'success');
+        nextGuideStep(3); // Passo 3: Publicar
+      }
+      setHasUnsavedChanges(false);
+
+      const listFn = httpsCallable(functions, 'listUserProjects');
+      const listRes: any = await listFn({});
+      setSavedProjects(listRes.data?.projects || []);
+      return activeSlug;
+    } catch (err: any) {
+      if (err.message.includes('já está em uso') || err.message.includes('already-exists')) {
+        showToast('Este nome de negócio já está em uso por outro site. Por favor, adicione um diferencial ao nome.', 'error');
+      } else {
+        showToast('Erro ao salvar o site: ' + err.message, 'error');
+      }
+      return false;
+    }
+    finally { setIsSavingProject(false); }
+  }
+
   useEffect(() => {
     const fetchConfigs = async () => {
       try {
@@ -985,8 +1183,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!generatedHtml && !currentProjectSlug && !isClientSiteView) {
-      const timer = setTimeout(() => setShowFloatModal(true), 0);
-      return () => clearTimeout(timer);
+      // const timer = setTimeout(() => setShowFloatModal(true), 0);
+      // return () => clearTimeout(timer);
     }
   }, [generatedHtml, currentProjectSlug, isClientSiteView]);
 
@@ -1064,6 +1262,10 @@ const App: React.FC = () => {
       setLoggedUserEmail(user?.email || null);
       if (user) {
         try {
+          const getProfileFn = httpsCallable(functions, 'getUserProfile');
+          const res: any = await getProfileFn();
+          setUserProfile(res.data);
+          
           const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
           await setDoc(doc(db, 'users', user.uid), {
             email: user.email,
@@ -1071,11 +1273,24 @@ const App: React.FC = () => {
             authProvider: user.providerData?.[0]?.providerId || 'password',
             lastLogin: serverTimestamp()
           }, { merge: true });
-        } catch (error) { console.error("Erro ao salvar lead", error); }
+        } catch (e) {
+          console.error("Erro ao carregar perfil:", e);
+        }
+      } else {
+        setUserProfile(null);
+        // Anti-bot: Faz login anônimo automático se não houver usuário logado
+        signInAnonymously(auth).catch(err => console.error("Erro no login anônimo:", err));
       }
     });
     return () => unsub();
   }, []);
+
+  useEffect(() => {
+    if (loggedUserEmail && pendingSave) {
+      setPendingSave(false);
+      handleSaveOrUpdateSite();
+    }
+  }, [loggedUserEmail, pendingSave]);
 
   useEffect(() => {
     if (toast) {
@@ -1111,9 +1326,7 @@ const App: React.FC = () => {
     } catch (err) { console.log('Erro ao compartilhar:', err); }
   };
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-    setToast({ message, type });
-  };
+   // showToast was here, moved higher
 
   // ==============================================================================
   // CORREÇÃO: BUSCA DE PROJETOS E SINCRONIA DO AUTH
@@ -1414,7 +1627,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (forcedDescription?: string) => {
     if (!formData.businessName) return showToast('Preencha o Nome do Negócio para gerar!', 'error');
     setShowFloatModal(false);
     setIsGenerating(true);
@@ -1431,19 +1644,27 @@ const App: React.FC = () => {
       const generateFn = httpsCallable(functions, 'generateSite');
       const result: any = await generateFn({
         businessName: formData.businessName,
-        description: formData.description,
+        description: forcedDescription !== undefined ? forcedDescription : formData.description,
         region: formData.region,
         googleContext: formData.showReviews ? JSON.stringify({ summary: formData.editorialSummary, reviews: formData.reviews }) : ''
       });
       console.log("Resultado da IA recebido:", result.data ? "Sucesso (HTML presente)" : "Falha (Sem dados)");
       setAiContent(result.data);
       const extractedImages = extractCustomImages(generatedHtml);
-      const outputHtml = renderTemplate(result.data, formData, extractedImages);
+      
+      // Mesclar imagens geradas pela IA caso o usuário não tenha enviado as dele manualmente
+      const mergedImages: Record<string, string> = { ...extractedImages };
+      if (result.data.heroImage && !mergedImages['hero-img']) mergedImages['hero-img'] = result.data.heroImage;
+      if (result.data.aboutImage && !mergedImages['about-img']) mergedImages['about-img'] = result.data.aboutImage;
+
+      const outputHtml = renderTemplate(result.data, formData, mergedImages);
       console.log("Template renderizado, tamanho:", outputHtml?.length || 0);
       setGeneratedHtml(outputHtml);
       setHasUnsavedChanges(true);
       showToast('Site gerado com inteligência artificial!', 'success');
       nextGuideStep(1); // Passo 1: Minimizar para ver
+      setTimeout(() => setIsSaveReminderOpen(true), 1500); // 1.5s delay for dramatic effect
+      setIsMenuOpen(false); // Fechar menu automaticamente para visualização imediata (mobile/desktop)
     } catch (error: any) {
       console.error("Erro Crítico na Geração:", error);
       showToast('Erro na geração: ' + error.message, 'error');
@@ -1469,8 +1690,14 @@ const App: React.FC = () => {
         setSelectedPriceId(e.data.priceId || null);
         setCheckoutTermsAccepted(false);
       }
+      if (e.data?.type === 'OPEN_TRIAL_MODAL') {
+        setIsTrialModalOpen(true);
+      }
       if (e.data?.type === 'SET_BUSINESS_NAME') {
         handleFloatNameChange(e.data.value);
+      }
+      if (e.data?.type === 'SET_BUSINESS_DESC') {
+        setFormData(p => ({ ...p, description: e.data.value }));
       }
       if (e.data?.type === 'SET_CUSTOM_SLUG') {
         handleCustomSlugChange(e.data.value);
@@ -1490,83 +1717,45 @@ const App: React.FC = () => {
         if (!formData.businessName) return showToast('Digite o nome da sua empresa!', 'warning');
         if (floatDomainStatus.available === false) return showToast('Este endereço não está disponível.', 'warning');
         
-        // Trigger Generation immediately
-        handleGenerate();
+        const desc = formData.description || `Uma empresa moderna e inovadora chamada ${formData.businessName}.`;
+        handleGenerate(desc);
         setIsMenuOpen(true);
         setActiveTab('geral');
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [formData.businessName, floatDomainStatus.available, formData.googlePlaceUrl, handleGenerate, setIsMenuOpen, setActiveTab, fetchGoogleData, confirmGoogleInjection, setPendingGoogleData]);
-
-  const slugify = (value = "") => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
-
-  const handleSaveOrUpdateSite = async () => {
-    if (!auth.currentUser) {
-      setPendingSave(true);
-      return setIsLoginOpen(true);
-    }
-
-    if (!formData.businessName) return showToast('Preencha o Nome do Negócio antes de salvar.', 'warning');
-
-    setIsSavingProject(true);
-    try {
-      const htmlToSave = cleanHtmlForPublishing(generatedHtml);
-      if (currentProjectSlug) {
-        const updateFn = httpsCallable(functions, 'updateSiteProject');
-        await updateFn({ targetId: currentProjectSlug, html: htmlToSave, formData, aiContent });
-        showToast('Alterações salvas com sucesso!', 'success');
-      } else {
-        const targetSlug = formData.customSlug || slugify(formData.businessName).slice(0, 30);
-        const checkFn = httpsCallable(functions, 'checkDomainAvailability');
-        const checkRes: any = await checkFn({ projectSlug: targetSlug });
-
-        if (checkRes.data?.error) {
-          console.warn("Aviso ao checar domínio:", checkRes.data.error);
-          // Continua a execução e deixa o save tratar se der ruim
-        } else if (checkRes.data && checkRes.data.available === false) {
-          throw new Error('already-exists');
-        }
-
-        const saveFn = httpsCallable(functions, 'saveSiteProject');
-        const res: any = await saveFn({
-          businessName: formData.businessName,
-          internalDomain: targetSlug,
-          officialDomain: officialDomain || "Pendente",
-          generatedHtml: htmlToSave,
-          formData,
-          aiContent
-        });
-        if (res.data?.projectSlug) setCurrentProjectSlug(res.data.projectSlug);
-        showToast('Projeto criado e salvo!', 'success');
-        nextGuideStep(3); // Passo 3: Publicar
-      }
-      setHasUnsavedChanges(false);
-
-      const listFn = httpsCallable(functions, 'listUserProjects');
-      const listRes: any = await listFn({});
-      setSavedProjects(listRes.data?.projects || []);
-    } catch (err: any) {
-      if (err.message.includes('já está em uso') || err.message.includes('already-exists')) {
-        showToast('Este nome de negócio já está em uso por outro site. Por favor, adicione um diferencial ao nome.', 'error');
-      } else {
-        showToast('Erro ao salvar o site: ' + err.message, 'error');
-      }
-    }
-    finally { setIsSavingProject(false); }
-  };
+  }, [formData.businessName, formData.description, floatDomainStatus.available, formData.googlePlaceUrl, handleGenerate, setIsMenuOpen, setActiveTab, fetchGoogleData, confirmGoogleInjection, setPendingGoogleData]);
 
   const handlePublishSite = async () => {
-    if (hasUnsavedChanges) return showToast("Salve suas alterações antes de publicar.", "warning");
+    let targetSlugForPublish = currentProjectSlug;
+    if (!currentProjectSlug || hasUnsavedChanges) {
+       showToast('Salvando últimas alterações...', 'info');
+       const savedSlug = await handleSaveOrUpdateSite();
+       if (!savedSlug) return; // Aborta publicação se falhar
+       if (typeof savedSlug === 'string') targetSlugForPublish = savedSlug;
+    }
+
+    if (!targetSlugForPublish) {
+      return showToast('Erro interno: ID do projeto não encontrado após salvar.', 'error');
+    }
+
+    // VERIFICAÇÃO DE IDENTIDADE (KYC)
+    const hasFullKyc = userProfile && userProfile.fullName && userProfile.document && userProfile.phone && userProfile.address;
+    if (!hasFullKyc) {
+      showToast('Preencha as informações do perfil para poder publicar.', 'info');
+      setIsProfileModalOpen(true);
+      return;
+    }
+
     setIsPublishing(true);
     try {
-      const project = savedProjects.find(p => p.id === currentProjectSlug);
+      const project = savedProjects.find(p => p.id === targetSlugForPublish);
       const isAlreadyPublished = Boolean(project?.publishUrl || project?.status === 'active' || project?.status === 'published');
       setIsUpdatePublish(isAlreadyPublished);
 
       const publishFn = httpsCallable(functions, 'publishUserProject');
-      const res: any = await publishFn({ targetId: currentProjectSlug });
+      const res: any = await publishFn({ targetId: targetSlugForPublish });
 
       let publicUrl = res.data?.publishUrl;
       if (publicUrl && !publicUrl.startsWith('http')) publicUrl = `https://${publicUrl}`;
@@ -1576,13 +1765,18 @@ const App: React.FC = () => {
       setSavedProjects(listRes.data?.projects || []);
 
       setPublishModalUrl(publicUrl);
+      showToast(isAlreadyPublished ? 'Atualização no ar! Seu site foi atualizado com sucesso.' : 'Site Publicado! Acesse: ' + publicUrl, 'success');
       nextGuideStep(4); // Passo 4: Pagamento
     } catch (err: any) { 
-      if (err.code === 'permission-denied' || err.message?.includes('expirou') || err.message?.includes('pagamento')) {
-        showToast('Seu período de teste expirou. Escolha um plano para manter seu site online!', 'warning');
-        setSelectedPlanModal('monthly');
+      const errMsg = err.message || '';
+      if (errMsg.includes('violar nossas políticas')) {
+        showToast('Ação bloqueada: O conteúdo do seu site violou as políticas de segurança.', 'error');
+      } else if (err.code === 'permission-denied' || errMsg.includes('expirou') || errMsg.includes('pagamento') || errMsg.includes('congelado')) {
+        showToast('Seu período de teste expirou ou o site está congelado. Escolha um plano para manter seu site online!', 'warning');
+        setActiveTab('assinatura');
+        setIsMenuOpen(true);
       } else {
-        showToast('Erro ao publicar: ' + err.message, 'error'); 
+        showToast('Erro ao publicar: ' + errMsg, 'error'); 
       }
     } 
     finally { setIsPublishing(false); }
@@ -1671,6 +1865,17 @@ const App: React.FC = () => {
     setRegisterLater(project.officialDomain === 'Pendente');
     setHasUnsavedChanges(false);
     setActiveTab('geral');
+    
+    if (window.innerWidth < 768) {
+      setIsMenuOpen(false); // Se for celular, já fecha o menu para mostrar o site carregado
+    }
+
+    // Lembrete Persuasivo para Publicação de Rascunhos
+    if (!project.publishUrl && project.status !== 'published') {
+      setTimeout(() => {
+        showToast('📍 Lembrete: Este projeto ainda é um rascunho. Preencha os dados e clique em Publicar para colocá-lo no ar!', 'info');
+      }, 1000);
+    }
   };
 
   useEffect(() => {
@@ -1695,6 +1900,320 @@ const App: React.FC = () => {
       showToast('Conta criada com sucesso!', 'success');
     }
     setIsLoginOpen(false);
+  };
+
+  const handleProfileSubmit = async (data: any) => {
+    try {
+      showToast('Salvando e validando identidade...', 'info');
+      const updateProfileFn = httpsCallable(functions, 'updateUserProfile');
+      await updateProfileFn(data);
+      setUserProfile((prev: any) => ({ ...prev, ...data, kycCompleted: true }));
+      setIsProfileModalOpen(false);
+      
+      // Auto-resume publication if we have a currentProjectSlug context
+      if (currentProjectSlug) {
+         showToast('Identidade verificada! Retomando publicação...', 'success');
+         // Use setTimeout to allow React state to flush
+         setTimeout(() => handlePublishSite(), 500);
+      } else {
+         showToast('Perfil atualizado com sucesso!', 'success');
+      }
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
+  const renderMobileWizard = () => {
+    if (!isMobile || !generatedHtml) return null;
+    
+    const steps = [
+      { id: 1, title: '🏷️ Identidade', icon: <Briefcase size={16} /> },
+      { id: 2, title: '🧱 Modelo', icon: <Settings size={16} /> },
+      { id: 3, title: '🌈 Cores', icon: <Palette size={16} /> },
+      { id: 4, title: '📝 Conteúdo', icon: <FileText size={16} /> },
+      { id: 5, title: '📱 Contatos', icon: <Phone size={16} /> },
+      { id: 6, title: '🌐 Redes Sociais', icon: <Globe size={16} /> },
+      { id: 7, title: '🖼️ Logotipo', icon: <Upload size={16} /> },
+      { id: 8, title: '📍 Extras', icon: <MapPin size={16} /> },
+    ];
+
+    const currentStepData = steps.find(s => s.id === mobileWizardStep);
+
+    return (
+      <AnimatePresence>
+        {isMobileWizardOpen && (
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed bottom-0 left-0 right-0 z-[100] bg-white border-t border-stone-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-[2.5rem] flex flex-col max-h-[90vh] overflow-hidden"
+          >
+            {/* Header com Abas */}
+            <div className="bg-stone-50/80 backdrop-blur-md border-b border-stone-100 flex-shrink-0">
+               <div className="px-6 py-4 flex items-center justify-between">
+                  <div className="flex bg-stone-200/50 p-1 rounded-xl w-full max-w-[240px]">
+                    <button 
+                      onClick={() => setMobileActiveTab('editar')}
+                      className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${mobileActiveTab === 'editar' ? 'bg-white text-teal-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+                    >
+                      Editar Site
+                    </button>
+                    <button 
+                      onClick={() => setMobileActiveTab('plano')}
+                      className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${mobileActiveTab === 'plano' ? 'bg-white text-orange-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+                    >
+                      Meu Plano
+                    </button>
+                  </div>
+                  <button onClick={() => setIsMobileWizardOpen(false)} className="bg-stone-200/50 p-2 ml-4 rounded-full text-stone-500">
+                    <X size={18} />
+                  </button>
+               </div>
+            </div>
+
+            {mobileActiveTab === 'editar' ? (
+              <>
+                {/* Header do Wizard */}
+                <div className="px-6 py-4 border-b border-stone-50 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black uppercase text-stone-400 tracking-widest mb-0.5">Passo {mobileWizardStep} de {steps.length}</span>
+                    <h3 className="text-sm font-black text-stone-900 flex items-center gap-2">
+                       {currentStepData?.title}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Barra de Progresso */}
+                <div className="h-1 w-full bg-stone-100 relative">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(mobileWizardStep / steps.length) * 100}%` }}
+                    className="absolute top-0 left-0 h-full bg-teal-500"
+                  />
+                </div>
+
+                {/* Área de Scroll do Formulário */}
+                <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-24">
+                  {mobileWizardStep === 1 && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">Nome do Seu Negócio</label>
+                        <input className="w-full bg-stone-50 border border-stone-200 rounded-xl p-4 text-sm font-bold text-stone-800 focus:border-teal-500 outline-none" placeholder="Ex: Pizzaria do Zé" value={formData.businessName} onChange={e => handleFloatNameChange(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">Seu Endereço Web Temporário</label>
+                        <div className="flex bg-stone-50 border border-stone-200 rounded-xl overflow-hidden focus-within:border-teal-500 transition-all">
+                          <input className="flex-1 bg-transparent px-3 py-4 text-sm font-mono font-bold text-teal-600 outline-none w-full text-right" placeholder="meu-site" value={formData.customSlug} onChange={e => handleCustomSlugChange(e.target.value)} />
+                          <span className="bg-stone-100 border-l border-stone-200 px-3 py-4 text-[10px] font-bold text-stone-400 flex items-center select-none shadow-inner">.sitezing.com.br</span>
+                        </div>
+                        {floatDomainStatus.available === false && <p className="text-[9px] text-red-500 font-bold mt-1">✗ Este link já está em uso.</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {mobileWizardStep === 2 && (
+                    <div className="space-y-6">
+                      <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3 block">Escolha o Modelo Visual</label>
+                      <div className="relative group">
+                        <select 
+                          value={formData.layoutStyle}
+                          onChange={(e) => { setFormData({ ...formData, layoutStyle: e.target.value }); setHasUnsavedChanges(true); }}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl p-4 pr-12 text-sm font-bold text-stone-800 appearance-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all cursor-pointer shadow-sm"
+                        >
+                          {LAYOUT_STYLES.map(s => (
+                            <option key={s.id} value={s.id}>{s.label}</option>
+                          ))}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400 group-focus-within:text-teal-500 transition-colors">
+                          <Settings size={18} className="animate-spin-slow" />
+                        </div>
+                      </div>
+                      <div className="bg-teal-50/50 border border-teal-100 p-4 rounded-xl flex items-start gap-3">
+                        <Info size={16} className="text-teal-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[11px] font-bold text-teal-900 leading-tight">Dica de Design</p>
+                          <p className="text-[10px] text-teal-700 mt-1 leading-relaxed">{LAYOUT_STYLES.find(s => s.id === formData.layoutStyle)?.desc || 'Cada modelo altera radicalmente a forma como seu conteúdo é apresentado.'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {mobileWizardStep === 3 && (
+                    <div className="space-y-6">
+                      <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3 block">Paleta de Cores do Site</label>
+                      <div className="grid grid-cols-5 gap-3">
+                        {COLORS.slice(0, 15).map(c => (
+                          <button key={c.id} onClick={() => { setFormData({ ...formData, colorId: c.id }); setHasUnsavedChanges(true); }} className={`w-full aspect-square rounded-2xl border-2 transition-all flex items-center justify-center ${formData.colorId === c.id ? 'border-teal-500 scale-110 shadow-lg shadow-teal-500/20' : 'border-transparent bg-stone-50'}`} style={{ backgroundColor: c.c1 }}>
+                             {formData.colorId === c.id && <Check size={16} className="text-white drop-shadow-md" />}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-stone-400 text-center font-medium italic">Selecione a cor que melhor combina com sua marca.</p>
+                    </div>
+                  )}
+
+                  {mobileWizardStep === 4 && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">O Que Vocês Fazem? (Foco em Vendas)</label>
+                        <textarea className="w-full bg-stone-50 border border-stone-200 rounded-xl p-4 text-sm text-stone-800 h-40 outline-none focus:border-teal-500 resize-none font-medium leading-relaxed" placeholder="Ex: Somos uma pizzaria artesanal focada em ingredientes frescos e entrega rápida..." value={formData.description} onChange={e => { setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true) }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {mobileWizardStep === 5 && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">WhatsApp Para Pedidos</label>
+                        <div className="relative">
+                          <input className="w-full bg-stone-50 border border-stone-200 rounded-xl p-4 pl-12 text-sm font-bold text-stone-800 outline-none focus:border-teal-500" placeholder="DDD + Número" value={formData.whatsapp} onChange={e => { setFormData({ ...formData, whatsapp: e.target.value }); setHasUnsavedChanges(true) }} />
+                          <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-500" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">Telefone de Contato (Opcional)</label>
+                        <input className="w-full bg-stone-50 border border-stone-200 rounded-xl p-4 text-sm outline-none focus:border-teal-500" placeholder="Fixo ou Celular" value={formData.phone} onChange={e => { setFormData({ ...formData, phone: e.target.value }); setHasUnsavedChanges(true) }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {mobileWizardStep === 6 && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">Instagram do Negócio</label>
+                        <div className="relative">
+                          <input className="w-full bg-stone-50 border border-stone-200 rounded-xl p-4 pl-12 text-sm font-bold text-stone-800 outline-none focus:border-pink-500" placeholder="@usuario" value={formData.instagram} onChange={e => { setFormData({ ...formData, instagram: e.target.value }); setHasUnsavedChanges(true) }} />
+                          <Instagram size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500" />
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-stone-400 leading-relaxed">Conectar suas redes sociais aumenta a confiança dos seus clientes.</p>
+                    </div>
+                  )}
+
+                  {mobileWizardStep === 7 && (
+                    <div className="space-y-6 text-center">
+                       <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block text-left">Sua Logomarca</label>
+                        {!formData.logoBase64 ? (
+                          <label className="cursor-pointer w-full border-2 border-dashed border-stone-200 hover:border-teal-400 rounded-2xl p-12 flex flex-col items-center gap-3 text-stone-500 transition-colors bg-stone-50">
+                            <div className="bg-white p-4 rounded-2xl shadow-sm"><Upload size={24} className="text-teal-500" /></div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Enviar Logotipo</span>
+                            <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                          </label>
+                        ) : (
+                          <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 relative">
+                             <div className="bg-white p-4 rounded-xl mb-4 flex items-center justify-center">
+                               <img src={formData.logoBase64} style={{ maxHeight: `${formData.logoSize || 40}px` }} className="block object-contain" />
+                             </div>
+                             <button onClick={() => { setFormData(p => ({ ...p, logoBase64: '', logoSize: 40 })); setHasUnsavedChanges(true); }} className="text-red-500 text-[10px] font-black uppercase mb-6 block w-full hover:underline">Remover Logotipo</button>
+                             <div className="space-y-3 text-left bg-white p-4 rounded-xl border border-stone-100">
+                               <label className="flex justify-between text-[9px] font-black text-stone-400 uppercase tracking-tighter">Ajustar Tamanho no Site <span>{formData.logoSize}px</span></label>
+                               <input type="range" min="20" max="100" value={formData.logoSize} onChange={e => { setFormData({ ...formData, logoSize: parseInt(e.target.value) }); setHasUnsavedChanges(true) }} className="w-full h-1.5 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-teal-500" />
+                             </div>
+                          </div>
+                        )}
+                    </div>
+                  )}
+
+                  {mobileWizardStep === 8 && (
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">Endereço Físico (Opcional)</label>
+                        <input className="w-full bg-stone-50 border border-stone-200 rounded-xl p-4 text-sm outline-none focus:border-teal-500" placeholder="Rua, Número, Bairro - Cidade" value={formData.address} onChange={e => { setFormData({ ...formData, address: e.target.value }); setHasUnsavedChanges(true) }} />
+                      </div>
+                      <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 flex items-center justify-between">
+                         <div className="flex flex-col">
+                            <span className="text-[11px] font-black text-stone-800 uppercase">Exibir Mapa</span>
+                            <span className="text-[9px] text-stone-400">Mostra sua localização no site</span>
+                         </div>
+                         <div onClick={() => { setFormData({ ...formData, showMap: !formData.showMap }); setHasUnsavedChanges(true); }} className={`w-12 h-6 rounded-full relative transition-all cursor-pointer ${formData.showMap ? 'bg-teal-500' : 'bg-stone-300'}`}>
+                            <motion.div animate={{ x: formData.showMap ? 24 : 4 }} className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                         </div>
+                      </div>
+                      <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl text-center">
+                        <Rocket size={24} className="text-emerald-500 mx-auto mb-3" />
+                        <h4 className="text-xs font-black text-emerald-800 uppercase italic">Tudo Pronto!</h4>
+                        <p className="text-[10px] text-emerald-600 mt-1 font-medium">Suas alterações foram preparadas com sucesso.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer de Navegação */}
+                <div className="p-6 border-t border-stone-100 bg-white/80 backdrop-blur-md absolute bottom-0 left-0 right-0 z-20 flex gap-3">
+                  {mobileWizardStep > 1 && (
+                    <button 
+                      onClick={() => setMobileWizardStep(prev => prev - 1)}
+                      className="flex-1 bg-stone-100 ring-1 ring-stone-200 text-stone-600 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest"
+                    >
+                      Voltar
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => {
+                      if (mobileWizardStep < steps.length) {
+                        setMobileWizardStep(prev => prev + 1);
+                      } else {
+                        handleSaveOrUpdateSite();
+                      }
+                    }}
+                    className={`flex-[2] bg-stone-900 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-stone-900/20 active:scale-95 transition-all`}
+                  >
+                    {mobileWizardStep < steps.length ? <>Próximo <ChevronRight size={14} /></> : <>Publicar Mudanças 🚀</>}
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* ABA DO PLANO */
+              <div className="p-6 overflow-y-auto flex-1 space-y-6 pb-24">
+                <div className="bg-orange-50 border border-orange-100 p-6 rounded-[2rem] text-center">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 border border-orange-100">
+                    <Globe size={32} className="text-orange-500 animate-pulse" />
+                  </div>
+                  <h3 className="text-lg font-black text-orange-900 uppercase">Seu Domínio Profissional</h3>
+                  <p className="text-stone-500 text-xs mt-2 leading-relaxed">Coloque seu negócio no ar com um endereço exclusivo como <strong>seunegocio.com.br</strong></p>
+                </div>
+
+                {currentProjectSlug ? (
+                  <div className="space-y-4">
+                     <div className="bg-white border border-stone-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Status da Publicação</span>
+                           <span className="text-xs font-bold text-stone-800">{officialDomain && officialDomain !== 'Pendente' ? officialDomain : 'Domínio Próprio Indisponível'}</span>
+                        </div>
+                        {getStatusBadge(savedProjects.find(p => p.id === currentProjectSlug))}
+                     </div>
+
+                     <div className="bg-teal-50 border border-teal-100 p-6 rounded-2xl">
+                        <h4 className="text-sm font-black text-teal-900 uppercase mb-3">Ativar Plano Premium</h4>
+                        <div className="space-y-3 mb-6">
+                           <div className="flex items-center gap-2 text-xs text-teal-700 font-bold"><Check size={14} /> Site no ar 24h por dia</div>
+                           <div className="flex items-center gap-2 text-xs text-teal-700 font-bold"><Check size={14} /> E-mail profissional grátis</div>
+                           <div className="flex items-center gap-2 text-xs text-teal-700 font-bold"><Check size={14} /> Suporte Prioritário VIP</div>
+                        </div>
+                        <button 
+                          onClick={() => setActiveTab('assinatura')} 
+                          className="w-full bg-teal-600 hover:bg-teal-500 text-white font-black uppercase text-[11px] tracking-widest py-4 rounded-xl shadow-lg shadow-teal-500/20 transition-all"
+                        >
+                          Conhecer Planos
+                        </button>
+                     </div>
+                  </div>
+                ) : (
+                  <div className="bg-stone-50 border border-dashed border-stone-300 p-8 rounded-[2rem] text-center">
+                    <Rocket size={32} className="text-stone-300 mx-auto mb-4" />
+                    <p className="text-stone-500 text-xs font-medium">Salve seu projeto primeiro para ver as opções de publicação e planos.</p>
+                    <button onClick={() => setMobileActiveTab('editar')} className="mt-4 text-teal-600 text-xs font-black uppercase hover:underline">Voltar para Edição</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* O Float Button foi movido para o bloco principal de return para persistência */}
+      </AnimatePresence>
+    );
   };
 
   const getStatusBadge = (project: any) => {
@@ -1866,6 +2385,36 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {isPublishing && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-stone-900/95 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden"
+          >
+            <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="flex flex-col items-center">
+              <div className="w-24 h-24 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl mb-8 relative">
+                <Globe className="w-12 h-12 text-emerald-400 animate-pulse relative z-10" />
+                <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-emerald-500/40 to-transparent blur-xl rounded-full animate-bounce"></div>
+              </div>
+              <img src={BRAND_LOGO} alt="SiteZing" className="h-8 mb-4 opacity-50 block" />
+              <h2 className="text-3xl font-black text-white px-6 text-center tracking-tight">Publicando Site...</h2>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={publishMsgIndex}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-emerald-400 mt-3 text-sm font-medium text-center max-w-sm px-6 h-10"
+                >
+                  {publishMsgs[publishMsgIndex]}
+                </motion.p>
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="w-full h-screen bg-[#FAFAF9] overflow-hidden font-sans text-stone-900 flex flex-col md:flex-row">
 
         <div className="flex-1 relative h-full overflow-hidden bg-[#FAFAF9]">
@@ -1877,24 +2426,36 @@ const App: React.FC = () => {
           />
 
           <AnimatePresence>
-            {!isMenuOpen && (
+            {!isMenuOpen && !isMobile && (
               <div
-                className={`absolute top-6 right-6 z-[90] flex items-center cursor-pointer group ${!generatedHtml ? 'animate-guide-pulse' : ''}`}
+                className={`absolute top-6 right-6 z-[90] flex items-center cursor-pointer group`}
                 onClick={() => setIsMenuOpen(true)}
               >
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="relative flex items-center justify-center">
-                  <motion.div
-                    animate={{ scale: [1, 2], opacity: [0.6, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
-                    className="absolute w-12 h-12 bg-orange-400 rounded-full"
-                  />
-                  <div className="relative flex items-center gap-2 bg-white px-5 py-3 rounded-full border border-orange-200 shadow-lg group-hover:shadow-orange-500/20 transition-all group-hover:border-orange-400">
-                    <Rocket size={18} className="text-orange-500" />
-                    <span className="text-sm font-black uppercase tracking-widest text-orange-600">{generatedHtml ? 'Editar Site' : 'Crie seu Site'}</span>
+                  <div className="relative flex items-center justify-center bg-white w-12 h-12 rounded-full border border-stone-200 shadow-lg group-hover:shadow-xl transition-all group-hover:border-stone-300 text-stone-600 group-hover:text-stone-900">
+                    <Menu size={20} />
                     <GuidedTip step={2} currentStep={guideStep} text="Clique aqui para continuar editando seu site!" position="top" />
                   </div>
                 </motion.div>
               </div>
+            )}
+          </AnimatePresence>
+
+          {renderMobileWizard()}
+
+          {/* Botão Flutuante Permanente para Mobile (Sempre visível se fechado) */}
+          <AnimatePresence>
+            {isMobile && !isMobileWizardOpen && generatedHtml && (
+              <motion.button
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                onClick={() => setIsMobileWizardOpen(true)}
+                className="fixed bottom-6 left-6 z-[100] w-14 h-14 bg-stone-900 text-white rounded-full shadow-2xl flex flex-col items-center justify-center active:scale-90 transition-all border-4 border-white group"
+              >
+                <Menu size={22} className="group-active:rotate-90 transition-transform" />
+                <span className="text-[7px] font-black uppercase tracking-tighter mt-0.5">Menu</span>
+              </motion.button>
             )}
           </AnimatePresence>
         </div>
@@ -1904,10 +2465,10 @@ const App: React.FC = () => {
         </Suspense>
 
         <AnimatePresence initial={false}>
-          {isMenuOpen && (
+          {isMenuOpen && !isMobile && (
             <motion.div
               initial={{ width: 0, paddingLeft: 0, paddingRight: 0 }}
-              animate={{ width: window.innerWidth < 768 ? '100%' : 420, paddingLeft: 16, paddingRight: 16 }}
+              animate={{ width: 420, paddingLeft: 16, paddingRight: 16 }}
               exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }}
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
               className="flex-shrink-0 h-full flex flex-col justify-center overflow-hidden relative z-50 bg-[#FAFAF9] w-full md:w-[420px] py-4"
@@ -1921,6 +2482,9 @@ const App: React.FC = () => {
                     <img src={BRAND_LOGO} alt="SiteZing" className="h-10 w-auto object-contain" />
                   </div>
                   <div className="flex items-center gap-4">
+                    <button onClick={() => setIsSupportModalOpen(true)} className="text-stone-400 hover:text-indigo-500 transition-colors p-2 rounded-full hover:bg-indigo-50" title="Central de Ajuda (Falar com Suporte)">
+                      <HelpCircle size={18} />
+                    </button>
                     <button onClick={sharePlatform} className="text-stone-400 hover:text-orange-500 transition-colors p-2 rounded-full hover:bg-orange-50" title="Compartilhar SiteZing">
                       <ExternalLink size={18} />
                     </button>
@@ -2052,7 +2616,7 @@ const App: React.FC = () => {
                         <div><label className="text-[11px] font-black text-stone-500 uppercase flex items-center gap-1.5 mb-1.5"><FileText size={12} /> Ideia Principal</label><textarea className="w-full h-20 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-[12px] resize-none focus:border-teal-500 outline-none transition-colors text-stone-800" placeholder="Descreva os serviços..." value={formData.description} onChange={e => { setFormData({ ...formData, description: e.target.value }); setHasUnsavedChanges(true) }} /></div>
                       </div>
 
-                      <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-stone-700 transition-colors shadow-md">
+                      <button onClick={() => handleGenerate()} disabled={isGenerating} className="w-full bg-stone-900 hover:bg-stone-800 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-stone-700 transition-colors shadow-md">
                         {isGenerating ? <Loader2 className="animate-spin" /> : <RefreshCw size={18} />} {generatedHtml ? 'Recriar Site c/ IA' : 'Gerar Meu Site'}
                       </button>
 
@@ -2259,9 +2823,14 @@ const App: React.FC = () => {
                                       <span className="font-mono text-sm font-bold text-teal-700">{currentProject.officialDomain}</span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                      <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${isDomainActive ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700 animate-pulse'}`}>
-                                        {isDomainActive ? 'Propagado' : 'Pendente'}
-                                      </span>
+                                      <div className="flex flex-col gap-1 items-end">
+                                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${isDomainActive ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700 animate-pulse'}`}>
+                                          {isDomainActive ? 'Propagado' : 'Pendente'}
+                                        </span>
+                                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${isDomainActive ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                                          {isDomainActive ? 'SSL Ativo ✅' : 'SSL Gerando... ⏳'}
+                                        </span>
+                                      </div>
                                       {/* BOTÃO PARA DESCONECTAR O DOMÍNIO */}
                                       <button
                                         onClick={() => handleRemoveDomain(currentProject.officialDomain)}
@@ -2469,16 +3038,16 @@ const App: React.FC = () => {
                             <div className="space-y-6">
                               <div className="grid grid-cols-1 gap-4">
                                 {platformConfigs?.plans?.length > 0 ? (
-                                  platformConfigs.plans.map((p: any) => {
+                                  [...platformConfigs.plans].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0)).map((p: any) => {
                                     const isAnual = p.interval === 'year';
                                     return (
                                       <div key={p.id} className={`bg-white p-5 rounded-xl border ${isAnual ? 'border-orange-200' : 'border-teal-200'} flex flex-col h-full relative overflow-hidden shadow-sm`}>
                                         <img src={BRAND_LOGO} className="absolute bottom-[-10%] right-[-10%] w-1/2 opacity-[0.03] pointer-events-none filter grayscale" alt="" />
                                         <div className={`absolute top-0 right-0 ${isAnual ? 'bg-orange-500' : 'bg-teal-600'} text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg rounded-tr-lg`}>
-                                          {isAnual ? 'Mais Econômico' : 'Recomendado'}
+                                          {p.badge || (isAnual ? 'Mais Econômico' : 'Recomendado')}
                                         </div>
                                         <h4 className={`${isAnual ? 'text-orange-500' : 'text-teal-600'} font-bold mb-2 uppercase tracking-wide text-xs`}>{p.name}</h4>
-                                        <div className="flex items-end gap-1 mb-4">
+                                        <div className="flex items-end gap-1 mb-1">
                                           <span className="text-3xl font-black text-stone-950">R$ {p.price}</span>
                                           <span className="text-xs text-stone-500 font-medium pb-1">/
                                             {p.interval === 'month' ? 'mês' : 
@@ -2487,17 +3056,29 @@ const App: React.FC = () => {
                                              p.interval === 'semestral' ? 'semestre' : 'ano'}
                                           </span>
                                         </div>
+                                        {p.allowInstallments && (
+                                          <div className="text-[10px] font-bold text-emerald-600 mb-4 flex items-center gap-1">
+                                            <CreditCard size={12} /> Ou em até {p.maxInstallments || 12}x no cartão
+                                          </div>
+                                        )}
+                                        {!p.allowInstallments && <div className="mb-4"></div>}
                                         <ul className="space-y-2 text-xs text-stone-600 mb-6 flex-1 relative z-10">
                                           {p.features?.map((f: string, i: number) => (
                                             <li key={i} className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5" /> {f}</li>
                                           ))}
                                         </ul>
                                         <button
-                                          onClick={() => setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: p.name, priceId: p.priceId })}
-                                          disabled={checkoutLoading === `${currentProjectSlug}-${p.name}`}
+                                          onClick={() => {
+                                            if (currentProject?.stripeSubscriptionId && currentProject?.cancelAtPeriodEnd && currentProject?.status !== 'frozen') {
+                                              handleResumeSubscription(currentProjectSlug);
+                                            } else {
+                                              setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: p.name, priceId: p.priceId });
+                                            }
+                                          }}
+                                          disabled={checkoutLoading === `${currentProjectSlug}-${p.name}` || isResuming}
                                           className={`w-full ${isAnual ? 'bg-orange-500 hover:bg-orange-400 shadow-orange-500/20' : 'bg-teal-600 hover:bg-teal-500 shadow-teal-500/20'} text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors relative z-10 shadow-lg`}
                                         >
-                                          {checkoutLoading === `${currentProjectSlug}-${p.name}` ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : (needsPayment ? `Reativar com ${p.name}` : `Assinar ${p.name}`)}
+                                          {checkoutLoading === `${currentProjectSlug}-${p.name}` || isResuming ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : (needsPayment ? `Reativar com ${p.name}` : `Assinar ${p.name}`)}
                                         </button>
                                       </div>
                                     );
@@ -2513,11 +3094,17 @@ const App: React.FC = () => {
                                         <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5" /> Domínio próprio & Suporte</li>
                                       </ul>
                                       <button
-                                        onClick={() => setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'mensal' })}
-                                        disabled={checkoutLoading === `${currentProjectSlug}-mensal`}
+                                        onClick={() => {
+                                          if (currentProject?.stripeSubscriptionId && currentProject?.cancelAtPeriodEnd && currentProject?.status !== 'frozen') {
+                                            handleResumeSubscription(currentProjectSlug);
+                                          } else {
+                                            setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'mensal' });
+                                          }
+                                        }}
+                                        disabled={checkoutLoading === `${currentProjectSlug}-mensal` || isResuming}
                                         className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors relative z-10 shadow-lg shadow-teal-500/20"
                                       >
-                                        {checkoutLoading === `${currentProjectSlug}-mensal` ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : needsPayment ? 'Reativar com Plano Mensal' : 'Assinar Mensal'}
+                                        {checkoutLoading === `${currentProjectSlug}-mensal` || isResuming ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : needsPayment ? 'Reativar com Plano Mensal' : 'Assinar Mensal'}
                                       </button>
                                     </div>
 
@@ -2530,11 +3117,17 @@ const App: React.FC = () => {
                                         <li className="flex items-start gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5" /> 2 meses grátis equivalentes</li>
                                       </ul>
                                       <button
-                                        onClick={() => setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'anual' })}
-                                        disabled={checkoutLoading === `${currentProjectSlug}-anual`}
+                                        onClick={() => {
+                                          if (currentProject?.stripeSubscriptionId && currentProject?.cancelAtPeriodEnd && currentProject?.status !== 'frozen') {
+                                            handleResumeSubscription(currentProjectSlug);
+                                          } else {
+                                            setCheckoutDetailsModal({ projectId: currentProjectSlug, planType: 'anual' });
+                                          }
+                                        }}
+                                        disabled={checkoutLoading === `${currentProjectSlug}-anual` || isResuming}
                                         className="w-full bg-orange-500 hover:bg-orange-400 text-white py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-colors shadow-lg shadow-orange-500/20 relative z-10"
                                       >
-                                        {checkoutLoading === `${currentProjectSlug}-anual` ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : needsPayment ? 'Reativar com Plano Anual' : 'Assinar Anual'}
+                                        {checkoutLoading === `${currentProjectSlug}-anual` || isResuming ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : needsPayment ? 'Reativar com Plano Anual' : 'Assinar Anual'}
                                       </button>
                                     </div>
                                   </>
@@ -2622,9 +3215,15 @@ const App: React.FC = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={handlePublishSite}
-                          disabled={isPublishing || hasUnsavedChanges || !currentProjectSlug}
-                          className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 relative ${!hasUnsavedChanges && currentProjectSlug ? (guideStep === 3 ? 'bg-orange-500 animate-guide-pulse text-white shadow-lg' : (isPublished ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20')) : 'bg-stone-100 text-stone-400 cursor-not-allowed'}`}
+                          onClick={() => {
+                            if (hasUnsavedChanges || !currentProjectSlug) {
+                              setIsSaveReminderOpen(true);
+                            } else {
+                              handlePublishSite();
+                            }
+                          }}
+                          disabled={isPublishing}
+                          className={`w-full sm:flex-1 py-3.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 relative ${!hasUnsavedChanges && currentProjectSlug ? (guideStep === 3 ? 'bg-orange-500 animate-guide-pulse text-white shadow-lg' : (isPublished ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20')) : 'bg-stone-200 text-stone-600 hover:bg-stone-300'}`}
                         >
                           {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : (isPublished ? <RefreshCw size={14} /> : <Globe size={14} />)}
                           {isPublished ? 'Atualizar Publicação' : 'Publicar Site'}
@@ -2642,74 +3241,236 @@ const App: React.FC = () => {
       {/* MODAL DOS PLANOS E REGRAS (Vindo do iFrame) */}
       <AnimatePresence>
         {selectedPlanModal && (
-          <div className="fixed inset-0 z-[400] bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[400] bg-stone-950/40 backdrop-blur-md flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl overflow-hidden max-w-lg w-full shadow-2xl relative"
+              initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="bg-white rounded-[2.5rem] overflow-hidden max-w-lg w-full shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] relative border border-stone-100"
             >
-              <button onClick={() => setSelectedPlanModal(null)} className="absolute top-4 right-4 bg-white/50 hover:bg-white text-stone-500 p-2 rounded-full transition-colors z-20">
+              <button onClick={() => setSelectedPlanModal(null)} className="absolute top-6 right-6 bg-stone-100 hover:bg-stone-200 text-stone-500 p-2.5 rounded-full transition-all z-20 hover:rotate-90">
                 <X size={20} />
               </button>
 
-              <div className={`p-8 pb-10 text-center relative ${selectedPlanModal === 'free' ? 'bg-stone-100' :
-                  (platformConfigs?.plans?.find((p: any) => p.id === selectedPlanModal || p.priceId === selectedPriceId)?.interval === 'year') ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white' : 'bg-teal-600 text-white'
-                }`}>
-                {selectedPlanModal !== 'free' && <div className="absolute inset-0 opacity-10"><img src={BRAND_LOGO} className="w-full h-full object-cover filter blur-sm" alt="" /></div>}
+              {(() => {
+                const plan = platformConfigs?.plans?.find((p: any) => p.id === selectedPlanModal || p.priceId === selectedPriceId);
+                const isAnual = plan?.interval === 'year';
+                const isFree = selectedPlanModal === 'free';
+                
+                return (
+                  <>
+                    <div className={`p-10 pb-12 text-center relative overflow-hidden ${isFree ? 'bg-stone-50' :
+                        isAnual ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white' : 'bg-gradient-to-br from-teal-600 to-emerald-700 text-white'
+                      }`}>
+                      {!isFree && (
+                        <div className="absolute inset-0 opacity-10 mix-blend-overlay">
+                          <img src={BRAND_LOGO} className="w-full h-full object-cover scale-150 rotate-12" alt="" />
+                        </div>
+                      )}
+                      
+                      <div className="relative z-10 space-y-4">
+                        <div className="inline-block px-4 py-1 rounded-full border border-current opacity-70 text-[10px] font-black uppercase tracking-[0.2em]">
+                          {isFree ? 'Experimente Agora' : (isAnual ? 'Melhor Custo-Benefício' : 'Plano Flexível')}
+                        </div>
+                        <h2 className="text-4xl font-black italic uppercase tracking-tight leading-none">
+                          {plan?.name || (isFree ? 'Plano Turbo Teste' : selectedPlanModal)}
+                        </h2>
+                        {plan && (
+                          <div className="flex flex-col items-center">
+                            <div className="flex items-end gap-1">
+                              <span className="text-4xl font-black">R$ {plan.price}</span>
+                              <span className="text-xs font-bold opacity-80 mb-1">
+                                /{plan.interval === 'month' ? 'mês' : 
+                                  plan.interval === 'year' ? 'ano' : plan.interval}
+                              </span>
+                            </div>
+                            {plan.allowInstallments && (
+                              <div className="text-[11px] font-black mt-2 opacity-90 bg-black/10 px-3 py-1 rounded-lg flex items-center gap-2">
+                                <CreditCard size={12} /> Em até {plan.maxInstallments}x de R$ {(parseFloat(plan.price) / parseInt(plan.maxInstallments)).toFixed(2)}*
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                <h2 className="text-3xl font-black uppercase tracking-tight italic relative z-10">
-                  {platformConfigs?.plans?.find((p: any) => p.id === selectedPlanModal || p.priceId === selectedPriceId)?.name || 
-                   (selectedPlanModal === 'free' ? 'Plano Turbo Teste' : 
-                    selectedPlanModal === 'monthly' ? 'Plano Mensal' : 
-                    selectedPlanModal === 'annual' ? 'Plano Anual Start' : selectedPlanModal)}
-                </h2>
+                    <div className="p-10 bg-white">
+                      <div className="space-y-6 mb-10">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-sm"><CheckCircle2 className="w-5 h-5" /></div>
+                          <div>
+                            <h4 className="font-black text-stone-900 text-sm uppercase tracking-wide">Recursos Ilimitados</h4>
+                            <p className="text-xs text-stone-500 mt-1 leading-relaxed">Criação completa via IA, todos os blocos liberados e design profissional de alto nível.</p>
+                          </div>
+                        </div>
+                        {!isFree && (
+                          <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 shadow-sm"><Globe className="w-5 h-5" /></div>
+                            <div>
+                              <h4 className="font-black text-stone-900 text-sm uppercase tracking-wide">Infraestrutura Premium</h4>
+                              <p className="text-xs text-stone-500 mt-1 leading-relaxed">Hospedagem Google Cloud com SSL (Cadeado ✅) e suporte para seu próprio domínio.</p>
+                            </div>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100 shadow-sm"><Rocket className="w-5 h-5" /></div>
+                          <div>
+                            <h4 className="font-black text-stone-900 text-sm uppercase tracking-wide">Velocidade e SEO</h4>
+                            <p className="text-xs text-stone-500 mt-1 leading-relaxed">Performance estelar para ranquear no Google e carregar instantaneamente no celular.</p>
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="mt-4 flex items-center justify-center gap-2 relative z-10">
-                  <span className="text-[10px] uppercase tracking-widest font-bold opacity-80 border border-current px-3 py-1 rounded-full">
-                    {selectedPlanModal === 'free' ? 'Sem Compromisso' : 'Liberação Imediata'}
-                  </span>
+                      <div className="space-y-4">
+                        <button
+                          onClick={() => {
+                            setSelectedPlanModal(null);
+                            setIsMenuOpen(true);
+                          }}
+                          className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.15em] transition-all shadow-xl hover:translate-y-[-2px] text-xs ${isFree
+                              ? 'bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20'
+                              : isAnual ? 'bg-orange-500 text-white hover:bg-orange-400 shadow-orange-500/30' : 'bg-teal-600 text-white hover:bg-teal-500 shadow-teal-500/30'
+                            }`}
+                        >
+                          {isFree ? '🚀 Começar Teste Grátis' : '🚀 Criar meu site agora'}
+                        </button>
+                        <p className="text-center text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                          {isFree ? 'Sem cartão de crédito' : 'Acesso imediato após confirmação'}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* NOVO MODAL: PLANOS (BANNER) */}
+      <AnimatePresence>
+        {isPlansBannerOpen && (
+          <div className="fixed inset-0 z-[500] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.95 }}
+              className="w-full max-w-5xl bg-stone-50 rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]"
+            >
+              <div className="bg-white p-6 border-b border-stone-200 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center"><Briefcase size={20} /></div>
+                  <h3 className="text-xl font-black text-stone-900 uppercase italic tracking-tight">Nossos Planos</h3>
+                </div>
+                <button onClick={() => { setIsPlansBannerOpen(false); window.location.hash = ''; }} className="text-stone-400 hover:text-orange-500 transition-colors bg-stone-100 hover:bg-orange-50 p-2 rounded-full cursor-pointer">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 md:p-8 overflow-y-auto w-full">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {platformConfigs?.plans?.length > 0 ? (
+                    [...platformConfigs.plans].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0)).map((p: any) => {
+                      const isAnual = p.interval === 'year';
+                      return (
+                        <div key={p.id} className={`bg-white p-6 rounded-2xl border ${isAnual ? 'border-orange-200 shadow-orange-500/10' : 'border-stone-200'} flex flex-col h-full relative overflow-hidden shadow-xl hover:-translate-y-1 transition-transform`}>
+                          <div className={`absolute top-0 right-0 ${isAnual ? 'bg-orange-500' : 'bg-stone-800'} text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-bl-xl tracking-wider`}>
+                            {p.badge || (isAnual ? 'Mais Econômico' : 'Recomendado')}
+                          </div>
+                          <h4 className={`${isAnual ? 'text-orange-500' : 'text-stone-800'} font-black text-lg mb-2 uppercase tracking-tight`}>{p.name}</h4>
+                          <div className="flex items-end gap-1 mb-6">
+                            <span className="text-4xl font-black text-stone-950">R$ {p.price}</span>
+                            <span className="text-sm text-stone-500 font-bold pb-1">/{p.interval === 'month' ? 'mês' : p.interval === 'year' ? 'ano' : p.interval}</span>
+                          </div>
+                          <ul className="space-y-3 mb-8 flex-1">
+                            {p.features?.map((f: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2 text-xs font-bold text-stone-600">
+                                <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                          <button
+                            onClick={() => {
+                              setIsPlansBannerOpen(false);
+                              setTimeout(() => { window.location.hash = '#criarsite'; }, 50);
+                            }}
+                            className={`w-full py-4 rounded-xl cursor-pointer font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2 text-xs ${isAnual ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/30' : 'bg-stone-900 text-white hover:bg-black shadow-lg shadow-black/20'}`}
+                          >
+                            <Rocket size={16} /> Criar meu site
+                          </button>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="col-span-3 text-center py-10 text-stone-500 font-bold">Nenhum plano configurado.</div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* NOVO MODAL: COMO FUNCIONA */}
+      <AnimatePresence>
+        {isHowItWorksOpen && (
+          <div className="fixed inset-0 z-[500] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.95 }}
+              className="w-full max-w-3xl bg-white rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]"
+            >
+              <div className="bg-gradient-to-r from-teal-600 to-indigo-600 p-6 md:p-8 relative overflow-hidden flex-shrink-0">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[50px] rounded-full pointer-events-none"></div>
+                <button onClick={() => { setIsHowItWorksOpen(false); window.location.hash = ''; }} className="absolute top-4 right-4 text-white/50 hover:text-white cursor-pointer transition-colors bg-black/20 p-2 rounded-full z-10">
+                  <X size={20} />
+                </button>
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md border border-white/20 text-white">
+                    <Sparkles size={28} />
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-2 italic">Como o SiteZing Funciona</h2>
+                  <p className="text-teal-50 text-sm md:text-base font-medium max-w-xl">Entenda o motor por trás da plataforma inteligente que constrói sua presença digital do zero em instantes.</p>
                 </div>
               </div>
 
-              <div className="p-8">
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+              <div className="p-6 md:p-10 overflow-y-auto space-y-8 bg-stone-50">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex items-start gap-4 hover:-translate-y-1 transition-transform">
+                    <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shrink-0"><Rocket size={24} /></div>
                     <div>
-                      <h4 className="font-bold text-sm text-stone-800">Serviços Disponíveis para você</h4>
-                      <p className="text-xs text-stone-500 mt-1">Acesso irrestrito a Inteligência Artificial geradora de sites. Todos os blocos liberados, design ilimitado.</p>
+                      <h4 className="font-black text-stone-900 uppercase tracking-wide mb-1">Criação por IA</h4>
+                      <p className="text-xs text-stone-500 font-medium leading-relaxed">Você só digita o nome do negócio e nossa IA faz o resto: escreve textos persuasivos e monta o layout focado em vendas nas cores da sua marca.</p>
                     </div>
                   </div>
-                  {selectedPlanModal !== 'free' && (
-                    <div className="flex items-start gap-3">
-                      <Globe className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-bold text-sm text-stone-800">Domínio Próprio Exclusivo</h4>
-                        <p className="text-xs text-stone-500 mt-1">Hospedagem Premium com SSL no Google Cloud e conexão liberada para seu próprio domínio (.com.br).</p>
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex items-start gap-3">
-                    <Rocket className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                  <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex items-start gap-4 hover:-translate-y-1 transition-transform">
+                    <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0"><Gift size={24} /></div>
                     <div>
-                      <h4 className="font-bold text-sm text-stone-800">Site nas Primeiras Posições</h4>
-                      <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                        Estrutura técnica construída para SEO. Otimizado para captar mais leads no piloto automático.
-                      </p>
+                      <h4 className="font-black text-stone-900 uppercase tracking-wide mb-1">Teste 100% Grátis</h4>
+                      <p className="text-xs text-stone-500 font-medium leading-relaxed">Sinta o poder da plataforma oferecendo 7 dias de uso sem compromisso. Crie, visualize e altere sem cadastrar cartão de crédito.</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex items-start gap-4 hover:-translate-y-1 transition-transform">
+                    <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0"><Globe size={24} /></div>
+                    <div>
+                      <h4 className="font-black text-stone-900 uppercase tracking-wide mb-1">Seu Próprio Domínio</h4>
+                      <p className="text-xs text-stone-500 font-medium leading-relaxed">Conecte facilmente o seu `.com.br` no painel. O SiteZing injeta certificados SSL (Cadeado ✅) e provisiona as rotas na hora com um clique.</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex items-start gap-4 hover:-translate-y-1 transition-transform">
+                    <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center shrink-0"><Zap size={24} /></div>
+                    <div>
+                      <h4 className="font-black text-stone-900 uppercase tracking-wide mb-1">Hospedagem Inclusa</h4>
+                      <p className="text-xs text-stone-500 font-medium leading-relaxed">Esqueça configurações complicadas. Seu site é hospedado nativamente no Google Cloud Platform, garantindo velocidade estelar 24/7.</p>
                     </div>
                   </div>
                 </div>
+              </div>
 
+              <div className="p-6 border-t border-stone-200 bg-white grid place-items-center flex-shrink-0">
                 <button
                   onClick={() => {
-                    setSelectedPlanModal(null);
-                    setIsMenuOpen(true);
+                    setIsHowItWorksOpen(false);
+                    setTimeout(() => { window.location.hash = '#criarsite'; }, 50);
                   }}
-                  className={`w-full py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg hover:translate-y-[-2px] ${selectedPlanModal === 'free'
-                      ? 'bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20'
-                      : (platformConfigs?.plans?.find((p: any) => p.id === selectedPlanModal || p.priceId === selectedPriceId)?.interval === 'year') ? 'bg-orange-500 text-white hover:bg-orange-400 shadow-orange-500/30' : 'bg-teal-600 text-white hover:bg-teal-500 shadow-teal-500/30'
-                    }`}
+                  className="w-full md:max-w-md bg-stone-950 hover:bg-black text-white py-4 rounded-xl cursor-pointer font-black uppercase tracking-[0.1em] text-sm shadow-xl shadow-stone-900/20 hover:-translate-y-1 transition-all flex justify-center items-center gap-2"
                 >
-                  🚀 Criar seu site agora
+                  <Sparkles size={18} className="text-orange-400" /> Crie seu site agora
                 </button>
               </div>
             </motion.div>
@@ -2861,8 +3622,9 @@ const App: React.FC = () => {
                   <button
                     onClick={() => {
                       if (!formData.businessName || floatDomainStatus.available === false) return;
-                      setFormData(p => ({ ...p, segment: "Negócios / Geral", description: `Uma empresa moderna e inovadora chamada ${p.businessName}.` }));
-                      handleGenerate();
+                      const constructedDesc = `Uma empresa moderna e inovadora chamada ${formData.businessName}.`;
+                      setFormData(p => ({ ...p, segment: "Negócios / Geral", description: constructedDesc }));
+                      handleGenerate(constructedDesc);
                       setIsMenuOpen(true);
                       setActiveTab('geral');
                     }}
@@ -2881,55 +3643,165 @@ const App: React.FC = () => {
       {/* MODAL DE SUCESSO DE PUBLICAÇÃO */}
       <AnimatePresence>
         {publishModalUrl && (
-          <div className="fixed inset-0 z-[500] bg-stone-900/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[5000] bg-stone-900/80 backdrop-blur-md flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white rounded-[2rem] overflow-hidden max-w-md w-full shadow-2xl relative"
             >
-              <button onClick={() => setPublishModalUrl(null)} className="absolute top-4 right-4 bg-stone-100 hover:bg-stone-200 text-stone-500 p-2 rounded-full transition-colors z-20">
+              <button onClick={() => setPublishModalUrl(null)} className="absolute top-4 right-4 bg-stone-100 hover:bg-stone-200 text-stone-500 p-2 rounded-full transition-colors z-[5010]">
                 <X size={20} />
               </button>
 
               <div className="p-8 pb-8 text-center bg-gradient-to-b from-emerald-50 to-white">
                 <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5 border-4 border-white shadow-lg">
-                  <Globe className="w-10 h-10 text-emerald-500" />
+                  {isUpdatePublish ? <RefreshCw className="w-10 h-10 text-emerald-500" /> : <Globe className="w-10 h-10 text-emerald-500" />}
                 </div>
-                <h2 className="text-2xl font-black uppercase tracking-tight text-stone-900 mb-2">Seu Site está no Ar!</h2>
-                <p className="text-sm text-stone-500 font-medium">Parabéns! O projeto foi implantado e já pode ser acessado em todo o mundo através do link abaixo:</p>
+                <h2 className="text-2xl font-black uppercase tracking-tight text-stone-900 mb-2">
+                  {isUpdatePublish ? 'Atualização no Ar!' : 'Seu Site está no Ar!'}
+                </h2>
+                <p className="text-sm text-stone-500 font-medium">
+                  {isUpdatePublish 
+                    ? 'Suas alterações foram publicadas com sucesso e já estão refletindo no seu endereço oficial:' 
+                    : 'Parabéns! O projeto foi implantado e já pode ser acessado em todo o mundo através do link abaixo:'
+                  }
+                </p>
 
                 <div className="mt-6 bg-stone-100 border border-stone-200 rounded-xl p-4 flex items-center justify-between gap-3 relative overflow-hidden group">
                   <div className="absolute left-0 top-0 w-1 h-full bg-emerald-500"></div>
                   <span className="font-mono text-emerald-700 font-bold truncate flex-1 text-left select-all">{publishModalUrl}</span>
-                  <a href={publishModalUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 bg-white border border-stone-200 p-2 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-stone-50 transition-colors shadow-sm">
+                  <a href={publishModalUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 bg-white border border-stone-200 p-2 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-stone-50 transition-colors shadow-sm focus:ring-2 focus:ring-emerald-500">
                     <ExternalLink size={18} />
                   </a>
                 </div>
               </div>
 
               <div className="px-8 pb-8 bg-white">
-                <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 mb-6">
-                  <h4 className="flex items-center gap-2 text-orange-800 font-black text-sm uppercase mb-2"><AlertCircle size={16} /> Aviso Importante</h4>
-                  <p className="text-xs text-orange-700/80 leading-relaxed font-medium">Você está operando atualmente no <span className="font-bold">Plano Turbo Teste (7 Dias)</span>. Caso não possua uma assinatura ativa ao término deste período, seu site será gentilmente congelado para visitantes externos.</p>
-                </div>
+                {(() => {
+                  const currentProject = savedProjects.find(p => p.id === currentProjectSlug);
+                  const isDomainActive = currentProject?.domainStatus === 'ACTIVE' || currentProject?.domainStatus === 'HOSTING_ACTIVE';
+                  const isPaid = currentProject?.paymentStatus === 'paid';
+                  let daysLeft = 7;
+                  if (currentProject?.expiresAt) {
+                    const expDate = currentProject.expiresAt._seconds ? currentProject.expiresAt._seconds * 1000 : currentProject.expiresAt.seconds * 1000;
+                    if (!isNaN(expDate)) {
+                      daysLeft = Math.ceil((new Date(expDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+                    }
+                  }
 
-                <div className="flex flex-col gap-3">
-                  <button
-                    onClick={() => {
-                      setPublishModalUrl(null);
-                      setActiveTab('assinatura');
-                      setIsMenuOpen(true);
-                    }}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-500/30 text-xs"
-                  >
-                    Garantir Hospedagem e Domínio
-                  </button>
-                  <button
-                    onClick={() => setPublishModalUrl(null)}
-                    className="w-full bg-stone-100 hover:bg-stone-200 text-stone-600 py-3 rounded-xl font-bold uppercase tracking-wider transition-colors text-xs"
-                  >
-                    Continuar Administrando
-                  </button>
+                  return (
+                    <>
+                      <div className={`mb-6 p-4 rounded-2xl border flex flex-col gap-2 ${isDomainActive ? 'bg-blue-50 border-blue-100' : 'bg-amber-50 border-amber-100'}`}>
+                        <div className="flex items-center justify-between">
+                          <h4 className={`font-black text-xs uppercase flex items-center gap-2 ${isDomainActive ? 'text-blue-800' : 'text-amber-800'}`}>
+                            <ShieldCheck size={16} /> Status do SSL
+                          </h4>
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${isDomainActive ? 'bg-blue-200 text-blue-900' : 'bg-amber-200 text-amber-900 animate-pulse'}`}>
+                            {isDomainActive ? 'Ativo ✅' : 'Gerando... ⏳'}
+                          </span>
+                        </div>
+                        <p className={`text-[11px] leading-relaxed font-medium ${isDomainActive ? 'text-blue-700/80' : 'text-amber-700/80'}`}>
+                          O certificado de segurança pode levar até 24h para ser totalmente propagado (Limpe o cache do navegador se necessário).
+                        </p>
+                      </div>
+
+                      {!isPaid && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 mb-6 shadow-inner relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 blur-xl rounded-full pointer-events-none"></div>
+                          <h4 className="flex items-center gap-2 text-orange-800 font-black text-sm uppercase tracking-wider mb-2 relative z-10"><Zap size={18} className="text-orange-500" /> Benefício 7 Dias Grátis</h4>
+                          <p className="text-xs text-orange-700/90 leading-relaxed font-medium mb-3 relative z-10">Você ganha <strong className="text-orange-900 bg-orange-200/50 px-1.5 py-0.5 rounded">{Math.max(0, daysLeft)} dias restantes</strong> de navegação pública e hospedagem irrestrita.</p>
+                          <ul className="text-[11px] text-orange-800/80 space-y-2 font-medium relative z-10">
+                            <li className="flex gap-2 items-start"><div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1 shrink-0" /> Após o teste, seu site será gentilmente congelado mantendo seus dados salvos.</li>
+                            <li className="flex gap-2 items-start"><div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1 shrink-0" /> Assine agora para manter no ar e liberar domínio personalizado.</li>
+                          </ul>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-3">
+                        <button
+                          onClick={() => {
+                            setPublishModalUrl(null);
+                            setActiveTab('assinatura');
+                            setIsMenuOpen(true);
+                          }}
+                          className={`w-full ${!isPaid ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/30' : 'bg-stone-900 hover:bg-black shadow-stone-900/30'} text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg text-xs`}
+                        >
+                          {!isPaid ? 'Garantir Hospedagem e Domínio' : 'Ver Meu Plano'}
+                        </button>
+                        <button
+                          onClick={() => setPublishModalUrl(null)}
+                          className="w-full bg-stone-100 hover:bg-stone-200 text-stone-600 py-3 rounded-xl font-bold uppercase tracking-wider transition-colors text-xs"
+                        >
+                          Fechar e Voltar ao Painel
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DE COLETA DE DADOS (KYC / Profile) */}
+      <AnimatePresence>
+        {isProfileModalOpen && (
+          <ProfileForm 
+            initialData={userProfile} 
+            onClose={() => setIsProfileModalOpen(false)} 
+            onSubmit={handleProfileSubmit} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* MODAL SUPORTE (MENSAGENS P/ ADMIN) */}
+      <AnimatePresence>
+        {isSupportModalOpen && (
+          <SupportModal 
+            onClose={() => setIsSupportModalOpen(false)} 
+            onSubmit={handleSupportSubmit} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* MODAL LEMBRETE PARA SALVAR PÓS-CRIAÇÃO */}
+      <AnimatePresence>
+        {isSaveReminderOpen && (
+          <div className="fixed inset-0 z-[600] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[2rem] overflow-hidden max-w-[380px] w-full shadow-2xl relative border border-orange-100"
+            >
+              <div className="bg-orange-50 p-8 flex flex-col items-center text-center border-b border-orange-100 relative">
+                <button onClick={() => setIsSaveReminderOpen(false)} className="absolute top-4 right-4 text-orange-400 hover:text-orange-600 transition-colors p-2 rounded-full hover:bg-orange-100/50">
+                  <X size={18} />
+                </button>
+                <div className="w-16 h-16 bg-white text-orange-500 rounded-full flex items-center justify-center mb-4 shadow-sm border border-orange-200">
+                  <Save size={32} />
                 </div>
+                <h3 className="text-xl font-black text-stone-900 mb-1 uppercase tracking-wider">Atenção Especial!</h3>
+                <p className="text-[11px] text-stone-600 font-medium uppercase tracking-widest">Ação Necessária</p>
+              </div>
+
+              <div className="p-8 bg-white space-y-5 text-center">
+                <p className="text-[13px] font-medium text-stone-500 leading-relaxed">
+                  Para que você não perca o projeto e para ele ser <b>publicado</b>, o servidor precisa armazená-lo formalmente agora. Em seguida, o botão de publicação será liberado!
+                </p>
+                <button
+                  onClick={() => {
+                    setIsSaveReminderOpen(false);
+                    handleSaveOrUpdateSite();
+                  }}
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl font-black uppercase text-xs tracking-[0.1em] shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <Save size={16} /> Salvar Projeto Agora
+                </button>
+                <button
+                  onClick={() => setIsSaveReminderOpen(false)}
+                  className="w-full bg-stone-50 hover:bg-stone-100 text-stone-500 py-3.5 rounded-xl font-bold uppercase text-[10px] tracking-widest transition-colors mt-2"
+                >
+                  Salvar depois
+                </button>
               </div>
             </motion.div>
           </div>
@@ -2939,70 +3811,179 @@ const App: React.FC = () => {
       {/* MODAL DE CONTRATACAO DE PLANO / TERMOS LAB */}
       <AnimatePresence>
         {checkoutDetailsModal && (
-          <div className="fixed inset-0 z-[500] bg-stone-900/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[500] bg-stone-950/40 backdrop-blur-md flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl overflow-hidden max-w-[400px] w-full shadow-2xl relative flex flex-col max-h-[90vh]"
+              initial={{ opacity: 0, scale: 0.95, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 30 }}
+              className="bg-white rounded-[2.5rem] overflow-hidden max-w-[440px] w-full shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] relative flex flex-col max-h-[90vh] border border-stone-100"
             >
-              <div className="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
-                <h3 className="font-black text-stone-900 uppercase flex items-center gap-2 text-sm"><ShieldCheck className="text-orange-500" size={18} /> Finalizar Contratação</h3>
-                <button onClick={() => setCheckoutDetailsModal(null)} className="text-stone-400 hover:text-stone-800 transition-colors bg-white p-1.5 border border-stone-200 rounded-full shadow-sm">
-                  <X size={16} />
+              <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm"><ShieldCheck size={22} /></div>
+                  <div>
+                    <h3 className="font-black text-stone-900 uppercase text-xs tracking-[0.1em]">Finalizar Contratação</h3>
+                    <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mt-0.5">Segurança de ponta a ponta</p>
+                  </div>
+                </div>
+                <button onClick={() => setCheckoutDetailsModal(null)} className="text-stone-400 hover:text-stone-800 transition-colors bg-white p-2 border border-stone-200 rounded-full shadow-sm hover:rotate-90">
+                  <X size={18} />
                 </button>
               </div>
 
-              <div className="p-6 overflow-y-auto custom-scrollbar">
-                <div className="bg-orange-50 text-orange-800 p-4 rounded-2xl border border-orange-100 mb-6 text-center">
-                  <h4 className="font-black text-lg uppercase italic mb-1">
+              <div className="p-8 overflow-y-auto custom-scrollbar space-y-8">
+                <div className="bg-gradient-to-br from-stone-900 to-stone-800 text-white p-6 rounded-3xl relative overflow-hidden shadow-lg">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[40px] rounded-full"></div>
+                  <h4 className="font-black text-2xl uppercase italic mb-1 relative z-10 leading-none">
                     {checkoutDetailsModal.planType || 'Plano Escolhido'}
                   </h4>
-                  <p className="text-xs font-medium opacity-80">Você está a um passo de oficializar sua presença digital.</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 relative z-10">Confirmação de Assinatura</p>
+                  
+                  {(() => {
+                    const plan = platformConfigs?.plans?.find((p: any) => p.priceId === checkoutDetailsModal.priceId);
+                    if (plan?.allowInstallments) {
+                      return (
+                        <div className="mt-4 pt-4 border-t border-white/10 relative z-10">
+                          <div className="flex items-center gap-2 text-emerald-400 text-[11px] font-black uppercase tracking-wider">
+                            <CreditCard size={14} /> Opção de Parcelamento Ativa
+                          </div>
+                          <p className="text-[10px] text-white/50 mt-1 font-medium">Você poderá parcelar em até {plan.maxInstallments}x no próximo passo.</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
 
-                <h4 className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-4 flex items-center gap-2">
-                  <div className="flex-1 h-px bg-stone-100"></div>Entenda Como Funciona<div className="flex-1 h-px bg-stone-100"></div>
-                </h4>
-
-                <ul className="space-y-4">
-                  <li className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-200 mt-0.5"><CheckCircle size={14} className="text-emerald-600" /></div>
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100"><CheckCircle2 size={18} /></div>
                     <div>
-                      <h5 className="font-bold text-stone-800 text-sm">Sem Pegadinhas</h5>
-                      <p className="text-xs text-stone-500 leading-relaxed mt-0.5">Renovação automática pelo Stripe. Cancele com um único clique no painel, quando quiser, sem precisar falar com atendentes.</p>
+                      <h5 className="font-black text-stone-900 text-[11px] uppercase tracking-wider">Assinatura Flexível</h5>
+                      <p className="text-xs text-stone-500 leading-relaxed mt-1">Gestão via Stripe. Cancele com um clique no painel a qualquer momento, sem burocracia ou multas.</p>
                     </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0 border border-orange-200 mt-0.5"><Info size={14} className="text-orange-600" /></div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100"><Info size={18} /></div>
                     <div>
-                      <h5 className="font-bold text-stone-800 text-sm">Transparência Total</h5>
-                      <p className="text-xs text-stone-500 leading-relaxed mt-0.5">Seu site é hospedado nos melhores servidores do mundo. Ao confirmar, o período é alocado para você. Por ser infraestrutura imediata, não há estorno de dias não utilizados em caso de cancelamento precoce.</p>
+                      <h5 className="font-black text-stone-900 text-[11px] uppercase tracking-wider">Infraestrutura Imediata</h5>
+                      <p className="text-xs text-stone-500 leading-relaxed mt-1">Ao confirmar, alocamos processamento e SSL para seu site. Não há estorno de dias não utilizados.</p>
                     </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200 mt-0.5"><RefreshCw size={14} className="text-blue-600" /></div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100"><RefreshCw size={18} /></div>
                     <div>
-                      <h5 className="font-bold text-stone-800 text-sm">Congelamento Seguro</h5>
-                      <p className="text-xs text-stone-500 leading-relaxed mt-0.5">Se um pagamento falhar, seu site não some na hora. Ele recebe um aviso e entra em "Congelamento" apenas para visitantes, mantendo os dados seguros conosco durante os próximos dias.</p>
+                      <h5 className="font-black text-stone-900 text-[11px] uppercase tracking-wider">Continuidade Garantida</h5>
+                      <p className="text-xs text-stone-500 leading-relaxed mt-1">Se o pagamento falhar, seus dados ficam protegidos por 5 dias em modo de congelamento seguro.</p>
                     </div>
-                  </li>
-                </ul>
+                  </div>
+                </div>
               </div>
 
-              <div className="p-6 border-t border-stone-100 bg-stone-50 mt-auto">
+              <div className="p-8 border-t border-stone-100 bg-stone-50/80 mt-auto">
                 <button
                   onClick={() => {
                     const { projectId, planType, priceId } = checkoutDetailsModal;
                     setCheckoutDetailsModal(null);
                     handleStripeCheckout(projectId, planType, priceId);
                   }}
-                  className="w-full bg-stone-900 hover:bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-xl shadow-stone-900/20 text-xs flex items-center justify-center gap-2"
+                  className="w-full bg-stone-900 hover:bg-black text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-stone-900/20 text-xs flex items-center justify-center gap-2 hover:translate-y-[-2px]"
                 >
-                  ✅ Concordar e ir para o Stripe
+                  Confirmar e Prosseguir <ChevronRight size={16} />
                 </button>
-                <div className="flex items-center justify-center gap-2 mt-4 text-[9px] font-bold text-stone-400 uppercase tracking-widest"><CreditCard size={12} /> Pagamento 100% Seguro</div>
+                <div className="flex items-center justify-center gap-3 mt-6">
+                  <div className="flex items-center gap-1.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em]"><CreditCard size={12} /> Pagamento Seguro</div>
+                  <div className="w-1 h-1 rounded-full bg-stone-200"></div>
+                  <div className="flex items-center gap-1.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em]"><ShieldCheck size={12} /> SSL 256-bit</div>
+                </div>
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DE INFORMAÇÕES DO TESTE GRÁTIS */}
+      <AnimatePresence>
+        {isTrialModalOpen && (
+          <div className="fixed inset-0 z-[600] bg-stone-950/40 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 30 }}
+              className="bg-white rounded-[2.5rem] overflow-hidden max-w-[480px] w-full shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] relative flex flex-col max-h-[90vh] border border-stone-100"
+            >
+              <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-lg rotate-3"><Gift size={22} /></div>
+                  <div>
+                    <h3 className="font-black text-stone-900 uppercase text-xs tracking-[0.1em]">Teste Grátis SiteZing</h3>
+                    <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mt-0.5">Sua jornada começa agora</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsTrialModalOpen(false)} className="text-stone-400 hover:text-stone-800 transition-colors bg-white p-2 border border-stone-200 rounded-full shadow-sm hover:rotate-90">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-8 overflow-y-auto custom-scrollbar space-y-8">
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-3xl relative overflow-hidden shadow-lg">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-[40px] rounded-full"></div>
+                  <h4 className="font-black text-2xl uppercase italic mb-1 relative z-10 leading-none">7 Dias de Liberdade</h4>
+                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 relative z-10">Sem cartão de crédito • Sem compromisso</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100 font-black">1</div>
+                    <div>
+                      <h5 className="font-black text-stone-900 text-[11px] uppercase tracking-wider">Criação Instantânea</h5>
+                      <p className="text-xs text-stone-500 leading-relaxed mt-1">Nossa IA monta seu site em 30 segundos com textos e imagens profissionais.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100 font-black">2</div>
+                    <div>
+                      <h5 className="font-black text-stone-900 text-[11px] uppercase tracking-wider">Publicação Imediata</h5>
+                      <p className="text-xs text-stone-500 leading-relaxed mt-1">Publique seu site com um link oficial grátis e comece a divulgar seu negócio.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100 font-black">3</div>
+                    <div>
+                      <h5 className="font-black text-stone-900 text-[11px] uppercase tracking-wider">Hospedagem Premium Grátis</h5>
+                      <p className="text-xs text-stone-500 leading-relaxed mt-1">Aproveite todos os recursos da nossa plataforma por 7 dias sem pagar nada.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100 font-black">4</div>
+                    <div>
+                      <h5 className="font-black text-stone-900 text-[11px] uppercase tracking-wider">Você no Controle</h5>
+                      <p className="text-xs text-stone-500 leading-relaxed mt-1">Após o teste, você decide se quer continuar com um plano pago ou parar sem custos.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 border-t border-stone-100 bg-stone-50/80 mt-auto">
+                <button
+                  onClick={() => {
+                    setIsTrialModalOpen(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-orange-500/20 text-xs flex items-center justify-center gap-2 hover:translate-y-[-2px]"
+                >
+                  Iniciar Minha Mágica Agora <Zap size={16} />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DE PERFIL / KYC */}
+      <AnimatePresence>
+        {isProfileModalOpen && (
+          <ProfileForm 
+            initialData={userProfile}
+            onSubmit={handleProfileSubmit}
+            onClose={() => setIsProfileModalOpen(false)}
+          />
         )}
       </AnimatePresence>
     </>

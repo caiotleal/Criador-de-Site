@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, Users, Globe, Settings, LogOut, ChevronRight, Eye, Edit3, 
   Search, ShieldAlert, DollarSign, ExternalLink, Loader2, RefreshCw, Save, Trash2, Star, X,
-  Layout, CreditCard, Megaphone, FileText, CheckCircle2
+  Layout, CreditCard, Megaphone, FileText, CheckCircle2, MessageSquare, Send, Rocket
 } from 'lucide-react';
 import { BRAND_LOGO } from './components/brand';
 
@@ -20,7 +20,7 @@ const CPanel: React.FC = () => {
   const [platformConfigs, setPlatformConfigs] = useState<any>(null);
   const [isSavingConfigs, setIsSavingConfigs] = useState(false);
   const [stats, setStats] = useState({ totalSites: 0, totalRevenue: 0, activeSites: 0, totalUsers: 0 });
-  const [view, setView] = useState<'dashboard' | 'editor' | 'users' | 'domains' | 'settings' | 'platform' | 'edit'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'editor' | 'users' | 'domains' | 'settings' | 'platform' | 'edit' | 'support'>('dashboard');
   const [editingProject, setEditingProject] = useState<any>(null);
   const [editingFormData, setEditingFormData] = useState<any>(null);
   const [manualCss, setManualCss] = useState('');
@@ -39,14 +39,28 @@ const CPanel: React.FC = () => {
 
   const [planName, setPlanName] = useState('');
   const [planPrice, setPlanPrice] = useState('');
-  const [planInterval, setPlanInterval] = useState<'month' | 'year' | 'bimestral' | 'trimestral' | 'semestral'>('month');
+  const [planInterval, setPlanInterval] = useState<'month' | 'year' | 'bimestral' | 'trimestral' | 'semestral' | 'one_time'>('month');
   const [planDescription, setPlanDescription] = useState('');
   const [planFeatures, setPlanFeatures] = useState('');
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [planBadge, setPlanBadge] = useState('');
   const [planSortOrder, setPlanSortOrder] = useState('0');
+  const [planAllowInstallments, setPlanAllowInstallments] = useState(false);
+  const [planMaxInstallments, setPlanMaxInstallments] = useState('12');
+  const [planInterestFree, setPlanInterestFree] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
+  const [ticketReplyMessage, setTicketReplyMessage] = useState('');
+  const [isReplying, setIsReplying] = useState(false);
+  const [isLoadingTickets, setIsLoadingTickets] = useState(false);
+  const [isTestingSmtp, setIsTestingSmtp] = useState(false);
+  const [smtpTestLog, setSmtpTestLog] = useState<string | null>(null);
+  const [replyErrors, setReplyErrors] = useState<Record<string, string>>({});
+  const [isTriggeringRecovery, setIsTriggeringRecovery] = useState(false);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
 
   const fetchPlatformConfigs = async () => {
     try {
@@ -73,8 +87,36 @@ const CPanel: React.FC = () => {
   };
 
   useEffect(() => {
-    if (view === 'platform') fetchPlatformConfigs();
+    if (view === 'platform') {
+      fetchPlatformConfigs();
+      fetchRecentEmailLogs();
+    }
+    if (view === 'support') fetchSupportTickets();
   }, [view]);
+
+  const fetchRecentEmailLogs = async () => {
+    try {
+      const listLogsFn = httpsCallable(functions, 'listRecentEmailLogsAdmin');
+      const res: any = await listLogsFn();
+      setEmailLogs(res.data?.logs || []);
+    } catch (err) {
+      console.error("Erro ao buscar logs de e-mail:", err);
+    }
+  };
+
+  const fetchSupportTickets = async () => {
+    setIsLoadingTickets(true);
+    try {
+      const listFn = httpsCallable(functions, 'listSupportTicketsAdmin');
+      const res: any = await listFn({});
+      setSupportTickets(res.data?.tickets || []);
+    } catch (err: any) {
+      console.error("Erro fetchSupportTickets:", err);
+      alert("Erro ao buscar tickets: " + err.message);
+    } finally {
+      setIsLoadingTickets(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -205,7 +247,10 @@ const CPanel: React.FC = () => {
           description: planDescription, 
           features: planFeatures.split(',').map(f => f.trim()).filter(f => f),
           badge: planBadge,
-          sortOrder: planSortOrder
+          sortOrder: planSortOrder,
+          allowInstallments: planAllowInstallments,
+          maxInstallments: planMaxInstallments,
+          interestFree: planInterestFree
         });
         alert("Plano atualizado com sucesso!");
       } else {
@@ -217,13 +262,16 @@ const CPanel: React.FC = () => {
           description: planDescription, 
           features: planFeatures.split(',').map(f => f.trim()).filter(f => f),
           badge: planBadge,
-          sortOrder: planSortOrder
+          sortOrder: planSortOrder,
+          allowInstallments: planAllowInstallments,
+          maxInstallments: planMaxInstallments,
+          interestFree: planInterestFree
         });
         alert("Plano criado e sincronizado com Stripe!");
       }
        
        setPlanName(''); setPlanPrice(''); setPlanInterval('month'); setPlanDescription(''); setPlanFeatures('');
-       setPlanBadge(''); setPlanSortOrder('0');
+       setPlanBadge(''); setPlanSortOrder('0'); setPlanAllowInstallments(false); setPlanMaxInstallments('12'); setPlanInterestFree(false);
        setEditingPlanId(null);
       fetchPlatformConfigs();
     } catch (err: any) {
@@ -242,13 +290,16 @@ const CPanel: React.FC = () => {
     setPlanFeatures(plan.features?.join(', ') || '');
     setPlanBadge(plan.badge || '');
     setPlanSortOrder((plan.sortOrder || 0).toString());
+    setPlanAllowInstallments(!!plan.allowInstallments);
+    setPlanMaxInstallments((plan.maxInstallments || 12).toString());
+    setPlanInterestFree(!!plan.interestFree);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelEditPlan = () => {
     setEditingPlanId(null);
     setPlanName(''); setPlanPrice(''); setPlanInterval('month'); setPlanDescription(''); setPlanFeatures('');
-    setPlanBadge(''); setPlanSortOrder('0');
+    setPlanBadge(''); setPlanSortOrder('0'); setPlanAllowInstallments(false); setPlanMaxInstallments('12');
   };
 
   const handleDeletePlan = async (plan: any) => {
@@ -287,6 +338,98 @@ const CPanel: React.FC = () => {
       alert('Erro ao salvar: ' + err.message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleReplyTicket = async (ticket: any) => {
+    if (!ticketReplyMessage.trim()) return alert("Digite uma mensagem de resposta.");
+    setIsReplying(true);
+    try {
+      const replyFn = httpsCallable(functions, 'replySupportTicket');
+      const res: any = await replyFn({ 
+        ticketId: ticket.id, 
+        replyMessage: ticketReplyMessage,
+        ticketEmail: ticket.email,
+        ticketName: ticket.name || "Cliente",
+        ticketSubject: ticket.subject
+      });
+      
+      if (res.data?.success) {
+        alert("Resposta enviada com sucesso por E-mail ao cliente!");
+        setReplyingTicketId(null);
+        setTicketReplyMessage('');
+        setReplyErrors(prev => {
+          const next = { ...prev };
+          delete next[ticket.id];
+          return next;
+        });
+        fetchSupportTickets();
+      } else {
+        const errorStack = [
+          `❌ ERRO SMTP: ${res.data.error || 'Falha no envio'}`,
+          `Código: ${res.data.code || 'N/A'}`,
+          `Comando: ${res.data.command || 'N/A'}`,
+          `Stack Trace:`,
+          res.data.stack || 'Sem detalhes.'
+        ].join('\n');
+        
+        setReplyErrors(prev => ({ ...prev, [ticket.id]: errorStack }));
+      }
+    } catch (err: any) {
+      setReplyErrors(prev => ({ ...prev, [ticket.id]: `🚫 ERRO FATAL: ${err.message}` }));
+    } finally {
+      setIsReplying(false);
+    }
+  };
+
+  const handleTestSmtp = async () => {
+    if (!platformConfigs.smtp?.host || !platformConfigs.smtp?.user || !platformConfigs.smtp?.pass) {
+      return alert("Preencha Host, Usuário e Senha antes de testar.");
+    }
+    
+    setIsTestingSmtp(true);
+    setSmtpTestLog("⏳ Iniciando teste de conexão SMTP...");
+    
+    try {
+      const testFn = httpsCallable(functions, 'testSmtpConfig');
+      const res: any = await testFn({ smtpConfig: platformConfigs.smtp });
+      
+      if (res.data?.success) {
+        setSmtpTestLog(`✅ SUCESSO: ${res.data.message}`);
+      } else {
+        const errorMsg = [
+          `❌ FALHA NA CONEXÃO`,
+          `Mensagem: ${res.data.error || 'Erro desconhecido'}`,
+          `Código: ${res.data.code || 'N/A'}`,
+          `Comando: ${res.data.command || 'N/A'}`,
+          `Stack Trace:`,
+          res.data.stack || 'Sem detalhes disponíveis.'
+        ].join('\n');
+        setSmtpTestLog(errorMsg);
+      }
+    } catch (err: any) {
+      setSmtpTestLog(`🚫 ERRO DE SOLICITAÇÃO: ${err.message}`);
+    } finally {
+      setIsTestingSmtp(false);
+    }
+  };
+
+  const handleTriggerRecovery = async () => {
+    if (!confirm("Deseja disparar a campanha de recuperação para todos os sites abandonados nas últimas 24h?")) return;
+    setIsTriggeringRecovery(true);
+    try {
+      const triggerFn = httpsCallable(functions, 'triggerRecoveryManual');
+      const res: any = await triggerFn();
+      if (res.data?.success) {
+        alert(`Campanha finalizada! ${res.data.sentCount} e-mails de recuperação foram enviados.`);
+        fetchRecentEmailLogs();
+      } else {
+        alert("Falha ao disparar campanha: " + (res.data?.message || "Erro desconhecido"));
+      }
+    } catch (err: any) {
+      alert("Erro na solicitação: " + err.message);
+    } finally {
+      setIsTriggeringRecovery(false);
     }
   };
 
@@ -417,6 +560,9 @@ const CPanel: React.FC = () => {
           <button onClick={() => { setView('settings'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${view === 'settings' ? 'bg-orange-50 text-orange-600' : 'text-stone-500 hover:bg-stone-50'}`}>
             <Settings size={18} /> Ajustes Admin
           </button>
+          <button onClick={() => { setView('support'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${view === 'support' ? 'bg-orange-50 text-orange-600' : 'text-stone-500 hover:bg-stone-50'}`}>
+            <MessageSquare size={18} /> Suporte e Tickets
+          </button>
         </nav>
 
         <div className="p-4 border-t border-stone-200">
@@ -433,6 +579,7 @@ const CPanel: React.FC = () => {
              view === 'users' ? 'Gestão de Usuários' :
              view === 'domains' ? 'Gestão de Domínios' :
              view === 'platform' ? 'Configurações da Plataforma' :
+             view === 'support' ? 'Central de Atendimento' :
              view === 'settings' ? 'Ajustes Admin' : `Ajuste Admin: ${editingProject?.businessName}`}
           </h2>
           <div className="flex items-center gap-4">
@@ -597,6 +744,93 @@ const CPanel: React.FC = () => {
               </motion.div>
             )}
 
+            {view === 'support' && (
+              <motion.div key="support" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-black uppercase text-stone-900 italic">Caixa de Entrada</h3>
+                  <button onClick={fetchSupportTickets} disabled={isLoadingTickets} className="flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors disabled:opacity-50">
+                    <RefreshCw size={14} className={isLoadingTickets ? 'animate-spin' : ''} /> {isLoadingTickets ? 'Buscando...' : 'Atualizar'}
+                  </button>
+                </div>
+                
+                {supportTickets.length === 0 && !isLoadingTickets && (
+                  <div className="bg-white p-12 rounded-[2.5rem] border border-stone-200 text-center shadow-sm">
+                    <div className="w-16 h-16 bg-stone-50 text-stone-300 rounded-full flex items-center justify-center mx-auto mb-4 border border-stone-100">
+                      <CheckCircle2 size={32} />
+                    </div>
+                    <h4 className="text-sm font-black text-stone-500 uppercase tracking-widest">Nenhum chamado aberto!</h4>
+                    <p className="text-xs text-stone-400 mt-2 font-medium max-w-sm mx-auto">Sua caixa de suporte está limpa. Todos os clientes estão atendidos.</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {supportTickets.map(t => (
+                    <div key={t.id} className={`bg-white rounded-3xl p-6 shadow-sm border ${t.status === 'open' ? 'border-indigo-200 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.1)] relative overflow-hidden' : 'border-stone-200 opacity-60'}`}>
+                      {t.status === 'open' && <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[8px] font-black uppercase px-3 py-1.5 rounded-bl-xl shadow-sm tracking-widest flex items-center gap-1"><Star size={10} /> Aguardando Resposta</div>}
+                      
+                      <div className="flex items-start justify-between mb-4 mt-2">
+                        <div>
+                          <div className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-1">{t.subject}</div>
+                          <h4 className="text-sm font-bold text-stone-900">{t.name || 'Cliente Sem Nome'}</h4>
+                          <span className="text-[11px] font-mono text-stone-500">{t.email}</span>
+                          <span className="text-[11px] text-stone-400 ml-2 font-medium">{t.phone}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-stone-50 border border-stone-100 p-4 rounded-2xl mb-4 text-xs text-stone-700 leading-relaxed font-medium">
+                        {t.message}
+                      </div>
+
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-[9px] font-bold text-stone-300 uppercase tracking-widest">Enviado: {new Date(t.createdAt).toLocaleString()}</span>
+                        {t.status === 'open' ? (
+                          <button onClick={() => setReplyingTicketId(t.id)} className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/20 transition-colors flex items-center gap-2">
+                            <Send size={14} /> Responder C/ E-mail
+                          </button>
+                        ) : (
+                          <span className="bg-stone-100 text-stone-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Resolvido
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Caixa de Resposta (Abre in-line) */}
+                      <AnimatePresence>
+                        {replyingTicketId === t.id && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mt-4 pt-4 border-t border-indigo-100">
+                            <label className="text-[9px] font-black text-indigo-500 uppercase tracking-widest block mb-2 ml-1">Mensagem de Retorno (Envia E-mail)</label>
+                            <textarea 
+                              className="w-full bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-400 outline-none text-stone-800 min-h-[100px] resize-none mb-3"
+                              placeholder={`Olá ${t.name || 'Cliente'}...`}
+                              value={ticketReplyMessage}
+                              onChange={e => setTicketReplyMessage(e.target.value)}
+                            />
+                            <div className="flex gap-2 justify-end">
+                              <button onClick={() => { setReplyingTicketId(null); setTicketReplyMessage(''); }} className="bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors">Cancelar</button>
+                              <button onClick={() => handleReplyTicket(t)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-md">
+                                {isReplying ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} Enviar e Fechar Chamado
+                              </button>
+                            </div>
+                            
+                            {replyErrors[t.id] && (
+                              <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl">
+                                <p className="text-[9px] font-black uppercase text-red-500 tracking-widest mb-1 border-b border-red-200 pb-1">Falha no Envio SMTP</p>
+                                <pre className="text-[9px] font-mono whitespace-pre-wrap leading-tight text-red-700">
+                                  {replyErrors[t.id]}
+                                </pre>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+
             {view === 'platform' && platformConfigs && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between mb-2">
@@ -647,6 +881,7 @@ const CPanel: React.FC = () => {
                         <option value="trimestral">Trimestral (3 meses)</option>
                         <option value="semestral">Semestral (6 meses)</option>
                         <option value="year">Anual</option>
+                        <option value="one_time">Pagamento Único (Avulso)</option>
                       </select>
                     </div>
                     <div>
@@ -656,6 +891,28 @@ const CPanel: React.FC = () => {
                     <div>
                       <label className="block text-[8px] font-black uppercase text-stone-400 mb-1 ml-1 tracking-widest">Ordem de Exibição (0 = primeiro)</label>
                       <input type="number" value={planSortOrder} onChange={e => setPlanSortOrder(e.target.value)} className="w-full px-5 py-3 bg-stone-50 border border-stone-100 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-orange-500" placeholder="0" />
+                    </div>
+                    <div className="bg-stone-50 p-4 rounded-xl border border-stone-100 space-y-3">
+                      <label className="flex items-center justify-between cursor-pointer">
+                        <span className="text-[9px] font-black uppercase text-stone-500 tracking-widest">Habilitar Parcelamento?</span>
+                        <input type="checkbox" checked={planAllowInstallments} onChange={e => {
+                          const checked = e.target.checked;
+                          setPlanAllowInstallments(checked);
+                          if (checked) setPlanInterval('one_time'); // Trava: Parcelamento exige pagamento único
+                        }} className="w-4 h-4 accent-orange-500" />
+                      </label>
+                      {planAllowInstallments && (
+                        <div className="space-y-3 pt-2 border-t border-stone-200">
+                          <div>
+                            <label className="block text-[8px] font-black uppercase text-stone-400 mb-1 tracking-widest">Máximo de Parcelas (ex: 12)</label>
+                            <input type="number" value={planMaxInstallments} onChange={e => setPlanMaxInstallments(e.target.value)} className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-xs font-bold outline-none focus:border-orange-500" />
+                          </div>
+                          <label className="flex items-center justify-between cursor-pointer group/toggle">
+                            <span className="text-[8px] font-black uppercase text-stone-400 tracking-widest group-hover/toggle:text-orange-500 transition-colors">Assumir Juros (Sem Juros p/ Cliente)</span>
+                            <input type="checkbox" checked={planInterestFree} onChange={e => setPlanInterestFree(e.target.checked)} className="w-3.5 h-3.5 accent-orange-500" />
+                          </label>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="block text-[8px] font-black uppercase text-stone-400 mb-1 ml-1 tracking-widest">Vantagens (Separadas por vírgula)</label>
@@ -776,6 +1033,213 @@ const CPanel: React.FC = () => {
                       </div>
                     </>
                   )}
+                </div>
+              </div>
+
+              {/* Configurações de E-mail (SMTP) */}
+              <div className="bg-white rounded-[2.5rem] p-8 border border-stone-200 shadow-sm md:col-span-1">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Globe size={24} /></div>
+                    <h3 className="font-black italic uppercase text-lg">E-mail (SMTP)</h3>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2 flex items-center justify-between mb-1">
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-0 ml-1 tracking-widest">Servidor SMTP (Host)</label>
+                      <button 
+                        onClick={() => setPlatformConfigs({
+                          ...platformConfigs, 
+                          smtp: {
+                            ...(platformConfigs.smtp || {}), 
+                            host: 'smtp.gmail.com', 
+                            port: '465'
+                          }
+                        })}
+                        className="text-[9px] font-black text-indigo-600 hover:text-indigo-700 uppercase tracking-widest flex items-center gap-1"
+                      >
+                        ⚡ Auto-Configurar Gmail
+                      </button>
+                    </div>
+                    <div className="col-span-2">
+                      <input 
+                        type="text" 
+                        value={platformConfigs.smtp?.host || ''} 
+                        onChange={e => setPlatformConfigs({...platformConfigs, smtp: {...(platformConfigs.smtp || {}), host: e.target.value}})} 
+                        className="w-full px-5 py-3 bg-stone-50 border border-stone-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-orange-500 outline-none" 
+                        placeholder="smtp.gmail.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Porta</label>
+                      <input 
+                        type="number" 
+                        value={platformConfigs.smtp?.port || ''} 
+                        onChange={e => setPlatformConfigs({...platformConfigs, smtp: {...(platformConfigs.smtp || {}), port: e.target.value}})} 
+                        className="w-full px-5 py-3 bg-stone-50 border border-stone-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-orange-500 outline-none" 
+                        placeholder="465"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Alias / Remetente</label>
+                      <input 
+                        type="text" 
+                        value={platformConfigs.smtp?.from || ''} 
+                        onChange={e => setPlatformConfigs({...platformConfigs, smtp: {...(platformConfigs.smtp || {}), from: e.target.value}})} 
+                        className="w-full px-5 py-3 bg-stone-50 border border-stone-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-orange-500 outline-none" 
+                        placeholder="Suporte@sitezing.com.br"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Usuário SMTP (E-mail)</label>
+                      <input 
+                        type="text" 
+                        value={platformConfigs.smtp?.user || ''} 
+                        onChange={e => setPlatformConfigs({...platformConfigs, smtp: {...(platformConfigs.smtp || {}), user: e.target.value}})} 
+                        className="w-full px-5 py-3 bg-stone-50 border border-stone-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-orange-500 outline-none" 
+                        placeholder="usuario@exemplo.com"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-[8px] font-black uppercase text-stone-400 mb-1.5 ml-1 tracking-widest">Senha SMTP (ou App Password)</label>
+                      <input 
+                        type="password" 
+                        value={platformConfigs.smtp?.pass || ''} 
+                        onChange={e => setPlatformConfigs({...platformConfigs, smtp: {...(platformConfigs.smtp || {}), pass: e.target.value}})} 
+                        className="w-full px-5 py-3 bg-stone-50 border border-stone-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-orange-500 outline-none" 
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 bg-indigo-50 border border-indigo-100 p-3 rounded-xl">
+                    <p className="text-[9px] text-indigo-700 font-bold leading-tight">
+                      Para Gmail, gere uma <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" className="underline font-black">Senha de Aplicativo (16 dígitos)</a>. A sua senha normal não funcionará.
+                    </p>
+                  </div>
+                  
+                  <div className="pt-2 border-t border-stone-200 mt-4">
+                    <button 
+                      onClick={handleTestSmtp}
+                      disabled={isTestingSmtp}
+                      className="w-full bg-stone-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-stone-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isTestingSmtp ? <Loader2 className="animate-spin w-3 h-3" /> : <RefreshCw size={14} />} 
+                      Testar Conexão
+                    </button>
+                    
+                    {smtpTestLog && (
+                      <div className="mt-3 p-4 bg-stone-950 rounded-xl overflow-x-auto">
+                        <p className="text-[9px] font-black uppercase text-stone-500 tracking-widest mb-2 border-b border-stone-800 pb-1">Console SMTP</p>
+                        <pre className="text-[10px] font-mono whitespace-pre-wrap leading-relaxed text-indigo-400">
+                          {smtpTestLog}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recuperação de Clientes (Marketing) */}
+              <div className="bg-white rounded-[2.5rem] p-8 border border-stone-200 shadow-sm overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                  <Rocket size={120} className="rotate-12 text-stone-900" />
+                </div>
+                
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Rocket size={24} /></div>
+                  <h3 className="font-black italic uppercase text-lg">Recuperação de Clientes</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                  <div className="space-y-4">
+                    <p className="text-[11px] font-bold text-stone-600 leading-relaxed">
+                      O sistema busca automaticamente por sites que foram criados, mas não foram publicados após 24 horas. 
+                      Um e-mail amigável é enviado incentivando o cliente a voltar e finalizar o projeto.
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <button 
+                        onClick={handleTriggerRecovery}
+                        disabled={isTriggeringRecovery}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                      >
+                        {isTriggeringRecovery ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                        Disparar Lembretes Agora (Manual)
+                      </button>
+                      <p className="text-[9px] text-stone-400 text-center font-bold italic">
+                        Nota: A automação roda sozinha a cada 24 horas.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-stone-50 rounded-3xl p-5 border border-stone-100 flex flex-col">
+                    <p className="text-[9px] font-black uppercase text-stone-400 tracking-widest mb-3">Prévia do Texto</p>
+                    <div className="space-y-2 flex-1">
+                      <div className="mt-1 p-4 bg-white rounded-xl border border-stone-100 text-[10px] font-bold text-stone-500 leading-relaxed">
+                        "Olá! Reparamos que você parou... O seu site <span className="text-indigo-600">[Nome do Negócio]</span> está esperando. Não deixe sua ideia esfriar!"
+                      </div>
+                      <div className="flex justify-center mt-3">
+                         <div className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-tight">Botão de Link Direto</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tabela de Logs Recentes */}
+                <div className="mt-12">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-[10px] font-black uppercase text-stone-400 tracking-widest flex items-center gap-2">
+                       <FileText size={14} className="text-stone-300" />
+                       Envios das Últimas 24 Horas
+                    </h4>
+                    <button onClick={fetchRecentEmailLogs} className="p-2 text-stone-400 hover:text-stone-600 transition-colors">
+                      <RefreshCw size={12} className={isTriggeringRecovery ? "animate-spin" : ""} />
+                    </button>
+                  </div>
+
+                  <div className="bg-stone-50 rounded-[2rem] border border-stone-100 overflow-hidden">
+                    {emailLogs.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b border-stone-200/60 text-[8px] font-black uppercase text-stone-400 tracking-tighter">
+                              <th className="px-6 py-4">Data/Hora</th>
+                              <th className="px-6 py-4">Destinatário</th>
+                              <th className="px-6 py-4">Tipo</th>
+                              <th className="px-6 py-4 text-right">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-stone-200/40">
+                            {emailLogs.map((log) => (
+                              <tr key={log.id} className="group hover:bg-white transition-colors">
+                                <td className="px-6 py-3 text-[9px] font-bold text-stone-500">
+                                  {log.sentAt ? new Date(log.sentAt._seconds * 1000).toLocaleString('pt-BR') : 'Agora'}
+                                </td>
+                                <td className="px-6 py-3">
+                                  <div className="text-[10px] font-black text-stone-800">{log.recipient}</div>
+                                  <div className="text-[8px] text-stone-400 truncate max-w-[200px]">{log.subject}</div>
+                                </td>
+                                <td className="px-6 py-3">
+                                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${
+                                    log.type === 'recovery' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'
+                                  }`}>
+                                    {log.type === 'recovery' ? 'Recuperação' : 'Suporte'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-3 text-right text-emerald-500 font-black text-[9px] uppercase tracking-widest">
+                                  Sucesso
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="px-6 py-12 text-center">
+                        <p className="text-[10px] text-stone-400 font-bold italic">Nenhum envio registrado nas últimas 24 horas.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -5,10 +5,97 @@ const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
-
+const nodemailer = require("nodemailer");
 const Stripe = require("stripe");
 
-if (!admin.apps.length) admin.initializeApp();
+if (!admin.apps.length) {
+  const firebaseConfig = process.env.FIREBASE_CONFIG ? JSON.parse(process.env.FIREBASE_CONFIG) : {};
+  admin.initializeApp({
+    storageBucket: firebaseConfig.storageBucket || "criador-de-site-1a91d.firebasestorage.app"
+  });
+  admin.firestore().settings({ ignoreUndefinedProperties: true });
+}
+
+const storage = admin.storage().bucket();
+
+/**
+ * Faz upload de uma string base64 para o Firebase Storage e retorna a URL pública.
+ */
+async function uploadBase64ToStorage(base64Data, folder = "generated_images") {
+  if (!base64Data || !base64Data.startsWith("data:image")) return base64Data;
+
+  // Limite de Segurança: Máximo 2MB por imagem para evitar abuso de Storage
+  if (base64Data.length > 2 * 1024 * 1024 * 1.37) { 
+    console.warn("[Storage] Imagem base64 muito grande ignorada.");
+    return null; 
+  }
+
+  try {
+    const mimeType = base64Data.match(/data:([^;]+);/)[1];
+    const extension = mimeType.split("/")[1] || "jpg";
+    const base64Content = base64Data.split(",")[1];
+    const buffer = Buffer.from(base64Content, "base64");
+
+    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
+    const file = storage.file(fileName);
+
+    await file.save(buffer, {
+      metadata: { contentType: mimeType },
+      public: true
+    });
+
+    // Retorna a URL pública padrão do Firebase Storage
+    return `https://storage.googleapis.com/${storage.name}/${fileName}`;
+  } catch (error) {
+    console.error("Erro no upload para o Storage:", error);
+    return base64Data; 
+  }
+}
+
+/**
+ * Procura por imagens base64 no HTML, faz upload para o Storage e as substitui pelas URLs.
+ */
+async function cleanHtmlImages(html) {
+  if (!html || typeof html !== "string") return html;
+  
+  const dataUriRegex = /src=["'](data:image\/[^;]+;base64,[^"']+)["']/g;
+  let newHtml = html;
+  const matches = [...html.matchAll(dataUriRegex)];
+  
+  if (matches.length === 0) return html;
+
+  console.log(`[Clean] Encontradas ${matches.length} imagens base64 para limpar.`);
+  
+  for (const match of matches) {
+    const base64 = match[1];
+    const url = await uploadBase64ToStorage(base64);
+    newHtml = newHtml.split(base64).join(url);
+  }
+  
+  return newHtml;
+}
+
+/**
+ * Remove valores 'undefined' recursivamente para evitar erros no Firestore.
+ * Também converte objetos em JSON e de volta para remover qualquer referência não-serializável.
+ */
+function sanitizeObject(obj) {
+  if (obj === null || obj === undefined) return null;
+  if (typeof obj === 'function') return null; // Firestore não aceita funções
+  if (typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeObject);
+
+  const sanitized = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      if (value !== undefined && typeof value !== 'function') {
+        sanitized[key] = sanitizeObject(value);
+      }
+    }
+  }
+  return sanitized;
+}
 
 const geminiKey = defineSecret("GEMINI_KEY");
 
@@ -21,6 +108,13 @@ const getGeminiClient = () => {
 };
 
 const slugify = (value = "") => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
+
+// Helper de Segurança: Valida se é um domínio ou slug seguro para evitar SSRF/Path Traversal
+const isSafeInput = (str) => {
+  if (!str || typeof str !== 'string') return false;
+  // Permite apenas letras, números, hífens e pontos (para domínios)
+  return /^[a-z0-9.-]+$/i.test(str) && !str.includes('..');
+};
 
 const ensureAuthed = (request) => {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Faça login para continuar.");
@@ -93,13 +187,45 @@ exports.getSiteContent = onCall({ cors: true }, async (request) => {
 // ============================================================================
 // INTELIGÊNCIA ARTIFICIAL E GESTÃO DE PROJETOS
 // ============================================================================
-exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB", secrets: [geminiKey] }, async (request) => {
+async function callImagen(prompt, apiKey) {
+  try {
+    const refinedPrompt = `A high-end, realistic commercial photograph of: ${prompt}. Shot on a 35mm lens, natural lighting, authentic detailed textures, 8k resolution. Pure photography.`;
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=${apiKey}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ instances: [{ prompt: refinedPrompt }], parameters: { sampleCount: 1, aspectRatio: "1:1" } })
+    });
+    const data = await response.json();
+    if (data.predictions?.[0]) {
+      const base64 = `data:${data.predictions[0].mimeType || "image/jpeg"};base64,${data.predictions[0].bytesBase64Encoded}`;
+      return await uploadBase64ToStorage(base64);
+    }
+    return null;
+  } catch (e) {
+    console.error("Erro Imagen:", e);
+    return null;
+  }
+}
+
+exports.generateSite = onCall({ cors: true, timeoutSeconds: 120, memory: "512MiB", secrets: [geminiKey] }, async (request) => {
+  const uid = ensureAuthed(request); // Anti-bot: Exige Auth (Anônima ou Conta)
   const genAI = getGeminiClient();
   const { businessName, description, region, googleContext } = request.data;
   if (!businessName) throw new HttpsError("invalid-argument", "Nome obrigatório");
 
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
-  let prompt = `Atue como um redator publicitário sênior. Empresa: "${businessName}". Descrição: "${description}". Região de atuação: "${region || "Brasil"}". Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall. Textos curtos, persuasivos e com linguagem natural.`;
+  let prompt = `Atue como um redator publicitário sênior. Empresa: "${businessName}". Descrição: "${description}". Região de atuação: "${region || "Brasil"}". 
+  
+  ⚠️ REGRAS DE SEGURANÇA CRÍTICAS:
+  - PROIBIDO gerar conteúdo adulto, erótico ou pornográfico.
+  - PROIBIDO conteúdo sobre drogas ilícitas, armas de fogo ou violência.
+  - PROIBIDO qualquer apologia a crimes ou atividades ilegais.
+  Se o pedido violar estas regras, gere um JSON com heroTitle: "Conteúdo Bloqueado" e heroSubtitle: "O tema solicitado viola nossas políticas de segurança.".
+
+  Gere JSON exato com as chaves: heroTitle, heroSubtitle, aboutTitle, aboutText, contactCall, heroImagePrompt, aboutImagePrompt. Textos curtos, persuasivos e com linguagem natural. 
+  As chaves heroImagePrompt e aboutImagePrompt devem conter descrições visuais DETALHADAS e em INGLÊS para um gerador de imagens IA (Imagen 4). 
+  - heroImagePrompt: Deve ser uma imagem de impacto, épica, que represente o SERVIÇO ou PRODUTO principal da empresa em um cenário profissional e iluminado. 
+  - aboutImagePrompt: Deve ser uma imagem que represente a essência do negócio, como o ambiente de trabalho, ferramentas ou uma pessoa representando a categoria profissional feliz e focada.
+  FOQUE ABSOLUTAMENTE NA CATEGORIA DO NEGÓCIO (${businessName}).`;
   
   if (googleContext) {
     prompt += ` Integre naturalmente também as seguintes informações reais do perfil e avaliações do Google Maps desta empresa para criar uma comunicação verdadeira e social proof: ${googleContext}`;
@@ -107,12 +233,20 @@ exports.generateSite = onCall({ cors: true, timeoutSeconds: 60, memory: "256MiB"
 
   try {
     const result = await model.generateContent(prompt);
-    return JSON.parse(result.response.text().replace(/```json/g, "").replace(/```/g, "").replace(/\\n/g, "").trim());
+    const aiData = JSON.parse(result.response.text().replace(/```json/g, "").replace(/```/g, "").replace(/\\n/g, "").trim());
+
+    // Geração de Imagens com Imagen 4
+    const [heroImage, aboutImage] = await Promise.all([
+      callImagen(aiData.heroImagePrompt || businessName, geminiKey.value()),
+      callImagen(aiData.aboutImagePrompt || businessName, geminiKey.value())
+    ]);
+
+    return { ...aiData, heroImage, aboutImage };
   } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
 exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [geminiKey] }, async (request) => {
-  ensureAuthed(request);
+  const uid = ensureAuthed(request); // Anti-bot: Exige Auth (Anônima ou Conta)
   const { prompt } = request.data;
   if (!prompt) throw new HttpsError("invalid-argument", "O descritivo da imagem é obrigatório.");
 
@@ -123,7 +257,9 @@ exports.generateImage = onCall({ cors: true, timeoutSeconds: 120, secrets: [gemi
       body: JSON.stringify({ instances: [{ prompt: refinedPrompt }], parameters: { sampleCount: 1, aspectRatio: "1:1" } })
     });
     const data = await response.json();
-    return { imageUrl: `data:${data.predictions[0].mimeType || "image/jpeg"};base64,${data.predictions[0].bytesBase64Encoded}` };
+    const base64 = `data:${data.predictions[0].mimeType || "image/jpeg"};base64,${data.predictions[0].bytesBase64Encoded}`;
+    const imageUrl = await uploadBase64ToStorage(base64);
+    return { imageUrl };
   } catch (error) { throw new HttpsError("internal", error.message); }
 });
 
@@ -147,14 +283,44 @@ exports.saveSiteProject = onCall({ cors: true, memory: "512MiB" }, async (reques
 
   await admin.firestore().collection("users").doc(uid).set({ activeUser: true, uid: uid }, { merge: true });
 
+  // Limpa o HTML removendo imagens pesadas em base64 e movendo para o Storage
+  const cleanedHtml = await cleanHtmlImages(generatedHtml);
+
+  // Sanitiza objetos para evitar erro 'invalid nested entity' (undefined) no Firestore
+  const safeAiContent = sanitizeObject(aiContent);
+  const safeFormData = sanitizeObject(formData);
+
   const now = admin.firestore.FieldValue.serverTimestamp();
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(projectSlug).set({
     uid, businessName, projectSlug, internalDomain: projectSlug,
-    officialDomain: officialDomain || "Pendente", generatedHtml, formData: formData || {}, aiContent: aiContent || {},
+    officialDomain: officialDomain || "Pendente", generatedHtml: cleanedHtml, formData: safeFormData, aiContent: safeAiContent,
     updatedAt: now, createdAt: now, status: "draft", paymentStatus: "pending"
   }, { merge: true });
 
   return { success: true, projectSlug };
+});
+
+exports.updateUserProfile = onCall({ cors: true }, async (request) => {
+  const uid = ensureAuthed(request);
+  const { fullName, document, phone, address, birthDate } = request.data;
+  
+  if (!fullName || !document || !phone || !address) {
+    throw new HttpsError("invalid-argument", "Dados de identidade incompletos.");
+  }
+
+  await admin.firestore().collection("users").doc(uid).set({
+    fullName, document, phone, address, birthDate,
+    kycCompleted: true,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  return { success: true };
+});
+
+exports.getUserProfile = onCall({ cors: true }, async (request) => {
+  const uid = ensureAuthed(request);
+  const snap = await admin.firestore().collection("users").doc(uid).get();
+  return snap.exists ? snap.data() : null;
 });
 
 exports.checkDomainAvailability = onCall({ cors: true }, async (request) => {
@@ -185,8 +351,15 @@ exports.updateSiteProject = onCall({ cors: true }, async (request) => {
   const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
   const { html, formData, aiContent } = request.data;
 
+  // Limpa o HTML removendo imagens pesadas em base64 e movendo para o Storage
+  const cleanedHtml = await cleanHtmlImages(html);
+
+  // Sanitiza objetos para evitar erro 'invalid nested entity' (undefined) no Firestore
+  const safeAiContent = sanitizeObject(aiContent);
+  const safeFormData = sanitizeObject(formData);
+
   await admin.firestore().collection("users").doc(uid).collection("projects").doc(targetId).update({
-    generatedHtml: html, ...(formData && { formData }), ...(aiContent && { aiContent }),
+    generatedHtml: cleanedHtml, ...(formData && { formData: safeFormData }), ...(aiContent && { aiContent: safeAiContent }),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   return { success: true };
@@ -200,7 +373,7 @@ exports.listUserProjects = onCall({ cors: true }, async (request) => {
   return { projects };
 });
 
-exports.publishUserProject = onCall({ cors: true }, async (request) => {
+exports.publishUserProject = onCall({ cors: true, secrets: [geminiKey] }, async (request) => {
   try {
     const uid = ensureAuthed(request);
     const targetId = request.data.targetId || request.data.projectId || request.data.projectSlug;
@@ -213,6 +386,31 @@ exports.publishUserProject = onCall({ cors: true }, async (request) => {
 
     if (project.status === "frozen") throw new HttpsError("permission-denied", "Site congelado. Renove o plano.");
     
+    // VERIFICAÇÃO DE IDENTIDADE (KYC)
+    const userSnap = await db.collection("users").doc(uid).get();
+    const userData = userSnap.data() || {};
+    const requiredFields = ["fullName", "document", "phone", "address"];
+    const missingFields = requiredFields.filter(f => !userData[f]);
+    
+    if (missingFields.length > 0) {
+      throw new HttpsError("failed-precondition", `Perfil incompleto. Campos obrigatórios: ${missingFields.join(", ")}`);
+    }
+
+    // MODERAÇÃO DE CONTEÚDO IA ANTES DE PUBLICAR
+    const genAI = getGeminiClient();
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const modPrompt = `Analise o seguinte conteúdo de site e responda 'SAFE' ou 'UNSAFE'. 
+    Marque como 'UNSAFE' se contiver: pornografia, violência explícita, apologia a crimes, drogas ilícitas ou golpes. 
+    Conteúdo: ${project.generatedHtml.substring(0, 5000)}`;
+    
+    const modResult = await model.generateContent(modPrompt);
+    const modText = modResult.response.text().trim().toUpperCase();
+    
+    if (modText.includes("UNSAFE")) {
+       await ref.update({ status: "blocked", moderatorNote: "Conteúdo violou políticas de segurança." });
+       throw new HttpsError("permission-denied", "Seu site foi bloqueado por violar nossas políticas de conteúdo seguro.");
+    }
+    
     // GERA A URL OFICIAL USANDO O WILDCARD
     const subdomainVal = `${project.projectSlug}.sitezing.com.br`;
     const publicUrl = `https://${subdomainVal}`;
@@ -220,6 +418,8 @@ exports.publishUserProject = onCall({ cors: true }, async (request) => {
     // REGISTRA O SUBDOMÍNIO NO FIREBASE HOSTING PARA SSL E ROTEAMENTO
     if (!project.published) {
       try {
+        if (!isSafeInput(subdomainVal)) throw new Error("Subdomínio inválido detected.");
+        
         const projectIdEnv = getProjectId();
         const token = await getFirebaseAccessToken();
         const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectIdEnv}/customDomains?customDomainId=${subdomainVal}`;
@@ -316,7 +516,8 @@ exports.addCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (requ
     }
 
     const token = await getFirebaseAccessToken();
-    const cleanDomain = domain.trim().toLowerCase();
+    const cleanDomain = (domain || "").trim().toLowerCase();
+    if (!isSafeInput(cleanDomain)) throw new HttpsError("invalid-argument", "Domínio em formato inválido detectado.");
 
     const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectIdEnv}/customDomains?customDomainId=${cleanDomain}`;
     
@@ -380,7 +581,9 @@ exports.removeCustomDomain = onCall({ cors: true, timeoutSeconds: 60 }, async (r
   try {
     const projectIdEnv = getProjectId();
     const token = await getFirebaseAccessToken();
-    const cleanDomain = domain.trim().toLowerCase();
+    const cleanDomain = (domain || "").trim().toLowerCase();
+
+    if (!isSafeInput(cleanDomain)) throw new HttpsError("invalid-argument", "Domínio em formato inválido detectado.");
 
     console.log(`[CustomDomain] Removendo domínio ${cleanDomain} do projeto ${projectIdEnv}`);
 
@@ -421,7 +624,9 @@ exports.verifyDomainPropagation = onCall({ cors: true, timeoutSeconds: 60 }, asy
   try {
     const projectIdEnv = getProjectId();
     const token = await getFirebaseAccessToken();
-    const cleanDomain = domain.trim().toLowerCase();
+    const cleanDomain = (domain || "").trim().toLowerCase();
+
+    if (!isSafeInput(cleanDomain)) throw new HttpsError("invalid-argument", "Domínio em formato inválido detectado.");
 
     const apiUrl = `https://firebasehosting.googleapis.com/v1beta1/projects/${projectIdEnv}/sites/${projectIdEnv}/customDomains/${cleanDomain}`;
     const response = await fetch(apiUrl, { method: "GET", headers: { "Authorization": `Bearer ${token}` } });
@@ -514,13 +719,67 @@ exports.createStripeCheckoutSession = onCall({ cors: true }, async (request) => 
 
   const sessionParams = {
     mode: 'subscription',
-    line_items: [{ price: priceId || stripeConfig.defaultPriceId, quantity: 1 }],
+    line_items: [lineItem],
     success_url: `${safeOrigin}?payment=success&project=${projectId}`,
     cancel_url: `${safeOrigin}?payment=cancelled&project=${projectId}`,
     metadata: { projectId, planType },
+    client_reference_id: projectId,
     allow_promotion_codes: true,
     payment_method_collection: 'always',
   };
+
+  // Habilitar Parcelamento (Stripe Brasil) se o plano permitir
+  const db = admin.firestore();
+  const configDoc = await db.collection("configs").doc("platform").get();
+  if (configDoc.exists) {
+    const plans = configDoc.data().plans || [];
+    const targetPlan = plans.find(p => p.priceId === priceId || (p.id === priceId));
+    
+    // Se o plano for pagamento único OU se o parcelamento estiver habilitado, usar mode: 'payment'
+    if (targetPlan?.interval === 'one_time' || targetPlan?.allowInstallments) {
+      sessionParams.mode = 'payment';
+      delete sessionParams.payment_method_collection;
+      
+      // Para o parcelamento no Brasil aparecer com mais confiabilidade
+      sessionParams.payment_method_types = ['card'];
+      sessionParams.billing_address_collection = 'required';
+    }
+
+    if (targetPlan?.allowInstallments) {
+      // Importante: Parcelamento no Stripe Brasil Checkout só funciona em mode: 'payment'
+      // E não aceita preços recorrentes. Precisamos converter para price_data único.
+      sessionParams.mode = 'payment';
+      
+      try {
+        const priceObj = await stripe.prices.retrieve(priceId);
+        sessionParams.line_items = [{
+          price_data: {
+            currency: priceObj.currency,
+            product: priceObj.product,
+            unit_amount: priceObj.unit_amount,
+          },
+          quantity: 1
+        }];
+      } catch (e) {
+        console.error("Erro ao converter preço recorrente para parcelamento:", e);
+      }
+
+      const installmentsConfig = { enabled: true };
+      if (targetPlan.interestFree) {
+        installmentsConfig.plan = {
+          type: 'merchant_paid',
+          count: parseInt(targetPlan.maxInstallments) || 12
+        };
+      }
+      
+      sessionParams.payment_method_options = {
+        card: {
+          installments: installmentsConfig
+        }
+      };
+
+    }
+  }
 
   const session = await stripe.checkout.sessions.create(sessionParams);
 
@@ -558,7 +817,9 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
 
           if (pDoc.exists) {
             const projectData = pDoc.data();
-            if (projectData.stripeSubscriptionId && session.subscription && projectData.stripeSubscriptionId !== session.subscription) {
+            
+            // Se for uma nova assinatura, cancela a anterior se existir
+            if (session.mode === 'subscription' && projectData.stripeSubscriptionId && session.subscription && projectData.stripeSubscriptionId !== session.subscription) {
               try { await stripe.subscriptions.cancel(projectData.stripeSubscriptionId); } catch (err) {}
             }
 
@@ -598,22 +859,62 @@ exports.cancelStripeSubscription = onCall({ cors: true }, async (request) => {
 });
 
 exports.resumeStripeSubscription = onCall({ cors: true }, async (request) => {
+  console.log("[ResumeSubscription] Iniciando...", JSON.stringify(request.data));
   const uid = ensureAuthed(request);
-  const { projectId } = request.data;
-  const projectRef = admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId);
-  const snap = await projectRef.get();
-  const project = snap.data();
-
-  if (!project?.stripeSubscriptionId) throw new HttpsError("failed-precondition", "Sem assinatura ativa.");
-
-  const stripeConfig = await getStripeConfig();
-  const stripe = getStripeInstance(stripeConfig);
+  const { projectId } = request.data || {};
+  if (!projectId) throw new HttpsError("invalid-argument", "Código do projeto ausente.");
 
   try {
-    await stripe.subscriptions.update(project.stripeSubscriptionId, { cancel_at_period_end: false });
-    await projectRef.update({ cancelAtPeriodEnd: false, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-    return { success: true };
-  } catch (error) { throw new HttpsError("internal", "Erro provedor de pagamentos."); }
+    const projectRef = admin.firestore().collection("users").doc(uid).collection("projects").doc(projectId);
+    const snap = await projectRef.get();
+    
+    if (!snap.exists) {
+      console.error("[ResumeSubscription] Projeto não encontrado:", projectId);
+      throw new HttpsError("not-found", "Projeto não encontrado em sua conta.");
+    }
+    const project = snap.data();
+
+    if (!project?.stripeSubscriptionId) {
+      console.warn("[ResumeSubscription] Sem stripeSubscriptionId vinculado.");
+      throw new HttpsError("failed-precondition", "Este site não possui uma assinatura vinculada para reativar. Se o período de teste expirou, use o botão 'Assinar' para contratar um novo plano.");
+    }
+
+    const stripeConfig = await getStripeConfig();
+    const stripe = getStripeInstance(stripeConfig);
+
+    console.log("[ResumeSubscription] Verificando assinatura no Stripe:", project.stripeSubscriptionId);
+    
+    try {
+      // Primeiro verificamos o status da assinatura no Stripe
+      const subscription = await stripe.subscriptions.retrieve(project.stripeSubscriptionId);
+      console.log("[ResumeSubscription] Status da assinatura no Stripe:", subscription.status);
+      
+      if (subscription.status === 'canceled') {
+        throw new HttpsError("failed-precondition", "A assinatura anterior (ID: " + project.stripeSubscriptionId + ") já foi totalmente cancelada no provedor e não pode ser reativada. Por favor, escolha um novo plano e faça o pagamento novamente.");
+      }
+
+      // Reativamos a assinatura (tiramos o agendamento de cancelamento)
+      await stripe.subscriptions.update(project.stripeSubscriptionId, { 
+        cancel_at_period_end: false 
+      });
+
+      await projectRef.update({ 
+        cancelAtPeriodEnd: false, 
+        status: 'active',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp() 
+      });
+
+      console.log("[ResumeSubscription] Reativado com sucesso!");
+      return { success: true, message: "Assinatura reativada com sucesso!" };
+    } catch (stripeError) {
+      console.error("[ResumeSubscription] Erro na API do Stripe:", stripeError);
+      throw new HttpsError("internal", "Erro no Stripe: " + (stripeError.message || "Erro desconhecido"));
+    }
+  } catch (error) {
+    console.error("[ResumeSubscription] Erro Fatal:", error);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError("internal", "Erro crítico no servidor: " + (error.message || "Tente novamente mais tarde."));
+  }
 });
 
 exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
@@ -634,7 +935,7 @@ exports.cleanupExpiredSites = onSchedule("every 24 hours", async (event) => {
 // GOOGLE PLACES API: BUSCAR NEGÓCIO
 // ============================================================================
 exports.fetchGoogleBusiness = onCall({ cors: true }, async (request) => {
-  const uid = ensureAuthed(request);
+  const uid = ensureAuthed(request); // Anti-bot: Exige Auth (Anônima ou Conta)
   const { query } = request.data;
   if (!query) throw new HttpsError("invalid-argument", "Busca vazia.");
   
@@ -922,7 +1223,7 @@ exports.createStripePlanAdmin = onCall({ cors: true }, async (request) => {
     throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
   }
 
-  const { name, description, price, interval, features, badge, sortOrder } = request.data;
+  const { name, description, price, interval, features, badge, sortOrder, allowInstallments, maxInstallments, interestFree } = request.data;
   if (!name || !price) throw new HttpsError("invalid-argument", "Nome e preço são obrigatórios.");
 
   const stripeConfig = await getStripeConfig();
@@ -942,7 +1243,9 @@ exports.createStripePlanAdmin = onCall({ cors: true }, async (request) => {
       currency: "brl",
     };
 
-    if (interval === 'bimestral') {
+    if (interval === 'one_time') {
+      // Sem propriedade recurring para pagamento único
+    } else if (interval === 'bimestral') {
       priceData.recurring = { interval: 'month', interval_count: 2 };
     } else if (interval === 'trimestral') {
       priceData.recurring = { interval: 'month', interval_count: 3 };
@@ -967,7 +1270,11 @@ exports.createStripePlanAdmin = onCall({ cors: true }, async (request) => {
         features: features || [],
         badge: badge || "",
         sortOrder: parseInt(sortOrder) || 0,
-        createdAt: new Date().toISOString()
+        allowInstallments: !!allowInstallments,
+        maxInstallments: parseInt(maxInstallments) || 12,
+        interestFree: !!interestFree,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       })
     });
 
@@ -982,7 +1289,7 @@ exports.updateStripePlanAdmin = onCall({ cors: true }, async (request) => {
     throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
   }
 
-  const { productId, name, description, features, price, interval, badge, sortOrder } = request.data;
+  const { productId, name, description, features, price, interval, badge, sortOrder, allowInstallments, maxInstallments, interestFree } = request.data;
   if (!productId) throw new HttpsError("invalid-argument", "ID do produto é obrigatório.");
 
   const stripeConfig = await getStripeConfig();
@@ -1016,7 +1323,9 @@ exports.updateStripePlanAdmin = onCall({ cors: true }, async (request) => {
         currency: "brl",
       };
       
-      if (interval === 'bimestral') {
+      if (interval === 'one_time') {
+        // Sem propriedade recurring para pagamento único
+      } else if (interval === 'bimestral') {
         priceData.recurring = { interval: 'month', interval_count: 2 };
       } else if (interval === 'trimestral') {
         priceData.recurring = { interval: 'month', interval_count: 3 };
@@ -1048,6 +1357,9 @@ exports.updateStripePlanAdmin = onCall({ cors: true }, async (request) => {
       priceId: newPriceId,
       badge: badge || "",
       sortOrder: parseInt(sortOrder) || 0,
+      allowInstallments: !!allowInstallments,
+      maxInstallments: parseInt(maxInstallments) || 12,
+      interestFree: !!interestFree,
       updatedAt: new Date().toISOString()
     };
 
@@ -1082,9 +1394,12 @@ exports.deleteStripePlanAdmin = onCall({ cors: true }, async (request) => {
         const stripe = getStripeInstance(stripeConfig);
         try {
           await stripe.prices.update(planToDelete.priceId, { active: false });
+          // Também arquivamos o produto para não aparecer mais em buscas ou relatórios como ativo
+          await stripe.products.update(productId, { active: false });
         } catch (e) {
-          console.error("Erro ao desativar preço na deleção:", e);
+          console.error("Erro ao desativar preço/produto na deleção:", e);
         }
+
       }
     }
     return { success: true };
@@ -1092,3 +1407,309 @@ exports.deleteStripePlanAdmin = onCall({ cors: true }, async (request) => {
     throw new HttpsError("internal", error.message);
   }
 });
+
+// ==========================================
+// CANAL DE SUPORTE
+// ==========================================
+
+const getTransporter = (config = {}) => {
+  const host = config.host || process.env.SMTP_HOST || "smtp.hostinger.com";
+  const port = parseInt(config.port) || parseInt(process.env.SMTP_PORT) || 465;
+  
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465, // true para 465 (SSL), false para 587 (TLS/STARTTLS)
+    auth: {
+      user: config.user || process.env.SMTP_USER || "Suporte@sitezing.com.br",
+      pass: config.pass || process.env.SMTP_PASS || "SenhaPadraoAqui"
+    },
+    // Adicionamos tls para aceitar certificados self-signed se necessário
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
+};
+
+exports.submitSupportTicket = onCall({ cors: true }, async (request) => {
+  const uid = ensureAuthed(request);
+  const db = admin.firestore();
+  
+  const { subject, message, email, name, phone } = request.data;
+  if (!subject || !message) throw new HttpsError("invalid-argument", "Assunto e mensagem são obrigatórios.");
+
+  try {
+    const ticketRef = db.collection("support_tickets").doc();
+    await ticketRef.set({
+      userId: uid,
+      name: name || "Cliente",
+      email: email || "Não informado",
+      phone: phone || "",
+      subject,
+      message,
+      status: "open",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { success: true, ticketId: ticketRef.id };
+  } catch (e) {
+    console.error("Erro ao salvar ticket:", e);
+    throw new HttpsError("internal", "Erro ao processar sua solicitação.");
+  }
+});
+
+exports.listSupportTicketsAdmin = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
+  }
+
+  const db = admin.firestore();
+  try {
+    const snap = await db.collection("support_tickets").orderBy("createdAt", "desc").get();
+    const tickets = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return { tickets };
+  } catch (e) {
+    throw new HttpsError("internal", "Erro ao carregar tickets.");
+  }
+});
+
+exports.replySupportTicket = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito ao administrador.");
+  }
+
+  const { ticketId, replyMessage, ticketEmail, ticketName, ticketSubject } = request.data;
+  if (!ticketId || !replyMessage || !ticketEmail) {
+    throw new HttpsError("invalid-argument", "Dados de resposta incompletos.");
+  }
+
+  const db = admin.firestore();
+  try {
+    // 1. Buscar Configurações de SMTP dinâmicas do Firestore
+    const configDoc = await db.collection("configs").doc("platform").get();
+    const platformData = configDoc.exists ? configDoc.data() : {};
+    const smtpConfig = platformData.smtp || {};
+
+    // 2. Enviar Email via Nodemailer
+    const transporter = getTransporter(smtpConfig);
+    
+    const mailOptions = {
+      from: smtpConfig.from ? `"Suporte SiteZing" <${smtpConfig.from}>` : '"Suporte SiteZing" <Suporte@sitezing.com.br>',
+      to: ticketEmail,
+      subject: `RE: ${ticketSubject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h2 style="color: #f97316;">Olá, ${ticketName || 'Cliente'}!</h2>
+          <p>Obrigado por entrar em contato com o suporte da <strong>SiteZing</strong>.</p>
+          <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="white-space: pre-wrap; margin: 0;">${replyMessage}</p>
+          </div>
+          <p style="font-size: 14px; color: #64748b;">
+            Se precisar de mais alguma coisa, basta responder diretamente a este e-mail.
+          </p>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="font-size: 12px; color: #94a3b8; text-align: center;">
+            &copy; ${new Date().getFullYear()} SiteZing - Central de Relacionamento
+          </p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email de suporte enviado com sucesso:", info.messageId);
+
+    // 2. Marcar Ticket como Concluído no Firestore
+    await db.collection("support_tickets").doc(ticketId).update({
+      status: "resolved",
+      adminReply: replyMessage,
+      repliedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // 3. Registrar Log de Envio
+    await db.collection("email_logs").add({
+      recipient: ticketEmail,
+      subject: `RE: ${ticketSubject}`,
+      type: "support",
+      status: "success",
+      sentAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { success: true };
+  } catch (e) {
+    console.error("Erro ao responder ticket:", e);
+    // Em vez de dar throw em 500, retornamos o erro estruturado para o CPanel ler
+    return { 
+      success: false, 
+      error: e.message,
+      code: e.code,
+      command: e.command,
+      stack: e.stack 
+    };
+  }
+});
+
+exports.testSmtpConfig = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso negado.");
+  }
+
+  const { smtpConfig } = request.data;
+  if (!smtpConfig || !smtpConfig.host || !smtpConfig.user || !smtpConfig.pass) {
+    throw new HttpsError("invalid-argument", "Dados de SMTP incompletos para o teste.");
+  }
+
+  try {
+    const transporter = getTransporter(smtpConfig);
+    // verify() retorna uma Promise (ou callback) que valida a conexão
+    await new Promise((resolve, reject) => {
+      transporter.verify((error, success) => {
+        if (error) reject(error);
+        else resolve(success);
+      });
+    });
+
+    return { 
+      success: true, 
+      message: "Conexão estabelecida com sucesso! O servidor SMTP aceitou as credenciais." 
+    };
+  } catch (e) {
+    console.error("Erro no teste de SMTP:", e);
+    return { 
+      success: false, 
+      error: e.message,
+      code: e.code,
+      command: e.command,
+      stack: e.stack // Útil para debug avançado no log do CPanel
+    };
+  }
+});
+
+/**
+ * SISTEMA DE RECUPERAÇÃO DE CARRINHO ABANDONADO (E-mails)
+ * Busca sites não publicados e envia um lembrete após 24h.
+ */
+async function processRecoveryCampaign(db) {
+  console.log("Iniciando campanha de recuperação de sites abandonados...");
+  
+  // 1. Buscar Configurações SMTP
+  const configDoc = await db.collection("configs").doc("platform").get();
+  const platformData = configDoc.exists ? configDoc.data() : {};
+  const smtpConfig = platformData.smtp || {};
+  
+  if (!smtpConfig.host || !smtpConfig.user || !smtpConfig.pass) {
+    console.warn("SMTP não configurado. Abortando campanha de recuperação.");
+    return { success: false, message: "SMTP não configurado." };
+  }
+
+  const transporter = getTransporter(smtpConfig);
+  const now = new Date();
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+
+  // 2. Buscar Projetos Abandonados (Status active e updatedAt entre 24-48h)
+  const projectsSnap = await db.collectionGroup("projects")
+    .where("status", "==", "active")
+    .where("updatedAt", "<=", twentyFourHoursAgo)
+    .where("updatedAt", ">=", fortyEightHoursAgo)
+    .get();
+
+  console.log(`Encontrados ${projectsSnap.size} projetos abandonados recentes.`);
+
+  let sentCount = 0;
+  for (const doc of projectsSnap.docs) {
+    const project = doc.data();
+    
+    // Evitar re-enviar se já foi enviado recentemente
+    if (project.recoveryEmailSent) continue;
+
+    // Buscar e-mail do usuário
+    const userDoc = await db.collection("users").doc(project.uid).get();
+    const userEmail = userDoc.exists ? (userDoc.data().email || userDoc.data().ownerEmail) : null;
+
+    if (userEmail) {
+      try {
+        const recoverUrl = `https://sitezing.com.br?project=${doc.id}`;
+        await transporter.sendMail({
+          from: smtpConfig.from ? `"SiteZing" <${smtpConfig.from}>` : '"SiteZing" <suporte@sitezing.com.br>',
+          to: userEmail,
+          subject: `🚀 Quase lá! O seu site ${project.businessName || 'está esperando'}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917;">
+              <h2 style="color: #f97316;">Olá! Reparamos que você parou...</h2>
+              <p>Notamos que você começou a criar o site do seu negócio <strong>${project.businessName || ''}</strong> na SiteZing, mas ele ainda não está no ar.</p>
+              <p>Não deixe sua ideia esfriar! Ter um site profissional é o primeiro passo para conquistar mais clientes.</p>
+              <div style="margin: 30px 0; text-align: center;">
+                <a href="${recoverUrl}" style="background-color: #f97316; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Finalizar e Publicar meu Site</a>
+              </div>
+              <p style="font-size: 14px; color: #78716c;">O editor está exatamente como você deixou. Basta clicar e continuar!</p>
+              <hr style="border: none; border-top: 1px solid #e7e5e4; margin: 30px 0;" />
+              <p style="font-size: 12px; color: #a8a29e; text-align: center;">SiteZing - Inteligência para o seu Negócio</p>
+            </div>
+          `
+        });
+        
+        // Marcar como enviado no Firestore
+        await doc.ref.update({ 
+          recoveryEmailSent: true,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Registrar Log de Envio
+        await db.collection("email_logs").add({
+          recipient: userEmail,
+          subject: `🚀 Quase lá! O seu site ${project.businessName || 'está esperando'}`,
+          type: "recovery",
+          status: "success",
+          sentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        sentCount++;
+      } catch (err) {
+        console.error(`Erro ao enviar recovery para ${userEmail}:`, err);
+      }
+    }
+  }
+
+  return { success: true, sentCount };
+}
+
+exports.listRecentEmailLogsAdmin = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito.");
+  }
+  const db = admin.firestore();
+  const now = admin.firestore.Timestamp.now();
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  try {
+    const snap = await db.collection("email_logs")
+      .where("sentAt", ">=", twentyFourHoursAgo)
+      .orderBy("sentAt", "desc")
+      .limit(50)
+      .get();
+    
+    const logs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return { logs };
+  } catch (err) {
+    console.error("Erro ao listar logs de email:", err);
+    throw new HttpsError("internal", err.message);
+  }
+});
+
+/**
+ * DESATIVADO POR SEGURANÇA (Prevenção de Spam/Suspensão)
+ * 
+exports.sendRecoveryEmails = onSchedule("every 24 hours", async (event) => {
+  const db = admin.firestore();
+  await processRecoveryCampaign(db);
+});
+
+exports.triggerRecoveryManual = onCall({ cors: true }, async (request) => {
+  if (request.auth?.token?.email !== ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Acesso restrito.");
+  }
+  const db = admin.firestore();
+  return await processRecoveryCampaign(db);
+});
+*/

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { functions, storage } from '../firebase';
 
 interface UseIframeEditorProps {
   setGeneratedHtml: (html: string | null) => void;
@@ -51,15 +52,43 @@ export const useIframeEditor = ({ setGeneratedHtml, setHasUnsavedChanges }: UseI
         const input = document.createElement('input');
         input.type = 'file'; 
         input.accept = 'image/*';
-        input.onchange = (e: any) => {
+        input.onchange = async (e: any) => {
           const file = e.target.files[0];
-          const reader = new FileReader();
-          reader.onload = async () => {
-            const compressedBase64 = await compressImage(reader.result as string);
-            const iframe = document.querySelector('iframe');
-            iframe?.contentWindow?.postMessage({ type: 'INSERT_IMAGE', targetId: event.data.targetId, url: compressedBase64 }, '*');
-          };
-          reader.readAsDataURL(file);
+          if (!file) return;
+
+          try {
+            // Mostra algum feedback visual se necessário (opcional aqui, já que o iframe cuida do estado)
+            const reader = new FileReader();
+            reader.onload = async () => {
+              // Comprime a imagem antes do upload para economizar espaço e banda
+              const compressedBase64 = await compressImage(reader.result as string);
+              
+              // Converte base64 de volta para Blob para o upload
+              const response = await fetch(compressedBase64);
+              const blob = await response.blob();
+
+              // Nome único para o arquivo
+              const fileName = `uploads/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, '_')}`;
+              const storageRef = ref(storage, fileName);
+
+              // Upload
+              await uploadBytes(storageRef, blob);
+              const downloadUrl = await getDownloadURL(storageRef);
+
+              const iframe = document.querySelector('iframe');
+              iframe?.contentWindow?.postMessage({ 
+                type: 'INSERT_IMAGE', 
+                targetId: event.data.targetId, 
+                url: downloadUrl 
+              }, '*');
+              
+              setHasUnsavedChanges(true);
+            };
+            reader.readAsDataURL(file);
+          } catch (error) {
+            console.error("Erro no upload do usuário:", error);
+            alert("Erro ao enviar imagem. Tente novamente.");
+          }
         };
         input.click();
       }

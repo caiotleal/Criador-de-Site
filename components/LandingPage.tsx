@@ -7,6 +7,7 @@ import {
 import { db, functions, auth } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import { BRAND_LOGO } from './brand';
 
 interface LandingPageProps {
   onStart: (initialData?: { businessName: string; segment: string }) => void;
@@ -72,18 +73,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
     setError(null);
     
     try {
-      await addDoc(collection(db, 'subscriptions'), {
-        businessName: businessName.trim(),
-        status: 'paid', 
-        createdAt: serverTimestamp(),
-        source: 'main_portal_v2',
-        platformVersion: '2.0'
-      });
+      // Tentativa de Captura de Lead (pode falhar se não houver permissão, mas não deve travar o usuário)
+      try {
+        await addDoc(collection(db, 'subscriptions'), {
+          businessName: businessName.trim(),
+          status: 'paid', 
+          createdAt: serverTimestamp(),
+          source: 'main_portal_v2',
+          platformVersion: '2.0'
+        });
+      } catch (e) {
+        console.warn("Aviso: Falha ao registrar lead (assinatura), continuando fluxo...", e);
+      }
       
       setSuccess(true);
       setTimeout(() => onStart({ businessName, segment }), 1500);
     } catch (err: any) {
-      setError("Não foi possível conectar ao servidor. Verifique sua internet.");
+      console.error("Erro Crítico no Submit:", err);
+      setError("Ocorreu um problema ao iniciar. Por favor, tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -101,10 +108,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
         {/* Nav Minimalista */}
         <nav className="flex justify-between items-center mb-20">
           <div className="flex items-center gap-2 group cursor-default">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-110 transition-transform">
-              <Rocket className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-white/10 group-hover:scale-110 transition-transform overflow-hidden">
+              <img src={BRAND_LOGO} alt="SiteZing Logo" className="w-full h-full object-contain p-1" />
             </div>
-            <span className="text-xl font-bold tracking-tight">SiteCraft</span>
+            <span className="text-xl font-bold tracking-tight">SiteZing</span>
           </div>
           <div className="hidden md:flex gap-8 text-sm font-medium text-zinc-400">
             <a href="#" className="hover:text-white transition-colors">Funcionalidades</a>
@@ -245,7 +252,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             <Shield className="w-4 h-4 text-zinc-600" />
             <span className="text-xs text-zinc-600 uppercase tracking-widest font-bold">100% Seguro & Protegido</span>
           </div>
-          <p className="text-xs text-zinc-700">© 2024 SiteCraft Global. Todos os direitos reservados.</p>
+          <p className="text-xs text-zinc-700">© 2026 SiteZing. Todos os direitos reservados.</p>
         </div>
       </div>
 

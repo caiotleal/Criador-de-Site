@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, Loader2 } from 'lucide-react';
 import { auth } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
+import { BRAND_LOGO } from './brand';
 
 interface LoginPageProps {
   isOpen: boolean;
@@ -79,8 +80,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ isOpen, onClose, onSubmit }) => {
           <X size={20} />
         </button>
 
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">SiteCraft</h2>
+        <div className="flex flex-col items-center mb-8 text-center">
+          <img src={BRAND_LOGO} alt="SiteZing Logo" className="w-16 h-16 object-contain mb-4" />
+          <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">SiteZing</h2>
           <p className="text-sm text-zinc-500 mt-1">Acesse ou crie sua conta em segundos</p>
         </div>
 
